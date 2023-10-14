@@ -8,3 +8,8 @@ I needed a tiny set of controls for a couple of different **[Music Player Daemon
 This one is written in Python, using Tkinter and is about as basic as you can get.
 
 It does exactly what I need and nothing more.
+
+## Windows Defender flags it as a severe threat
+This is pretty common.  This is just [one of many sites](https://medium.com/@markhank/how-to-stop-your-python-programs-being-seen-as-malware-bfd7eb407a7) describing the problem.
+When I first installed my own app, Windows stuck it in the quarantine folder and said it was malicious.  I had to add an exception in Defender settings and restore it from the quarantine before I could use it.
+If all this troubles you, then don't download it.  Sorry, but that's where we are.
