@@ -1,4 +1,4 @@
-# mmc4w - Minimal MPD Client for Windows
+# MMC4W - Minimal MPD Client for Windows
 ### Intentionally tiny and simple. Basic and yet capable.
 This works for me. [The help menu is here](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
 
@@ -6,7 +6,18 @@ I needed a tiny set of controls for a couple of different **[Music Player Daemon
 
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
-![titlebar.jpg](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
+![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
+
+Other than the basic controls, I also want to be able to see the album cover most of the time.  The **Art** button toggles a small window to display embedded art.  The MPD server provides it.  MMC4W displays it. Dead simple.  That looks like this:
+
+![screen_1.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_1.png)
+
+The black background in this pic is my desktop.  The MMC4W interface is only the two small windows you see there.  Notice two other things about that pic:
+
+- The title of the song and the artist's name are shown in the text area.
+- The Windows titlebar is gone.
+
+
 
 This one is written in Python, using Tkinter and is about as basic as you can get. It does exactly what I need and nothing more.
 
