@@ -19,7 +19,7 @@ The black background in this pic is my desktop.  The MMC4W interface is only the
 - The title of the song and the artist's name are shown in the text area.
 - The Windows titlebar is gone.
 
-The **Mode** button toggles the titlebar.  I really like that.  The text area is active, switching between song title - artist name and a line about the status of things as seen here:
+The **Mode** button toggles the titlebar.  I really like that.  The text area is active, switching every three seconds between song title - artist name and a line about the status of things as seen here:
 
 ![screen_2.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_2.png)
 
@@ -30,3 +30,19 @@ I really do not want to let scope creep bloat this.  However, there are some thi
 - Dynamic repositioning of all windows.  Right now you can set their initial position in the mmc4w.ini file.  You can also drag the main window if the titlebar is active.  The Art window, however is static. I'm OK with that right now.
 - Maybe a second optional window that displays more stats. This is tickling my brain, but I'm not there yet.  
 
+### A Note About Window Positions
+
+I put the windows where I wanted them.  Down low and off to the right side.  You can find that down around line 400:
+
+```
+window.title("Minimal MPD Client " + version)  # Set window title
+winWd = 380  # Set window size
+winHt = 80
+confparse.read(mmc4wIni)  # get parameters from config .ini file.
+win_x = int(confparse.get("mainwindow","win_x"))
+win_y = int(confparse.get("mainwindow","win_y"))
+tbarini = confparse.get("mainwindow","titlebarstatus")
+x_Left = int(window.winfo_screenwidth() - (winWd + win_x))
+y_Top = int(window.winfo_screenheight() - (winHt + win_y))
+window.geometry(str(winWd) + "x" + str(winHt) + "+{}+{}".format(x_Left, y_Top))
+```
