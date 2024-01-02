@@ -1,5 +1,9 @@
 # mmc4w
 ## Minimal MPD Client for Windows
+### January 1, 2024 - First Serious Release
+I think this works.  At least it does on my system.
+
+
 ### October 14, 2023 - This is a new project, not perfect in any way.
 There is a lot of detail work to do before it's "finished finished".
 
