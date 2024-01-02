@@ -1,0 +1,1 @@
+pyinstaller --noconsole  --add-binary=".\_internal\*.png;." --add-binary=".\ico\mmc4w.png;ico" --add-binary=".\ico\mmc4w-ico.ico;ico" --icon=.\ico\mmc4w-ico.ico --add-data=".\README.txt;." --add-data=".\mmc4w_help.html;." --add-data=".\mmc4w.ini;." mmc4w.py
