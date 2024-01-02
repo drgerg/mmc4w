@@ -22,12 +22,20 @@ The **Mode** button toggles the titlebar.  I really like that.  The text area is
 
 ![screen_2.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_2.png)
 
+### Things I Might Do Differently
 
-## Windows Defender falsely flags this and certain other Python apps as a severe threat
+I really do not want to let scope creep bloat this.  However, there are some things that might get included like:
+
+- Dynamic repositioning of all windows.  Right now you can set their initial position in the mmc4w.ini file.  You can also drag the main window if the titlebar is active.  The Art window, however is static. I'm OK with that right now.
+- Maybe a second optional window that displays more stats. This is tickling my brain, but I'm not there yet.  
+
+## Windows Defender may falsely flag this and certain other Python apps as a severe threat
 When I first installed my own app, Windows stuck it in the quarantine folder and said it was malicious.  I had to add an exception in Defender settings and restore it from the quarantine before I could use it.
 
-What can I say? Look at the code and you can see I've written in nothing that does anything other than control your MPD server to play your music.  
+I'm aware that there are sometimes malicious content in various repo's now and then.  I read Ars Technica every morning.  But this ain't that.
 
 This false positive warning is apparently pretty common.  This is just [one of many sites](https://medium.com/@markhank/how-to-stop-your-python-programs-being-seen-as-malware-bfd7eb407a7) describing the problem.  If I knew of a no-cost way to solve this problem, it would be solved.
+
+What can I say? Look at the code and you can see I've written in nothing that does anything other than control your MPD server to play your music.  
 
 If all this troubles you, then don't download the compiled executable installer.  Download the source and run it raw, or compile it yourself.  Sorry, but that's where we are.
