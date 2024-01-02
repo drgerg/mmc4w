@@ -30,7 +30,8 @@ You are able to edit the configuration file (mmc4w.ini) by selecting **File** | 
 I really do not want to let scope creep bloat this.  However, there are some things that might get included like:
 
 - Dynamic repositioning of all windows.  Right now you can set their initial position in the mmc4w.ini file.  You can also drag the main window if the titlebar is active.  The Art window, however is static. I'm OK with that right now.
-- Maybe a second optional window that displays more stats. This is tickling my brain, but I'm not there yet.  
+- Maybe a second optional window that displays more stats. This is tickling my brain, but I'm not there yet.
+- Tweak some details in the main window for those with heightened aesthetic sensitivies. 
 
 ### A Note About Window Positions
 
