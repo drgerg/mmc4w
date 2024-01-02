@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # 
-# mmc4wp.py - 2023 by Gregory A. Sanders (dr.gerg@drgerg.com)
+# mmc4w.py - 2023-2024 by Gregory A. Sanders (dr.gerg@drgerg.com)
 # Minimal MPD Client for Windows - basic set of controls for an MPD server.
 # Take up as little space as possible to get the job done.
+# mmc4w.py uses the python-mpd2 library.
 ##
 
 from tkinter import *
@@ -10,207 +11,327 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter.font import Font
-from time import strftime, localtime,sleep
+from time import sleep
 import sys
 from configparser import ConfigParser
 from os import path
 import os
-from pathlib import Path
+from tkhtmlview import HTMLScrolledText, RenderHTML, HTMLLabel
 import mpd
+# import threading
 import threading
+from PIL import ImageTk, Image
+from io import BytesIO
+import time
+import logging
 
 client = mpd.MPDClient()                    # create client object
-version = "v0.0.2"
+version = "v0.0.4"
+# v0.0.4 - a boatload of changes, including albumart display option, config editing, error catching.
 # v0.0.2 - renamed from mlmp.py to mmc4w.py
+# confparse is for general use for normal text strings.
 confparse = ConfigParser()
+# cp is for use where lists are involved.
 cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
 path_to_dat = path.abspath(path.dirname(__file__))
 mmc4wIni = path_to_dat + "/mmc4w.ini"
 workDir = os.path.expanduser("~")
 confparse.read(mmc4wIni)
-global serverip,serverport
-serverip = confparse.get('serverstats', 'lastsrvr')
-serverport = confparse.get('serverstats','lastport')
-client.timeout = 10                     # network timeout in seconds (floats allowed), default: None
-client.idletimeout = None               # timeout for fetching the result of the idle command is handled seperately, default: None
-# client.connect(serverip, int(serverport))    # connect to localhost:6600
+if confparse.get('basic','installation') == "":
+    confparse.set('basic','installation',path_to_dat)
+    # logger.warning("Writing installation path to .ini file.")
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+#
+logLevel = confparse.get('program','logging')
 
-def initialize():
-    global serverip,serverport
-    try:
-        client.connect(serverip, int(serverport))
-    except:
-        window.mainloop()
-        SrvrWindow()
+if logLevel == 'warning':
+    if os.path.isfile(path_to_dat + "./mmc4w.log"):
+        os.remove(path_to_dat + './mmc4w.log')
+    logging.basicConfig(
+        filename=path_to_dat + "./mmc4w.log",
+        format="%(asctime)s - %(message)s",
+        datefmt="%a, %d %b %Y %H:%M:%S",
+        level=logging.WARNING,
+    )
 
+if logLevel != 'warning':
+    logging.basicConfig(
+        filename=path_to_dat + "./mmc4w.log",
+        format="%(asctime)s - %(message)s",
+        datefmt="%a, %d %b %Y %H:%M:%S",
+        level=logging.CRITICAL,
+    )
+
+logger = logging.getLogger(__name__)
+global serverip,serverport,noloop
+endtime = time.time()
 
 def connext():
     global serverip,serverport
-    try:
-        client.close()
-        client.disconnect()
-    except mpd.base.ConnectionError:
-        pass
-    client.connect(serverip, int(serverport))
+    cxstat = 0
+    if serverip != "" and serverport != "":
+        try:
+            client.close()
+            client.disconnect()
+        except (ValueError, mpd.base.ConnectionError):
+            pass
+        client.connect(serverip, int(serverport))
+        cxstat = 1
+    else:
+        cxstat = 0
+    return cxstat
 
-def loadpl1():
-    connext()
-    client.load("Everything_Edited")
-    client.play(100)
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+def plrandom():
+    cxstat = connext()
+    if cxstat == 1:
+        client.random(1)
 
-def random():
-    randobtn = "Random"
-    connext()
-    client.random(1)
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+def plnotrandom():
+    cxstat = connext()
+    if cxstat == 1:
+        client.random(0)
 
 def halt():
-    connext()
-    client.stop()
-    # getcurrstat()
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+    global endtime
+    endtime = time.time()
+    cxstat = connext()
+    if cxstat == 1:
+        client.stop()
+    endtime = time.time()
 
 def play():
-    connext()
-    client.play()
+    cxstat = connext()
+    if cxstat == 1:
+        client.play()
     getcurrsong()
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
 
 def next():
     try:
-        connext()
-        client.next()
+        cxstat = connext()
+        if cxstat == 1:
+            client.next()
+            getcurrsong()
     except mpd.base.CommandError:
-        connext()
-        play()
-    getcurrsong()
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+        cxstat = connext()
+        if cxstat == 1:
+            play()
 
 def previous():
-    connext()
-    client.previous()
+    cxstat = connext()
+    if cxstat == 1:
+        client.previous()
     getcurrsong()
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
 
 def pause():
-    connext()
-    client.pause()
-    getcurrsong()
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+    cxstat = connext()
+    if cxstat == 1:
+        client.pause()
+    getcurrstat()
 
 def volup():
-    connext()
-    client.volume(+5)
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+    cxstat = connext()
+    if cxstat == 1:
+        client.volume(+5)
     
 def voldn():
-    connext()
-    client.volume(-5)
-    # client.close()                          # send the close command
-    # client.disconnect()                     # disconnect from the server
+    cxstat = connext()
+    if cxstat == 1:
+        client.volume(-5)
+
 
 def getcurrsong():
-    global globsongtitle
-    connext()
-    cs = client.currentsong()
-    try:
-        msg = str(cs["title"] + " - " + cs["artist"])
-        globsongtitle = msg
-    except KeyError:
-        msg = "No Current Song. Play one."
-    confparse.set("serverstats","lastsongtitle",str(msg))
-    with open(mmc4wIni, 'w') as SLcnf:
-        confparse.write(SLcnf)
-    displaytext1(msg)
-    window.update()
-    sleep(1)
-    # getcurrstat()
+    global globsongtitle,endtime,aatgl,sent,pstate
+    if threading.active_count() < 2:
+        exit()
+    def getaartpic():
+        global aatgl
+        cs = {'file': '', 'last-modified': '2023-12-18T23:22:24Z', 'format': '44100:16:2', 'title': "Title Not Available", 'disc': '1', 'artist': 'Oops', 'album': 'Unknown', 'genre': 'Error', 'date': '2024', 'track': '1', 'time': '200', 'duration': '200.000', 'pos': '0000', 'id': '00000'}
+        aadict = {}
+        try:
+            gaperr = 0
+            cs = client.currentsong()
+            sleep(0.25)
+            aadict = client.readpicture(cs['file'])
+            if 'binary' in aadict:
+                aartvar = 1
+                try:
+                    artw.title()
+                    artw.destroy()
+                except (AttributeError,NameError,TclError):
+                    pass
+            else:
+                aartvar = 0
+            if aatgl == '1':
+                artWindow(aartvar,**aadict)
+                logger.warning(" - - - - - - - - - - - ")
+                logger.warning("1) Top of getcurrsong(). artw updated with AlbumArt.")
+        except mpd.base.ConnectionError:
+            gaperr = 1
+            cs = []
+            logger.warning("1) Got a ConnectionError in getaartpic().")
+        except ValueError:
+            gaperr = 1
+            cs = []
+            logger.warning("1) Got a ValueError in getaartpic().")
+            pass
+        return gaperr,cs
+    def getendtime():
+        stat = {'volume': '', 'repeat': '', 'random': '', 'single': '', 'consume': '', 'partition': '', 'playlist': '', 'playlistlength': '', 'mixrampdb': '', 'state': '', 'song': '', 'songid': '', 'nextsong': '', 'nextsongid': ''}
+        try:
+            geterr = 0
+            msg = ""
+            stat = client.status()
+            gpstate = stat['state']
+            dur = cs['duration']
+            elap = stat['elapsed']
+            remaining = float(dur) - float(elap)
+            gendtime = time.time() + remaining
+            logger.warning("2) endtime generated: {}.".format(gendtime))
+            msg = str(cs["title"] + " - " + cs["artist"])
+        except mpd.base.ConnectionError:
+            geterr = 1
+            logger.warning("2) Got a ConnectionError in getendtime().")
+            gendtime = time.time()
+        except KeyError:
+            geterr = 1
+            logger.warning("2) Got a KeyError in getendtime().")
+            gendtime = time.time()
+            pass
+        return geterr,msg,gendtime,gpstate
+    cxstat = connext()
+    gsent = sent
+    if cxstat == 1:
+        try:
+            gaperr,cs = getaartpic()
+            if gaperr == 1:
+                gaperr,cs = getaartpic()
+            geterr,msg,gendtime,gpstate = getendtime()
+            if geterr == 1:
+                geterr,msg,gendtime,gpstate = getendtime()
+            logger.warning("3) {}.".format(msg))
+            globsongtitle = msg
+            if msg != confparse.get('serverstats','lastsongtitle'):
+                gsent = 0
+                logger.warning("4) This is a new title.")
+                confparse.set("serverstats","lastsongtitle",str(msg))
+                with open(mmc4wIni, 'w') as SLcnf:
+                    confparse.write(SLcnf)
+            else:
+                logger.warning("4) This is NOT a new title. - - - Rolling back gendtime and gsent.")
+                gendtime = endtime
+                gsent = 0
+                logger.warning("5) gendtime returned to {}. Duration is {}.".format(gendtime,cs['duration']))
+                if float(cs['duration']) == 0.00:
+                    next()
+        except KeyError:
+            msg = "No Current Song. Play one."
+            displaytext1(msg)
+        if geterr == 0 and gaperr == 0:
+            endtime = gendtime
+            pstate = gpstate
+            sent = gsent
+    if pstate == 'stop' or pstate == 'pause':
+        logger.warning("6) pstate: {}.".format(pstate))
+
+    if cxstat == 0:
+        msg = "Not Connected."
+        displaytext1(msg)
+
+def songtitlefollower():
+    logger.warning("Start songtitlefollower.")
+    global endtime,sent,pstate
+    sent = 0
+    pstate = 'stop'
+    thisendtime = endtime
+    while True:
+        if threading.active_count() > 2:
+            logger.warning("There are {} threads now.".format(threading.active_count()))
+        sleep(.2)
+        if pstate != 'stop' and pstate != 'pause':
+            if endtime != thisendtime:
+                logger.warning("5) Threaded timer got new endtime.")
+                thisendtime = endtime
+                logger.warning("6) endtime: {}, now: {} sent: {}.".format(thisendtime,time.time(),sent))
+            if thisendtime <= time.time() and sent == 0:
+                logger.warning("0) Threaded timer ran down. Getting new current song data.")
+                sent = 1
+                getcurrsong()
+
+def configurator():
+        halt()
+        proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
+        if proceed == True:
+            os.startfile(mmc4wIni)
+            sleep(1)
+            exit()
 
 def getcurrstat():
-    connext()
-    cstat = client.status()
-    cpl = client.listplaylists()
-    pl = ""
-    for plv in cpl:
-        pl = plv['playlist'] + "," + pl
-    confparse.read(mmc4wIni)
-    lastpl = confparse.get("serverstats","lastsetpl")
-    confparse.set("serverstats","playlists",str(pl))
-    with open(mmc4wIni, 'w') as SLcnf:
-        confparse.write(SLcnf)
-    # client.close()
-    # client.disconnect()
-    msg = str("Server: " + serverip[-3:] +" | " + cstat["state"] + " | PlayList: " + lastpl)
-    # displaytext1(msg)
+    cxstat = connext()
+    if cxstat == 1:
+        cstat = client.status()
+        cpl = client.listplaylists()
+        pl = ""
+        for plv in cpl:
+            pl = plv['playlist'] + "," + pl
+        confparse.read(mmc4wIni)
+        lastpl = confparse.get("serverstats","lastsetpl")
+        confparse.set("serverstats","playlists",str(pl))
+        with open(mmc4wIni, 'w') as SLcnf:
+            confparse.write(SLcnf)
+        msg = str("Server: " + serverip[-3:] +" | " + cstat["state"] + " | PlayList: " + lastpl)
+    if cxstat == 0:
+        msg = "Not Connected"
     return msg
 
 def displaytext1(msg):
     text1.delete("1.0", 'end')
     text1.insert("1.0", msg)
-#
-## DINK MORE WITH THREADED SONG TITLE CAPTURE =================================================================
-#
 
-globsongtitle = ""
-def songtitlelooptest():
-    global globsongtitle
-    globsongtitle = 0
-    while True:
-        sleep(10)
-        globsongtitle += 1
-
-
-def songtitleloop():
-    global globsongtitle
-    while True:
-        confparse.read(mmc4wIni)
-        lastst = confparse.get("serverstats","lastsongtitle")
+def albarttoggle():
+    global aatgl,artw
+    confparse.read(mmc4wIni)
+    aatgl = confparse.get("albumart","albarttoggle")
+    if aatgl == '1':
         try:
-            client.connect(serverip, int(serverport))
-        except mpd.base.ConnectionError as cerr:
-            if cerr == "Already connected":
-                print("Already connected error.")
-                pass
+            # logger.warning("Destroy AArt window.")
+            artw.title()
+            artw.destroy()
+            aatgl = '0'
+        except (AttributeError,NameError):
+            pass
+    else:
+        # logger.warning("Set aatgl to '1'.")
+        aatgl = '1'
         try:
             cs = client.currentsong()
-            stat = client.status()
-        except ValueError:
+            aadict = client.readpicture(cs['file'])
+            if 'binary' in aadict:
+                aartvar = 1
+            else:
+                aartvar = 0
+            artWindow(aartvar,**aadict)
+        except (ValueError,KeyError):
             pass
-        try:
-            dur = stat['duration']
-            elap = stat['elapsed']
-            remaining = float(dur) - float(elap)
-        except KeyError:
-            remaining = 0
-        try:
-            thissongtitle = str(cs["title"] + " - " + cs["artist"])
-        except KeyError:
-            thissongtitle = "No Current Song. Play one."
-        if thissongtitle != lastst:
-            confparse.set("serverstats","lastsongtitle",str(thissongtitle))
-            with open(mmc4wIni, 'w') as SLcnf:
-                confparse.write(SLcnf)
-            print("{}. Time remaining: {} secs.".format(thissongtitle,remaining))
-        globsongtitle = thissongtitle
-        client.close()
-        client.disconnect()
-        try:
-            sleep(remaining + 1)
-        except ValueError:
-            pass
+    confparse.set("albumart","albarttoggle",aatgl)
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
 
-#
-## WRAP UP AND DISPLAY ==========================================================================================
-#
+def tbtoggle():
+    tbstatus = window.overrideredirect()
+    if tbstatus == None or tbstatus == False:
+        window.overrideredirect(1)
+        confparse.set("mainwindow","titlebarstatus",'0')  # Titlebar off (overridden)
+    else:
+        window.overrideredirect(0)
+        confparse.set("mainwindow","titlebarstatus",'1')  # Titlebar on (not overridden)
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+    getcurrsong()
+
+def nonstdport():
+    # logger.warning("Setting non-standard port.")
+    messagebox.showinfo("Setting a non-standard port","Set your non-standard port by editing the mmc4w.ini file. Use the Configure option in the File menu.\n\nPut your port number in the 'serverport' attribute under the [basic] section. 6600 is the default MPD port.")
 
 def endWithError(msg):
     messagebox.showinfo("UhOh",msg)
@@ -220,6 +341,34 @@ def endWithError(msg):
 def exit():
     halt()
     sys.exit()
+
+serverlist = confparse.get('basic','serverlist')
+serverip = confparse.get('serverstats', 'lastsrvr')
+if serverlist == "":
+    configurator()
+    serverport = confparse.get('basic','serverport')
+if confparse.get('serverstats','lastport') != "":
+    serverport = confparse.get('serverstats','lastport')
+else:
+    confparse.set('serverstats','lastport',serverport)
+    # logger.warning("Writing port to .ini file.")
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+if version != confparse.get('program','version'):
+    confparse.set('program','version',version)
+    # logger.warning("Writing version to .ini file.")
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+client.timeout = None                     # network timeout in seconds (floats allowed), default: None
+client.idletimeout = None               # timeout for fetching the result of the idle command is handled seperately, default: None
+# client.connect(serverip, int(serverport))    # connect to localhost:6600
+artw = None
+
+
+globsongtitle = ""
+aatgl = '0'
+
+
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
 ## https://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
@@ -244,52 +393,97 @@ class FaultTolerantTk(tk.Tk):
 #
 ##  END ERROR MESSAGEBOX SECTION
 #
-def tbtoggle():
-    tbstatus = window.overrideredirect()
-    if tbstatus == None or tbstatus == False:
-        window.overrideredirect(1)
-    else:
-        window.overrideredirect(0)
-
-
-
+#
+## WRAP UP AND DISPLAY ==========================================================================================
+#
 ##
 ##  EVERYTHING SOUTH OF HERE IS THE 'window.mainloop' UNDEFINED BUT YET DEFINED QUASI-FUNCTION
-############################################################################
 ##  THIS IS THE 'ROOT' WINDOW.  IT IS NAMED 'window' rather than 'root'.  ##
-############################################################################
-# window = FaultTolerantTk()  # Create the root window.  Shows abbreviated error messages in popup.
-window = Tk()  # Create the root window.  Shows errors in console.  THIS IS THE 'ROOT' WINDOW.
-window.title("Mini MPD Player " + version)  # Set window title
-winWd = 380  # Set window size and placement
+window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
+# window = Tk()  # Create the root window with errors in console.  THIS IS THE 'ROOT' WINDOW.
+window.title("Minimal MPD Client " + version)  # Set window title
+winWd = 380  # Set window size
 winHt = 80
-x_Left = int(window.winfo_screenwidth() - (winWd + 40))
-# y_Top = int(window.winfo_screenheight() / 2 - (winHt / 2))
-y_Top = int(window.winfo_screenheight() - (winHt + 400))
+confparse.read(mmc4wIni)  # get parameters from config .ini file.
+win_x = int(confparse.get("mainwindow","win_x"))
+win_y = int(confparse.get("mainwindow","win_y"))
+tbarini = confparse.get("mainwindow","titlebarstatus")
+x_Left = int(window.winfo_screenwidth() - (winWd + win_x))
+y_Top = int(window.winfo_screenheight() - (winHt + win_y))
 window.geometry(str(winWd) + "x" + str(winHt) + "+{}+{}".format(x_Left, y_Top))
 window.config(background="white")  # Set window background color
 window.columnconfigure([0,1,2,3,4], weight=0)
 window.rowconfigure([0,1,2], weight=0)
+if tbarini == '0':
+    window.overrideredirect(1)
 
 def featureNotReady():
     messagebox.showinfo(title='Not Yet', message='That feature is not ready.')
 
+
+
 nnFont = Font(family="Segoe UI", size=10, weight='bold')          ## Set the base font
 
 #
-## DEFINE THE SELECTIONS WINDOW
+## DEFINE THE SERVER SELECTION WINDOW
 #
-def SelWindow():
+def SrvrWindow():
+    global serverip
+    text1['bg']='orange'
+    cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
+    srvrw = Toplevel(window)
+    srvrw.title("Servers")
+    srvrwinWd = 300
+    srvrwinHt = 30
+    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+    win_x = int(confparse.get("mainwindow","win_x"))
+    win_y = int(confparse.get("mainwindow","win_y"))
+    x_Left = int(window.winfo_screenwidth() - srvrwinWd - (win_x+60))
+    y_Top = int(window.winfo_screenheight() - srvrwinHt - (win_y+120))
+    srvrw.config(background="gray")  
+    srvrw.geometry(str(srvrwinWd) + "x" + str(srvrwinHt) + "+{}+{}".format(x_Left, y_Top))
+    srvrw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+    def rtnplsel(ipvar):
+        global serverip
+        # halt()
+        msg = ipvar
+        displaytext1(msg)
+        # serverip = str(ipvar.get())
+        serverip = ipvar
+        confparse.read(mmc4wIni)
+        confparse.set("serverstats","lastsrvr",ipvar)
+        with open(mmc4wIni, 'w') as SLcnf:
+            confparse.write(SLcnf)
+        srvrw.destroy()
+        # logger.warning("serverip: {}".format(serverip))
+        getcurrstat()
+        PLSelWindow()
+    cp.read(mmc4wIni)
+    iplist = cp.getlist('basic','serverlist')
+    # logger.warning(pllist)
+    ipvar = StringVar(srvrw)
+    ipvar.set('Currently - ' + serverip + ' - Click for dropdown list.')
+    plselwin = OptionMenu(srvrw,ipvar,*iplist,command=rtnplsel)
+    plselwin.config(width=44)
+    plselwin.grid(column=1,row=1)
+#
+## DEFINE THE PLAYLIST SELECTION WINDOW
+#
+def PLSelWindow():
     global serverip
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     sw = Toplevel(window)
     sw.title("PlayLists")
-    swinWd = 200
+    swinWd = 300
     swinHt = 30
-    x_Left = int(window.winfo_screenwidth() / 2 - swinWd / 2)
-    y_Top = int(window.winfo_screenheight() / 2 - swinHt / 2)
+    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+    win_x = int(confparse.get("mainwindow","win_x"))
+    win_y = int(confparse.get("mainwindow","win_y"))
+    x_Left = int(window.winfo_screenwidth() - swinWd - (win_x+60))
+    y_Top = int(window.winfo_screenheight() - swinHt - (win_y+120))
     sw.config(background="white")  
     sw.geometry(str(swinWd) + "x" + str(swinHt) + "+{}+{}".format(x_Left, y_Top))
+    sw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
     def rtnplsel(plvar):
         global serverip
         if plvar == "" or plvar == None:
@@ -298,113 +492,105 @@ def SelWindow():
             msg = confparse.get("serverstats","lastsetpl")
         else:
             msg = plvar
-        print("plvar: {} msg: {}".format(plvar,msg))
+        # logger.warning("plvar: {} msg: {}".format(plvar,msg))
         displaytext1(plvar)
         if plvar != "Unchanged":
-            print("not unchanged: {}".format(plvar))
-            connext()
-            client.clear()
-            client.load(plvar)
-            confparse.read(mmc4wIni)
-            confparse.set("serverstats","lastsetpl",plvar)
-            with open(mmc4wIni, 'w') as SLcnf:
-                confparse.write(SLcnf)
+            # logger.warning("not unchanged: {}".format(plvar))
+            cxstat = connext()
+            if cxstat == 1:
+                client.clear()
+                client.load(plvar)
+                confparse.read(mmc4wIni)
+                confparse.set("serverstats","lastsetpl",plvar)
+                with open(mmc4wIni, 'w') as SLcnf:
+                    confparse.write(SLcnf)
         sw.destroy()
         sleep(1)
+        text1['bg']='white'
         # getcurrstat()
     cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
+    lastpl = confparse.get("serverstats","lastsetpl")
     plvar =StringVar(sw)
-    plvar.set('---== Select a Playlist ==---')
+    plvar.set('Current Playlist - ' + lastpl + ' - Click for list.')
     plselwin = OptionMenu(sw,plvar,*pllist,command=rtnplsel)
+    plselwin.config(width=44)
     plselwin.grid(column=1,row=1)
-
-
-def SrvrWindow():
-    global serverip
-    cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
-    srvrw = Toplevel(window)
-    srvrw.title("Servers")
-    srvrwinWd = 200
-    srvrwinHt = 30
-    x_Left = int(window.winfo_screenwidth() / 2 - srvrwinWd / 2)
-    y_Top = int(window.winfo_screenheight() / 2 - srvrwinHt / 2)
-    srvrw.config(background="gray")  
-    srvrw.geometry(str(srvrwinWd) + "x" + str(srvrwinHt) + "+{}+{}".format(x_Left, y_Top))
-    def rtnplsel(plvar):
-        global serverip
-        halt()
-        msg = ipvar
-        displaytext1(msg)
-        serverip = str(ipvar.get())
-        confparse.read(mmc4wIni)
-        confparse.set("serverstats","lastsrvr",str(ipvar.get()))
-        with open(mmc4wIni, 'w') as SLcnf:
-            confparse.write(SLcnf)
-        srvrw.destroy()
-        print("serverip: {}".format(serverip))
-        SelWindow()
-        # getcurrstat()
-    cp.read(mmc4wIni)
-    iplist = cp.getlist('basic','serverip')
-    # print(pllist)
-    ipvar = StringVar(srvrw)
-    ipvar.set('---== Select a Server ==---')
-    plselwin = OptionMenu(srvrw,ipvar,*iplist,command=rtnplsel)
-    plselwin.grid(column=1,row=1)
-
+    window.update()
+    window.update_idletasks()
 
 #
 ## DEFINE THE ABOUT WINDOW
 #
 def aboutWindow():
     aw = Toplevel(window)
-    aw.title("About NextNum")
-    awinWd = 400  # Set window size and placement
+    aw.title("About MMC4W")
+    awinWd = 400  # Set window size and albumart
     awinHt = 400
     x_Left = int(window.winfo_screenwidth() / 2 - awinWd / 2)
     y_Top = int(window.winfo_screenheight() / 2 - awinHt / 2)
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
-    aw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
-    awlabel = Label(aw, font=18, text ="About NextNum " + version)
+    aw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+    awlabel = Label(aw, font=18, text ="About MMC4W " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
     aw.rowconfigure(0, weight=1)
     aboutText = Text(aw, height=20, width=170, bd=3, padx=10, pady=10, wrap=WORD, font=nnFont)
     aboutText.grid(column=0, row=1)
-    aboutText.insert(INSERT, "There is nothing to say.")
+    aboutText.insert(INSERT, "MMC4W is installed at\n" + path_to_dat + "\n\nMusic without the bloat.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
+                     "This little app holds forth the smallest set of functions I could think of to just play the music without being frustrating.\n\nCopyright 2023-2023 Gregory A. Sanders\nhttps://www.drgerg.com")
 #
 ## DEFINE THE HELP WINDOW
 #
 def helpWindow():
     hw = Toplevel(window)
-    hw.title("NextNum Help")
-    hwinWd = 600  # Set window size and placement
+    hw.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
+    hw.title("MMC4W Help")
+    hwinWd = 800  # Set window size and placement
     hwinHt = 600
     x_Left = int(window.winfo_screenwidth() / 2 - hwinWd / 2)
     y_Top = int(window.winfo_screenheight() / 2 - hwinHt / 2)
     hw.config(background="white")  # Set window background color
     hw.geometry(str(hwinWd) + "x" + str(hwinHt) + "+{}+{}".format(x_Left, y_Top))
-    hw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
-    # hw.iconbitmap('./ico/mmc4w-ico.ico')
-
-    hwlabel = Label(hw, height=8, font=18, text ="NextNum Help")
+    hw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+    hwlabel = HTMLLabel(hw, height=3, html='<h2 style="text-align: center">MMC4W Help</h2>')
     hw.columnconfigure(0, weight=1)
-    hw.rowconfigure(0, weight=1)
-    hw.rowconfigure(1, weight=1)
+    helpText = HTMLScrolledText(hw, height=44, padx=10, pady=10, html=RenderHTML(path_to_dat + "\\mmc4w_help.html"))
+    hwlabel.grid(column=0, row=0, sticky="NSEW")  # Place label in grid
+    helpText.grid(column=0, row=1, ipadx=10, ipady=10, sticky="NSEW")
 
-    helpText = Text(hw, height=40, width=80, bd=3, padx=6, pady=6, wrap=WORD, font=nnFont)
-    helpsb = ttk.Scrollbar(hw, orient='vertical', command=helpText.yview)
+#
+## DEFINE THE ART WINDOW
+#
+def artWindow(aartvar,**aadict):
+    global artw
+    if aartvar == 1:
+        thisimage = BytesIO(aadict['binary'])
+    if aartvar == 0:
+        thisimage = path_to_dat + '/ico/mmc4w.png'
+    artw = Toplevel(window)
+    artw.title("AlbumArt")
+    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+    aartwin_x = int(confparse.get("albumart","aartwin_x"))
+    aartwin_y = int(confparse.get("albumart","aartwin_y"))
+    artwinWd = 110  # Set window size
+    artwinHt = 110
+    x_Left = int(window.winfo_screenwidth() - aartwin_x)
+    y_Top = int(window.winfo_screenheight() - aartwin_y)
+    artw.config(background="white")  # Set window background color
+    artw.geometry(str(artwinWd) + "x" + str(artwinHt) + "+{}+{}".format(x_Left, y_Top))
+    artw.columnconfigure([0,1,2], weight=1)
+    artw.rowconfigure(0, weight=1)
+    artw.rowconfigure(1, weight=1)
+    aart = Image.open(thisimage)
+    aart = aart.resize((100,100))
+    aart = ImageTk.PhotoImage(aart)
+    aart.image = aart  # required for some reason
+    aartLabel = Label(artw,image=aart)
+    aartLabel.grid(column=0, row=0, padx=5, pady=5)
+    artw.overrideredirect(1) ## turn off the titlebar
 
-    helpText['yscrollcommand'] = helpsb.set
-    hwlabel.grid(column=0, columnspan=3, row=0, padx=10, pady=10)  # Place label in grid
-    helpText.grid(column=0, row=1)
-    helpsb.grid(column=1, row=1, sticky='ns')
-
-    with open("mmc4w_help.txt", "r") as f:
-        hlptxt = f.read()
-    helpText.insert(INSERT, hlptxt)
 #
 ## MENU AND MENU ITEMS
 #
@@ -413,22 +599,23 @@ menu = Menu(window)
 window.config(menu=menu)
 nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
 fileMenu = Menu(menu, tearoff=False)
-# fileMenu.add_command(label="Configure", command=lambda:configWindow())
+fileMenu.add_command(label="Configure", command=configurator)
 fileMenu.add_command(label="Select Server", command=SrvrWindow)
 fileMenu.add_command(label="Exit", command=exit)
 menu.add_cascade(label="File", menu=fileMenu)
 
 lessMenu = Menu(menu, tearoff=False)
+lessMenu.add_command(label="Turn Random On", command=plrandom)
+lessMenu.add_command(label="Turn Random Off", command=plnotrandom)
 lessMenu.add_command(label="Toggle Titlebar", command=tbtoggle)
-lessMenu.add_command(label="Current Title", command=getcurrsong)
-lessMenu.add_command(label="Status", command=getcurrstat)
+lessMenu.add_command(label="Reload Current Title", command=getcurrsong)
+lessMenu.add_command(label="Set Non-Standard Port", command=nonstdport)
 menu.add_cascade(label="Look", menu=lessMenu)
 
 helpMenu = Menu(menu, tearoff=False)
 helpMenu.add_command(label="Help", command=helpWindow)
 helpMenu.add_command(label="About", command=aboutWindow)
 menu.add_cascade(label="Help", menu=helpMenu)
-
 
 # window.iconbitmap('./ico/mmc4w-ico.ico')
 window.iconbitmap('./_internal/ico/mmc4w-ico.ico')
@@ -443,76 +630,85 @@ text1.grid(column=0, columnspan=5, row=0)
 # text2.grid(column=0, columnspan=7, row=2)
 
 button_volup = ttk.Button(window, text="Vol +", command=volup)                  # 
-button_volup.grid(column=0, row=1)                     # Place Exit button in grid
+button_volup.grid(column=0, row=1)                     # Place button in grid
 
 button_voldn = ttk.Button(window, text="Vol -", command=voldn)                  # 
-button_voldn.grid(column=1, row=1)                     # Place Exit button in grid
+button_voldn.grid(column=1, row=1)                     # Place button in grid
 
 button_play = ttk.Button(window, text="Play", command=play)                  # 
-button_play.grid(column=0, row=2)                     # Place Exit button in grid
+button_play.grid(column=0, row=2)                     # Place button in grid
 
 button_stop = ttk.Button(window, text="Stop", command=halt)                  # 
-button_stop.grid(column=1, row=2)                     # Place Exit button in grid
+button_stop.grid(column=1, row=2)                     # Place button in grid
 
 button_prev = ttk.Button(window, text="Prev", command=previous)                  # 
-button_prev.grid(column=2, row=2)                     # Place Exit button in grid
+button_prev.grid(column=2, row=2)                     # Place button in grid
 
 button_pause = ttk.Button(window, text="Pause", command=pause)                  # 
-button_pause.grid(column=3, row=2)                     # Place Exit button in grid
+button_pause.grid(column=3, row=2)                     # Place button in grid
 
 button_next = ttk.Button(window, text="Next", command=next)                  # 
-button_next.grid(column=4, row=2)                     # Place Exit button in grid
+button_next.grid(column=4, row=2)                     # Place button in grid
 
 button_tbtog = ttk.Button(window, text="Mode", command=tbtoggle)                  # 
-button_tbtog.grid(column=2, row=1)                     # Place Exit button in grid
+button_tbtog.grid(column=2, row=1)                     # Place button in grid
 
-button_load = ttk.Button(window, text="CurrTitle", command=getcurrsong)                  #
-button_load.grid(column=3, row=1)                     # Place Exit button in grid
+button_load = ttk.Button(window, text="Art", command=albarttoggle)                  #
+button_load.grid(column=3, row=1)                     # Place button in grid
 
 button_exit = ttk.Button(window, text="Quit", command=exit)                  #
-button_exit.grid(column=4, row=1)                     # Place Exit button in grid
+button_exit.grid(column=4, row=1)                     # Place button in grid
 
-# Instead of directly specifying a main() function, we let the window.mainloop() wait for a button press
-# from one of the buttons we defined.  The function associated with the button defines what happens next.
-#
-# main()
-# getcurrsong()
-initialize()
-# getcurrstat()
-connext()
-# client.connect(serverip, int(serverport))
-cs = client.currentsong()
-# client.close()
-# client.disconnect()
-# msg = str(cs["title"] + " - " + cs["artist"])
-# displaytext1(msg)
-## THREADING NOTES BELOW HERE ==============================
+## THREADING NOTES =========================================
 # while threading.active_count() > 0:
 # Make all threads daemon threads, and whenever the main thread dies all threads will die with it.
-t1 = threading.Thread(target=songtitleloop)
+## END THREADING NOTES =====================================
+#
+
+t1 = threading.Thread(target=songtitlefollower)
 t1.daemon = True
 t1.start()
-## END THREADING NOTES =====================================
+#
+confparse.read(mmc4wIni)
+aatgl = confparse.get("albumart","albarttoggle")
 evenodd = 1
-def tensecdisplaytext():
+
+def threesecdisplaytext():
     global evenodd, globsongtitle
     def eo1():
         global evenodd, globsongtitle
+        # logger.warning("evenodd: " + str(evenodd))
         if evenodd == 1:
-            # print("evenodd: " + str(evenodd))
+            # logger.warning("evenodd: " + str(evenodd))
             msg = globsongtitle
             evenodd = 2
             displaytext1(msg)
     def eo2():
         global evenodd
+        # logger.warning("evenodd: " + str(evenodd))
         if evenodd == 2:
-            # print("evenodd: " + str(evenodd))
+            # logger.warning("evenodd: " + str(evenodd))
             msg = getcurrstat()
             evenodd = 1
             displaytext1(msg)
     window.after(1000,eo1)
     window.after(2500,eo2)
-    window.after(3000,tensecdisplaytext)
-tensecdisplaytext()
+    window.after(3000,threesecdisplaytext)
+#
+## Start 
+threesecdisplaytext()
+getcurrsong()
+logger.warning("Down at the bottom.")
 window.mainloop()  # Run the (not defined with 'def') main window loop.
 
+## Some random things I want to keep around:
+#
+    # aart = Image.open(BytesIO(aadict['binary']))
+    # aart = aart.resize((100,100))
+    # aart = ImageTk.PhotoImage(aart)
+    # aart = Image.open('./ico/mmc4w.png')
+    # aart_byte_array = BytesIO()
+    # aart.save('./ico/mmc4w.png', format='PNG')
+    # aart_byte_array = BytesIO()
+    # aart.save(aart_byte_array, format='PNG')
+    # aart_byte_array = aart_byte_array.getvalue()
