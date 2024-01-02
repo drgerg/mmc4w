@@ -3,6 +3,7 @@
 This works for me. [The help menu is here](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
 
 I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  I could not find a Windows MPD client that was as simple as what I wanted.
+This one is written in Python, using Tkinter and is about as basic as you can get. It does exactly what I need and nothing more.
 
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
@@ -17,9 +18,10 @@ The black background in this pic is my desktop.  The MMC4W interface is only the
 - The title of the song and the artist's name are shown in the text area.
 - The Windows titlebar is gone.
 
+The **Mode** button toggles the titlebar.  I really like that.  The text area is active, switching between song title - artist name and a line about the status of things as seen here:
 
+![screen_2.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_2.png)
 
-This one is written in Python, using Tkinter and is about as basic as you can get. It does exactly what I need and nothing more.
 
 ## Windows Defender falsely flags this and certain other Python apps as a severe threat
 When I first installed my own app, Windows stuck it in the quarantine folder and said it was malicious.  I had to add an exception in Defender settings and restore it from the quarantine before I could use it.
