@@ -23,6 +23,8 @@ The **Mode** button toggles the titlebar.  I really like that.  The text area is
 
 ![screen_2.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_2.png)
 
+You are able to edit the configuration file (mmc4w.ini) by selecting **File** | **Configure**.  It uses Windows' default text editor.
+
 ### Things I Might Do Differently
 
 I really do not want to let scope creep bloat this.  However, there are some things that might get included like:
@@ -46,3 +48,5 @@ x_Left = int(window.winfo_screenwidth() - (winWd + win_x))
 y_Top = int(window.winfo_screenheight() - (winHt + win_y))
 window.geometry(str(winWd) + "x" + str(winHt) + "+{}+{}".format(x_Left, y_Top))
 ```
+As you can see there, you can alter the initial position of the windows in the mmc4w.ini file.  The entries required are relative to the screen width and the width of the window.
+I find this to be a perfectly acceptable arrangement.
