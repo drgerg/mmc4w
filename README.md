@@ -1,8 +1,12 @@
 # mmc4w - Minimal MPD Client for Windows
 ### Intentionally tiny and simple. Basic and yet capable.
-I think this works.  At least it does on my system. [The help menu is here](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
+This works for me. [The help menu is here](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
 
-The entire interface is intentionally tiny and simple. I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  I could not find a Windows MPD client that was as simple as what I wanted.
+I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  I could not find a Windows MPD client that was as simple as what I wanted.
+
+The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
+
+![titlebar.jpg](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
 
 This one is written in Python, using Tkinter and is about as basic as you can get. It does exactly what I need and nothing more.
 
