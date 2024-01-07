@@ -15,13 +15,14 @@ It takes up very little room on my screen. The interface contains the basic requ
 - An 'Art' button toggles a very small window that displays embedded album art.  
     - If no embedded art is found, MMC4W's logo is displayed.
 
-The **'File'** menu contains these functions:
+### The **'File'** menu contains these functions:
 
 - Configure - opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)
 - Select Server - Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
+- Toggle Logging - Toggles logging On or Off.  Restart the app after toggling.
 - Exit - Same as the 'Quit' button: exits the app.
 
-There is a **'Look'** menu that has these functions:
+### There is a **'Look'** menu that has these functions:
 
 - Turn Random On
 - Turn Random Off
@@ -29,7 +30,12 @@ There is a **'Look'** menu that has these functions:
 - Reload Current Title
 - Set Non-Standard Port
 
-### Some Things MMC4W Does NOT Do:
+### The 'Help' menu contains:
+
+- Help - This document.
+- About - Look here to find your installation path and version number.
+
+## Some Things MMC4W Does NOT Do:
 
 - Constantly poll the server. - Based on song duration, **MMC4W** checks back with the server when the song is ending.
 - Discover servers.  You need to know the IP address of any servers you wish to control.
@@ -59,9 +65,9 @@ Don't worry about the playlists or ports.  Type your server info in the [basic] 
 
 Restart **MMC4W**.  Go to the **File** menu and click **Select Server**.  You'll be prompted to select one of the servers you just put into the **mmc4w.ini** file.  Click on one.
 
-Next you are prompted to select one of that server's playlists.  Click on it.  Now you can click the **'Play'** button.
-
 ![Select server and playlist](./_internal/select_playlist.png)
+
+Next you are prompted to select one of that server's playlists.  Click on it.  Now you can click the **'Play'** button.
 
 ### Normal Operation
 
@@ -69,9 +75,9 @@ After you press **'Play'**, there's not much to do but enjoy the music.
 
 MMC4W will show you these basic statistics, alternating between the two lines of text shown in these two images:
 
-![Track name and Artist](./_internal/screen_1.png)
+![Track name and Artist](./_internal/screen_1.png)</br></br><span style="color:green; font-size:smaller;">Track name and Artist.</span>
 
-![Server IP, status, and playlist.](./_internal/screen_2.png)
+![Server IP, status, playlist.](./_internal/screen_2.png)</br></br><span style="color:green; font-size:smaller;">Server, Status, PlayList and Elapsed vs Duration in seconds.</span>
 
 The **'Art'** button toggles the small album art window.
 
@@ -79,17 +85,29 @@ The **'Mode'** button toggles the titlebar like this:
 
 ![Titlebar on.](./_internal/titlebar.png)
 
-### Other Random Options
+### Logging 
 
-Logging can be enabled by typing "warning" here:
+Logging can be enabled by using the '**Toggle Logging**' option under the **File** menu.
 
-![Turning on Logging](./_internal/logging.png)
+![Toggle Logging](./_internal/toggle_logging.png)
 
-The resulting log file (**mmc4w.log**) can be found in the **_internal** folder in the installation folder.  The log file is deleted and started fresh each time you start **MMC4W**.  If you remove **warning** from the .ini file, the last log file will remain until you delete it or create a new one.
+After using the '**Toggle Logging**' option, restart MMC4W.
 
-Under the **'Look'** menu there are options to turn **Random Mode** on or off.
+MMC4W currently supports two levels of logging: **INFO** and **DEBUG**.  INFO lists basic actions that should be occurring as they occur.  DEBUG adds another layer of potentially useful data to the stream.
 
-The **'Set Non-Standard Port'** option opens a pop-up that provides the details to set any port other than 6600 which is the default MPD port.
+![Setting the Log Level](./_internal/logging.png)
+
+To set the logging level, use the '**Configure**' option and edit the **mmc4w.ini** file.  Type either 'info' or 'debug' where indicated (without quotes).
+
+The resulting log file (**mmc4w.log**) can be found in the **_internal** folder in the installation folder.  The log file is deleted and started fresh each time you start **MMC4W**.  If you toggle Off logging, the last log file will remain until you delete it or create a new one by toggling logging On again.
+
+The DEBUG file (**mmc4w_DEBUG.log**) does not start fresh with each run, and is not deleted.
+
+### A Couple of Other Random Options
+
+Under the **'Look'** menu there are options to turn MPD's **Random Mode** on or off.
+
+The **'Set Non-Standard Port'** option opens a pop-up that provides the details to set any port other than 6600 which is the default MPD port.  Most people will never use this.
 
 ## Notes About What Happens Under the Hood
 
@@ -99,11 +117,11 @@ MMC4W uses the Python **threading** module to run a timer in conjunction with a 
 
 The Tkinter interface runs continuously waiting for button presses.  Blocking code (like sleep(10)) is avoided at all cost.  As a result, things work.  From my chair, it's perfect.  We'll see how long that perspective lasts, shan't we?
 
-The design of this utility is intentionally simple.  I'm sure there are several 'better' ways it can be done, I just don't know what they are.  Every once in a blue moon some little thing might get out of sync.  Don't cry, just restart it.  Boom! Done.
+The design of this utility is intentionally simple.  I'm sure there are several 'better' ways it can be done, I just don't know what they are. 
 
 ### Minutia
 
-MMC4W was developed and tested in Windows 10.  My MPD library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file for each album and embed the art in the songs using Music Bee.  I highly recommend Music Bee!
+MMC4W was developed and tested in Windows 10.  **MPD** is running on three different computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file for each album and embed the art in the songs using **[MP3TAG](https://www.mp3tag.de/en/)** or **Music Bee** depending on the circumstances.
 
 I hope you enjoy using this as much as I do.<br><br>
 
