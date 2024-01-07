@@ -1,4 +1,4 @@
-# MMC4W - Minimal MPD Client for Windows
+# MMC4W - Minimal MPD Client for Windows Proves 'Basic' != 'Worthless'
 ### Intentionally tiny and simple. Basic and yet capable.
 
 I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  I could not find a Windows MPD client that was as simple as what I wanted.
