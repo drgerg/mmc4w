@@ -26,7 +26,7 @@ import time
 import logging
 
 
-version = "v0.0.5"
+version = "v0.0.6"
 # v0.0.5 - improve reliability
 # v0.0.4 - a boatload of changes, including albumart display option, config editing, error catching.
 
@@ -85,27 +85,50 @@ logger = logging.getLogger(__name__)
 mpd_logger = logging.getLogger('mpd')
 mpd_logger.setLevel(logging.CRITICAL)
 
-global serverip,serverport,noloop
+global serverip,serverport
 endtime = time.time()
 cxstat = 0
 buttonvar = 'stop'
 pstart = 0
+dur='0'
 pause_duration = 0.0
 sent = 0
+
+serverlist = confparse.get('basic','serverlist')
+serverip = confparse.get('serverstats', 'lastsrvr')
+serverport = confparse.get('basic','serverport')
+if serverlist == "":
+    proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
+    if proceed == True:
+        os.startfile(mmc4wIni)
+        sys.exit()
+if confparse.get('serverstats','lastport') != "":
+    serverport = confparse.get('serverstats','lastport')
+else:
+    confparse.set('serverstats','lastport',serverport)
+    # logger.info("Writing port to .ini file.")
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+if version != confparse.get('program','version'):
+    confparse.set('program','version',version)
+    # logger.info("Writing version to .ini file.")
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+
 
 def connext():
     global serverip,serverport
     try:
         client.ping()  # Use ping() to see if we're connected.
         cxstat = 1
-    except  mpd.base.ConnectionError as errvar:
+    except  (mpd.base.ConnectionError,ConnectionRefusedError) as errvar:
         logger.debug("errvar: {}".format(errvar))
         cxstat = 0
         try:
             logger.debug("Try to connect to {} on port {}".format(serverip,serverport))
             client.connect(serverip, int(serverport))
             cxstat = 1
-        except  (ValueError, mpd.base.ConnectionError) as errvar:
+        except  (ValueError, mpd.base.ConnectionError,ConnectionRefusedError) as errvar:
             logger.debug("Second level errvar: {}".format(errvar))
             cxstat = 0
             pass
@@ -370,6 +393,21 @@ def getcurrstat():
         msg = "Not Connected"
     return msg,buttonvar,lastpl
 
+def plupdate():
+    global lastpl
+    cxstat = connext()
+    if cxstat == 1:
+        # cstat = client.status()
+        cpl = client.listplaylists()
+        pl = ""
+        for plv in cpl:
+            pl = plv['playlist'] + "," + pl
+        confparse.read(mmc4wIni)
+        lastpl = confparse.get("serverstats","lastsetpl")
+        confparse.set("serverstats","playlists",str(pl))
+        with open(mmc4wIni, 'w') as SLcnf:
+            confparse.write(SLcnf)
+
 def displaytext1(msg):
     text1.delete("1.0", 'end')
     text1.insert("1.0", msg)
@@ -433,23 +471,23 @@ def exit():
         logger.info("Connections closed.  Quitting.")
         sys.exit()
 
-serverlist = confparse.get('basic','serverlist')
-serverip = confparse.get('serverstats', 'lastsrvr')
-if serverlist == "":
-    configurator()
-    serverport = confparse.get('basic','serverport')
-if confparse.get('serverstats','lastport') != "":
-    serverport = confparse.get('serverstats','lastport')
-else:
-    confparse.set('serverstats','lastport',serverport)
-    # logger.info("Writing port to .ini file.")
-    with open(mmc4wIni, 'w') as SLcnf:
-        confparse.write(SLcnf)
-if version != confparse.get('program','version'):
-    confparse.set('program','version',version)
-    # logger.info("Writing version to .ini file.")
-    with open(mmc4wIni, 'w') as SLcnf:
-        confparse.write(SLcnf)
+# serverlist = confparse.get('basic','serverlist')
+# serverip = confparse.get('serverstats', 'lastsrvr')
+# serverport = confparse.get('basic','serverport')
+# if serverlist == "":
+#     configurator()
+# if confparse.get('serverstats','lastport') != "":
+#     serverport = confparse.get('serverstats','lastport')
+# else:
+#     confparse.set('serverstats','lastport',serverport)
+#     # logger.info("Writing port to .ini file.")
+#     with open(mmc4wIni, 'w') as SLcnf:
+#         confparse.write(SLcnf)
+# if version != confparse.get('program','version'):
+#     confparse.set('program','version',version)
+#     # logger.info("Writing version to .ini file.")
+#     with open(mmc4wIni, 'w') as SLcnf:
+#         confparse.write(SLcnf)
 client.timeout = None                     # network timeout in seconds (floats allowed), default: None
 client.idletimeout = None               # timeout for fetching the result of the idle command is handled seperately, default: None
 # client.connect(serverip, int(serverport))    # connect to localhost:6600
@@ -544,12 +582,11 @@ def SrvrWindow():
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         srvrw.destroy()
-        # logger.info("serverip: {}".format(serverip))
-        getcurrstat()
+        logger.debug("serverip: {}".format(serverip))
+        plupdate()
         PLSelWindow()
     cp.read(mmc4wIni)
     iplist = cp.getlist('basic','serverlist')
-    # logger.info(pllist)
     ipvar = StringVar(srvrw)
     ipvar.set('Currently - ' + serverip + ' - Click for dropdown list.')
     plselwin = OptionMenu(srvrw,ipvar,*iplist,command=rtnplsel)
@@ -559,7 +596,7 @@ def SrvrWindow():
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
 def PLSelWindow():
-    global serverip
+    global serverip,lastpl
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     sw = Toplevel(window)
     sw.title("PlayLists")
@@ -574,17 +611,15 @@ def PLSelWindow():
     sw.geometry(str(swinWd) + "x" + str(swinHt) + "+{}+{}".format(x_Left, y_Top))
     sw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
     def rtnplsel(plvar):
-        global serverip
+        global serverip,lastpl
         if plvar == "" or plvar == None:
             plvar = "Unchanged"
             confparse.read(mmc4wIni)
             msg = confparse.get("serverstats","lastsetpl")
         else:
             msg = plvar
-        # logger.info("plvar: {} msg: {}".format(plvar,msg))
         displaytext1(plvar)
         if plvar != "Unchanged":
-            # logger.info("not unchanged: {}".format(plvar))
             cxstat = connext()
             if cxstat == 1:
                 client.clear()
@@ -593,6 +628,7 @@ def PLSelWindow():
                 confparse.set("serverstats","lastsetpl",plvar)
                 with open(mmc4wIni, 'w') as SLcnf:
                     confparse.write(SLcnf)
+                lastpl = plvar
         sw.destroy()
         sleep(1)
         text1['bg']='white'
@@ -619,7 +655,8 @@ def aboutWindow():
     y_Top = int(window.winfo_screenheight() / 2 - awinHt / 2)
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
-    aw.iconbitmap(path_to_dat + './_internal/ico/mmc4w-ico.ico')
+    # aw.iconbitmap(path_to_dat + './_internal/ico/mmc4w-ico.ico')
+    aw.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
     awlabel = Label(aw, font=18, text ="About MMC4W " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
@@ -645,7 +682,8 @@ def helpWindow():
     y_Top = int(window.winfo_screenheight() / 2 - hwinHt / 2)
     hw.config(background="white")  # Set window background color
     hw.geometry(str(hwinWd) + "x" + str(hwinHt) + "+{}+{}".format(x_Left, y_Top))
-    hw.iconbitmap(path_to_dat + './_internal/ico/mmc4w-ico.ico')
+    # hw.iconbitmap(path_to_dat + './_internal/ico/mmc4w-ico.ico')
+    hw.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
     hwlabel = HTMLLabel(hw, height=3, html='<h2 style="text-align: center">MMC4W Help</h2>')
     hw.columnconfigure(0, weight=1)
     helpText = HTMLScrolledText(hw, height=44, padx=10, pady=10, html=RenderHTML(path_to_dat + "\\mmc4w_help.html"))

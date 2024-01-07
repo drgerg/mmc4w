@@ -1,4 +1,6 @@
-Minimal MPD Client - v0.0.5
+Minimal MPD Client - v0.0.6
+
+Skipped v0.0.5 because I didn't test thoroughly enough.
 
 Check out the offline help under the Help menu.
 
