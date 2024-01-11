@@ -4,7 +4,8 @@
 I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  I could not find a Windows MPD client that was as simple as what I wanted.
 This one is written in Python, using Tkinter and is about as basic as you can get. It does exactly what I need and nothing more.
 
-This works for me. [More details are here in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  That is exactly what you get when you click **Help** | **Help** in the app.
+This works for me. [More details are here in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
+This is playlist-centered.  I wanted to start a playlist and then leave it alone.  I did add the ability to search and play a single title.  I'm planning to make an 'album' mode that plays albums from beginning to end.  Like when I was a child. There I said it.
 
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
