@@ -27,6 +27,7 @@ import logging
 
 
 version = "v0.0.6"
+# v0.0.7 - Added search and play a single title
 # v0.0.5 - improve reliability
 # v0.0.4 - a boatload of changes, including albumart display option, config editing, error catching.
 
@@ -229,14 +230,14 @@ def getcurrsong():
     #
     ## Sub-function definitions
     #
-    def getaartpic():
+    def getaartpic(**cs):
         global aatgl
-        cs = {'file': '', 'last-modified': '2023-12-18T23:22:24Z', 'format': '44100:16:2', 'title': "Title Not Available", 'disc': '1', 'artist': 'Oops', 'album': 'Unknown', 'genre': 'Error', 'date': '2024', 'track': '1', 'time': '200', 'duration': '200.000', 'pos': '0000', 'id': '00000'}
+        # cs = {'file': '', 'last-modified': '2023-12-18T23:22:24Z', 'format': '44100:16:2', 'title': "Title Not Available", 'disc': '1', 'artist': 'Oops', 'album': 'Unknown', 'genre': 'Error', 'date': '2024', 'track': '1', 'time': '200', 'duration': '200.000', 'pos': '0000', 'id': '00000'}
         aadict = {}
         try:
             gaperr = 0
-            cs = client.currentsong()
-            sleep(0.25)
+            # cs = client.currentsong()
+            # sleep(0.25)
             aadict = client.readpicture(cs['file'])
             if 'binary' in aadict:
                 aartvar = 1
@@ -260,16 +261,14 @@ def getcurrsong():
             cs = []
             logger.warning("1) Got a ValueError in getaartpic().")
             pass
-        return gaperr,cs
+        return gaperr
     #
-    def getendtime():
+    def getendtime(**stat):
         global dur,elap,gpstate
         stat = {'volume': '', 'repeat': '', 'random': '', 'single': '', 'consume': '', 'partition': '', 'playlist': '', 'playlistlength': '', 'mixrampdb': '', 'state': '', 'song': '', 'songid': '', 'nextsong': '', 'nextsongid': ''}
         try:
             geterr = 0
             msg = ""
-            stat = client.status()
-            gpstate = stat['state']
             dur = cs['duration']
             if 'elapsed' in stat:
                 elap = stat['elapsed']
@@ -288,7 +287,7 @@ def getcurrsong():
             logger.info("2) Got a KeyError in getendtime().{}".format(getendtmkeyer))
             gendtime = time.time()
             pass
-        return geterr,msg,gendtime,gpstate
+        return geterr,msg,gendtime
     #
     ## End sub-function definitions
     #
@@ -296,12 +295,18 @@ def getcurrsong():
     gsent = sent
     if cxstat == 1:
         try:
-            gaperr,cs = getaartpic()
+            stat = client.status()
+            gpstate = stat['state']
+            cs = client.currentsong()
+            if cs:
+                gaperr = getaartpic(**cs)
+            else:
+                gaperr = 0
             if gaperr == 1:
-                gaperr,cs = getaartpic()
-            geterr,msg,gendtime,gpstate = getendtime()  ### Generate 'endtime'.
+                gaperr,cs = getaartpic(**cs)
+            geterr,msg,gendtime = getendtime(**stat)  ### Generate 'endtime'.
             if geterr == 1:
-                geterr,msg,gendtime,gpstate = getendtime()
+                geterr,msg,gendtime = getendtime(**stat)
             logger.info("3) {}.".format(msg))
             globsongtitle = msg
             if firstrun != 1 and prevbtnstate != 'stop':
@@ -456,6 +461,13 @@ def tbtoggle():
         confparse.write(SLcnf)
     getcurrsong()
 
+def returntoPL():
+    cp.read(mmc4wIni)
+    # pllist = cp.getlist('serverstats','playlists')
+    lastpl = confparse.get("serverstats","lastsetpl")
+    client.clear()
+    client.load(lastpl)
+
 def nonstdport():
     # logger.info("Setting non-standard port.")
     messagebox.showinfo("Setting a non-standard port","Set your non-standard port by editing the mmc4w.ini file. Use the Configure option in the File menu.\n\nPut your port number in the 'serverport' attribute under the [basic] section. 6600 is the default MPD port.")
@@ -471,32 +483,12 @@ def exit():
         logger.info("Connections closed.  Quitting.")
         sys.exit()
 
-# serverlist = confparse.get('basic','serverlist')
-# serverip = confparse.get('serverstats', 'lastsrvr')
-# serverport = confparse.get('basic','serverport')
-# if serverlist == "":
-#     configurator()
-# if confparse.get('serverstats','lastport') != "":
-#     serverport = confparse.get('serverstats','lastport')
-# else:
-#     confparse.set('serverstats','lastport',serverport)
-#     # logger.info("Writing port to .ini file.")
-#     with open(mmc4wIni, 'w') as SLcnf:
-#         confparse.write(SLcnf)
-# if version != confparse.get('program','version'):
-#     confparse.set('program','version',version)
-#     # logger.info("Writing version to .ini file.")
-#     with open(mmc4wIni, 'w') as SLcnf:
-#         confparse.write(SLcnf)
+
 client.timeout = None                     # network timeout in seconds (floats allowed), default: None
 client.idletimeout = None               # timeout for fetching the result of the idle command is handled seperately, default: None
-# client.connect(serverip, int(serverport))    # connect to localhost:6600
 artw = None
-
-
 globsongtitle = ""
 aatgl = '0'
-
 
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
@@ -529,7 +521,7 @@ class FaultTolerantTk(tk.Tk):
 ##  EVERYTHING SOUTH OF HERE IS THE 'window.mainloop' UNDEFINED BUT YET DEFINED QUASI-FUNCTION
 ##  THIS IS THE 'ROOT' WINDOW.  IT IS NAMED 'window' rather than 'root'.  ##
 # window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
-window = Tk()  # Create the root window with errors in console.  THIS IS THE 'ROOT' WINDOW.
+window = Tk()  # Create the root window with errors in console. Invisible to Windows.
 window.title("Minimal MPD Client " + version)  # Set window title
 winWd = 380  # Set window size
 winHt = 80
@@ -545,12 +537,59 @@ window.columnconfigure([0,1,2,3,4], weight=0)
 window.rowconfigure([0,1,2], weight=0)
 if tbarini == '0':
     window.overrideredirect(1)
-
-def featureNotReady():
-    messagebox.showinfo(title='Not Yet', message='That feature is not ready.')
-
 nnFont = Font(family="Segoe UI", size=10, weight='bold')          ## Set the base font
-
+#
+## DEFINE THE PLAY SINGLE WINDOW AND FUNCTIONS
+#
+def playsingle():
+    cxstat = connext()
+    if cxstat == 1:
+        ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
+        def select(event):
+            i = listbx.curselection()[0]
+            editing_item.set(items[i])
+            client.clear()
+            client.add(itemsraw[i]['file'])
+            client.play()
+            getcurrsong()
+            plsngwin.destroy()
+        ## The tk.Entry box runs this upon <Return>
+        def update(event):
+            srchterm = editing_item.get().replace('Search:','')
+            findit = client.search('Title',srchterm)
+            for f in findit:
+                thisf = '"'+f['title'] + ' - ' + f['artist']+'"'
+                thisfrec = dict([('song',thisf), ('file',f['file'])])
+                itemsraw.append(thisfrec)
+            for sng in itemsraw:
+                items.append(sng['song'])
+            var.set(items)
+        ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
+        plsngwin = Toplevel(window)
+        plsngwin.title("Search & Play Single")
+        plsngwin.configure(bg='black')
+        plsngwin_x=200
+        plsngwin_y=200
+        plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (plsngwin_x + 400)))
+        plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(plsngwin_y + 640)))
+        plsngwin.geometry('300x300+' + plsngwin_xpos + '+' +  plsngwin_ypos)
+        plsngwin.columnconfigure([0,1,2,3,4],weight=1)
+        plsngwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
+        plsngwin.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+        itemsraw = []
+        items = []
+        var = tk.StringVar(value=items)
+        ## Feeds into update()
+        listbx = tk.Listbox(plsngwin, listvariable=var)
+        listbx.configure(bg='black',fg='white')
+        listbx.grid(column=0,row=0,rowspan=6, padx=5,pady=5,sticky='NSEW')
+        listbx.bind('<<ListboxSelect>>', select)
+        ## Feeds into select()
+        editing_item = tk.StringVar()
+        entry = tk.Entry(plsngwin, textvariable=editing_item, width=200)
+        entry.grid(row=6,column=0)
+        entry.insert(0,'Search:')
+        entry.bind('<Return>', update)
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
@@ -731,17 +770,20 @@ nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
 fileMenu = Menu(menu, tearoff=False)
 fileMenu.add_command(label="Configure", command=configurator)
 fileMenu.add_command(label="Select Server", command=SrvrWindow)
+fileMenu.add_command(label="Select Playlist", command=PLSelWindow)
 fileMenu.add_command(label='Toggle Logging', command=logtoggler)
 fileMenu.add_command(label="Exit", command=exit)
 menu.add_cascade(label="File", menu=fileMenu)
 
-lessMenu = Menu(menu, tearoff=False)
-lessMenu.add_command(label="Turn Random On", command=plrandom)
-lessMenu.add_command(label="Turn Random Off", command=plnotrandom)
-lessMenu.add_command(label="Toggle Titlebar", command=tbtoggle)
-lessMenu.add_command(label="Reload Current Title", command=getcurrsong)
-lessMenu.add_command(label="Set Non-Standard Port", command=nonstdport)
-menu.add_cascade(label="Look", menu=lessMenu)
+lookMenu = Menu(menu, tearoff=False)
+lookMenu.add_command(label="Turn Random On", command=plrandom)
+lookMenu.add_command(label="Turn Random Off", command=plnotrandom)
+lookMenu.add_command(label="Toggle Titlebar", command=tbtoggle)
+lookMenu.add_command(label="Reload Current Title", command=getcurrsong)
+lookMenu.add_command(label='Play A Single',command=playsingle)
+lookMenu.add_command(label='ReLoad Last Playlist',command=returntoPL)
+lookMenu.add_command(label="Set Non-Standard Port", command=nonstdport)
+menu.add_cascade(label="Look", menu=lookMenu)
 
 helpMenu = Menu(menu, tearoff=False)
 helpMenu.add_command(label="Help", command=helpWindow)

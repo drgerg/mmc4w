@@ -1,15 +1,12 @@
-Minimal MPD Client - v0.0.6
+Minimal MPD Client - v0.0.7
 
-Skipped v0.0.5 because I didn't test thoroughly enough.
+This is an interim release. I know more changes are coming soon.
 
-Check out the offline help under the Help menu.
+Check out the offline help under the Help menu. (updated for v0.0.6)
 
-- Improved connection status handling.
-- Added code to compensate for the time Pause is engaged.
-- Added  remaining/duration seconds to stat display.
-- Added 'Toggle Logging' item to File Menu.
-- DEBUG log is written to a separate file from the INFO level log.
-    The DEBUG log is not automatically deleted like the INFO log.
-- Changed from ttk.Button to tk.Button in order to be able to 
-    change the background color of Pause when paused. It's a nice retro look.
+- Added the ability to search for and play a single title.
+- Added a menu option to quickly return to the previously selected playlist.
+- Added 'Select Playlist' to the File menu so it's easy do that.
 
+I want to make an 'album mode'.  Maybe add song search by artist.
+All that's later.  This works for today.
