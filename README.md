@@ -5,9 +5,9 @@ I needed a tiny set of controls for a couple of different **[Music Player Daemon
 
 I could not find a Windows MPD client with an interface that was as small as what I wanted.  So I wrote this one.
 
-This one is written in Python, using Tkinter. It may not be sexy, but it does exactly what I need without being obnoxious.  Search your library easily for song titles, albums, or by text in an Artist's name.
+Tkinter may not be sexy, but it gets the job done.  MMC4W does exactly what I need, simply and easily.  Play saved playlists, search your library easily for song titles, albums, or by text in an Artist's name.
 
-MMC4W is primarily a saved-playlist player.  There is also what I call "True Blue Album Mode" that plays all songs on an album sequentially, first to last.  Play single titles using 'Search by Title'.
+MMC4W is natively a saved-playlist player.  There is also what I call "True Blue Album Mode" that plays all songs on an album sequentially, first to last.  Play single titles using 'Search by Title'.
 
 [More details are here in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
 
