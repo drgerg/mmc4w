@@ -1,5 +1,6 @@
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<h2>In a world with tons of music apps, MMC4W stands alone.</h2>
+<p>This help file was updated for the v0.8.0 release.</p>
+<h2>Music Without the Bloat</h2>
 <p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That means it does what I need and nothing more.  </p>
 <p><strong>MMC4W</strong> is a MPD Client.  To be clear, you must have access to a running MPD server for this app to be of any value to you.</p>
 <p>MMC4W is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)</p>
@@ -14,65 +15,89 @@
 </ul>
 <h3>The <strong>'File'</strong> menu contains these functions:</h3>
 <ul>
-<li>Configure - opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)</li>
-<li>Select Server - Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.</li>
-<li>Toggle Logging - Toggles logging On or Off.  Restart the app after toggling.</li>
-<li>Exit - Same as the 'Quit' button: exits the app.</li>
+<li>Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)</li>
+<li>Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.</li>
+<li>Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.</li>
+<li>Exit : Same as the 'Quit' button: exits the app.</li>
+</ul>
+<h3>The <strong>'Tools'</strong> menu has these functions:</h3>
+<ul>
+<li>Turn Random On : Turns on random playback. Text area background is white.</li>
+<li>Turn Random Off : Turns on sequential playback. Text area background is navy blue.</li>
+<li>Toggle Titlebar : Exposes the Windows titlebar.</li>
+<li>Reload Current Title : Reloads data about the current playing song, including art.</li>
+<li>Set Non-Standard Port : Tells you how to set up a non-standard port.</li>
 </ul>
 <h3>There is a <strong>'Look'</strong> menu that has these functions:</h3>
 <ul>
-<li>Turn Random On</li>
-<li>Turn Random Off</li>
-<li>Toggle Titlebar</li>
-<li>Reload Current Title</li>
-<li>Set Non-Standard Port</li>
+<li>Play a Single : Select a single title by title.</li>
+<li>Play an Album : Select an album by album title. Turns on sequential playback.</li>
+<li>Find by Artist : Select a single title by artist. Also get info at the same time.</li>
+<li>Reload Last Playlist : Restore your settings to the last configured playlist.</li>
+<li>Select a Playlist : Select any playlist available on the connected server.</li>
 </ul>
 <h3>The 'Help' menu contains:</h3>
 <ul>
-<li>Help - This document.</li>
-<li>About - Look here to find your installation path and version number.</li>
+<li>Help : This document.</li>
+<li>About : Look here to find your installation path and version number.</li>
 </ul>
 <h2>Some Things MMC4W Does NOT Do:</h2>
 <ul>
 <li>Constantly poll the server. - Based on song duration, <strong>MMC4W</strong> checks back with the server when the song is ending.</li>
 <li>Discover servers.  You need to know the IP address of any servers you wish to control.</li>
-<li>Search the music database.  <strong>MMC4W</strong> is a playlist-based app.  You select the playlist you want to listen to and it plays it.</li>
-<li>Update the MPD database.  There are many other ways to do that.  It could be an option later, but for now, no.</li>
 <li>Edit tags, display lyrics, get art from the web, display artist info, provide stats on servers, wash dishes or vacuum floors.</li>
 </ul>
 <h2>First Run Process</h2>
 <p>MMC4W ships with a blank .ini file.  The first time you run it, it will pop up a box like this:</p>
-<p><img alt="The Configure dialog." src="./_internal/edit_config_dialog.png" /></p>
+<p><img alt="The Configure dialog." src="./_internal/edit_config_dialog.png"></p>
 <p>When you press the 'OK' button, <strong>mmc4w</strong> opens mmc4w.ini using the default Windows text editor.  On my system it's Notepad++.  If you never specified an editor for .ini files, you will likely be informed of that fact at this point.</p>
 <p><strong>Notepad</strong> is perfectly fine for this job.  Word processors like <strong>Microsoft Word</strong> or <strong>Wordpad</strong> will cause you problems.  </p>
 <p>Do not use a word processor.  Only use a text editor that edits and saves plain ASCII text.</p>
 <p>You need to type in your preferred MPD server's IP address in the [basic] section as shown.  Be sure to put that trailing comma on there.</p>
-<p><img alt="inside the mmc4w.ini file" src="./_internal/config_ini_basics.png" /></p>
+<p><img alt="inside the mmc4w.ini file" src="./_internal/config_ini_basics.png"></p>
 <p>If you have more than one server, just string those IP addresses together as seen there.</p>
 <p>Don't worry about the playlists or ports.  Type your server info in the [basic] section, save and close the file.</p>
 <p>Restart <strong>MMC4W</strong>.  Go to the <strong>File</strong> menu and click <strong>Select Server</strong>.  You'll be prompted to select one of the servers you just put into the <strong>mmc4w.ini</strong> file.  Click on one.</p>
-<p><img alt="Select server and playlist" src="./_internal/select_playlist.png" /></p>
+<p><img alt="Select server and playlist" src="./_internal/select_playlist.png"></p>
 <p>Next you are prompted to select one of that server's playlists.  Click on it.  Now you can click the <strong>'Play'</strong> button.</p>
 <h3>Normal Operation</h3>
-<p>After you press <strong>'Play'</strong>, there's not much to do but enjoy the music.</p>
+<p>After you press <strong>'Play'</strong>, just kick back and enjoy the music.</p>
 <p>MMC4W will show you these basic statistics, alternating between the two lines of text shown in these two images:</p>
-<p><img alt="Track name and Artist" src="./_internal/screen_1.png" /></br></br><span style="color:green; font-size:smaller;">Track name and Artist.</span></p>
-<p><img alt="Server IP, status, playlist." src="./_internal/screen_2.png" /></br></br><span style="color:green; font-size:smaller;">Server, Status, PlayList and Elapsed vs Duration in seconds.</span></p>
+<p><img alt="Track name and Artist" src="./_internal/screen_1.png"></br><span style="color:green; font-size:smaller;">Track number, Track name and Artist.</span></p>
+<p><img alt="Server IP, status, playlist." src="./_internal/screen_2.png"></br><span style="color:green; font-size:smaller;">Server, Play Status, PlayList and Elapsed-vs-Duration in seconds.</span></p>
 <p>The <strong>'Art'</strong> button toggles the small album art window.</p>
 <p>The <strong>'Mode'</strong> button toggles the titlebar like this:</p>
-<p><img alt="Titlebar on." src="./_internal/titlebar.png" /></p>
+<p><img alt="Titlebar on." src="./_internal/titlebar.png"></p>
+<p>When the titlebars are on, you can drag the windows around. (You will likely have to expand the art window a bit).  Where you leave the upper-left corners gets saved when you press <strong>'Mode'</strong> again.  Your windows will stay there until you press <strong>'Mode'</strong> again.</p>
+<p>The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.</p>
+<h3>Searching</h3>
+<p>There are three options under the <strong>'Look'</strong> menu related to search.</p>
+<p><strong>- Play a Single</strong></br>
+  <strong>- Play an Album</strong></br>
+  <strong>- Find by Artist</strong></br></p>
+<p>All three options use the same window, just differently. There's a hint in the titlebar to help you out.</p>
+<p><strong>Note:</strong> The Search window is resizeable.  </p>
+<p><strong>Play a Single</strong> opens the Search window and allows you to type some search term.  This is a <strong>Title</strong> search.  If any song title in the entire library contains the search term, it will be displayed when you press <strong>[enter]</strong></p>
+<p><img alt="Title Search." src="./_internal/search_title.png"></br><span style="color:green; font-size:smaller;">Song title search.</span></p>
+<p>When you click on one of them, it plays that one title then stops.  Use another <strong>'Look'</strong> menu option to do something else.</p>
+<p><strong>Play an Album</strong> opens the same Search window.  This time you are searching for text contained in <strong>Album</strong> names.</p>
+<p>Pressing enter on an entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that <strong>Random Mode</strong> has been turned off.  </p>
+<p><img alt="Album Search." src="./_internal/album_mode.png"></br><span style="color:green; font-size:smaller;">Album title search.</span></p>
+<p>I call this "<strong>True Blue Album Mode</strong>".  Use the <strong>'Tools'</strong> menu to turn Random playback on when you want it. No assumptions are made about whether you want random or sequential playback outside of Album Mode.</p>
+<p><strong>Find by Artist</strong> opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  </p>
+<p><img alt="Artist Search." src="./_internal/search_artist.png"></br><span style="color:green; font-size:smaller;">Artist search. Click in field and hit Enter for all songs.</span></p>
+<p>This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.</p>
 <h3>Logging</h3>
 <p>Logging can be enabled by using the '<strong>Toggle Logging</strong>' option under the <strong>File</strong> menu.</p>
-<p><img alt="Toggle Logging" src="./_internal/toggle_logging.png" /></p>
+<p><img alt="Toggle Logging" src="./_internal/toggle_logging.png"></p>
 <p>After using the '<strong>Toggle Logging</strong>' option, restart MMC4W.</p>
 <p>MMC4W currently supports two levels of logging: <strong>INFO</strong> and <strong>DEBUG</strong>.  INFO lists basic actions that should be occurring as they occur.  DEBUG adds another layer of potentially useful data to the stream.</p>
-<p><img alt="Setting the Log Level" src="./_internal/logging.png" /></p>
+<p><img alt="Setting the Log Level" src="./_internal/logging.png"></p>
 <p>To set the logging level, use the '<strong>Configure</strong>' option and edit the <strong>mmc4w.ini</strong> file.  Type either 'info' or 'debug' where indicated (without quotes).</p>
 <p>The resulting log file (<strong>mmc4w.log</strong>) can be found in the <strong>_internal</strong> folder in the installation folder.  The log file is deleted and started fresh each time you start <strong>MMC4W</strong>.  If you toggle Off logging, the last log file will remain until you delete it or create a new one by toggling logging On again.</p>
 <p>The DEBUG file (<strong>mmc4w_DEBUG.log</strong>) does not start fresh with each run, and is not deleted.</p>
-<h3>A Couple of Other Random Options</h3>
-<p>Under the <strong>'Look'</strong> menu there are options to turn MPD's <strong>Random Mode</strong> on or off.</p>
-<p>The <strong>'Set Non-Standard Port'</strong> option opens a pop-up that provides the details to set any port other than 6600 which is the default MPD port.  Most people will never use this.</p>
+<h3>Other Random Options</h3>
+<p>Under the <strong>'Tools'</strong> menu there is the <strong>'Set Non-Standard Port'</strong> option.  Choosing that opens a pop-up which provides details about how to set any port other than 6600 (the default MPD port).  Most people will never use this.</p>
 <h2>Notes About What Happens Under the Hood</h2>
 <p>When you press '<strong>Play</strong>', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is being displayed, it attempts to get art embedded in the song.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.</p>
 <p>MMC4W uses the Python <strong>threading</strong> module to run a timer in conjunction with a small set of global variables.  In this way we're able to keep the interface satisfactorily snappy and avoid having to poll the server every few seconds to determine if a new song is playing.</p>

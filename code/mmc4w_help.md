@@ -1,6 +1,8 @@
 # MMC4W - Minimal MPD Client for Windows
 
-## In a world with tons of music apps, MMC4W stands alone.
+This help file was updated for the v0.8.0 release.
+
+## Music Without the Bloat
 
 **MMC4W** is first and foremost **Minimal**.  That means it does what I need and nothing more.  
 
@@ -17,30 +19,36 @@ It takes up very little room on my screen. The interface contains the basic requ
 
 ### The **'File'** menu contains these functions:
 
-- Configure - opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)
-- Select Server - Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
-- Toggle Logging - Toggles logging On or Off.  Restart the app after toggling.
-- Exit - Same as the 'Quit' button: exits the app.
+- Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)
+- Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
+- Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.
+- Exit : Same as the 'Quit' button: exits the app.
+
+### The **'Tools'** menu has these functions:
+
+- Turn Random On : Turns on random playback. Text area background is white.
+- Turn Random Off : Turns on sequential playback. Text area background is navy blue.
+- Toggle Titlebar : Exposes the Windows titlebar.
+- Reload Current Title : Reloads data about the current playing song, including art.
+- Set Non-Standard Port : Tells you how to set up a non-standard port.
 
 ### There is a **'Look'** menu that has these functions:
 
-- Turn Random On
-- Turn Random Off
-- Toggle Titlebar
-- Reload Current Title
-- Set Non-Standard Port
+- Play a Single : Select a single title by title.
+- Play an Album : Select an album by album title. Turns on sequential playback.
+- Find by Artist : Select a single title by artist. Also get info at the same time.
+- Reload Last Playlist : Restore your settings to the last configured playlist.
+- Select a Playlist : Select any playlist available on the connected server.
 
 ### The 'Help' menu contains:
 
-- Help - This document.
-- About - Look here to find your installation path and version number.
+- Help : This document.
+- About : Look here to find your installation path and version number.
 
 ## Some Things MMC4W Does NOT Do:
 
 - Constantly poll the server. - Based on song duration, **MMC4W** checks back with the server when the song is ending.
 - Discover servers.  You need to know the IP address of any servers you wish to control.
-- Search the music database.  **MMC4W** is a playlist-based app.  You select the playlist you want to listen to and it plays it.
-- Update the MPD database.  There are many other ways to do that.  It could be an option later, but for now, no.
 - Edit tags, display lyrics, get art from the web, display artist info, provide stats on servers, wash dishes or vacuum floors.
 
 ## First Run Process
@@ -71,19 +79,56 @@ Next you are prompted to select one of that server's playlists.  Click on it.  N
 
 ### Normal Operation
 
-After you press **'Play'**, there's not much to do but enjoy the music.
+After you press **'Play'**, just kick back and enjoy the music.
 
 MMC4W will show you these basic statistics, alternating between the two lines of text shown in these two images:
 
-![Track name and Artist](./_internal/screen_1.png)</br></br><span style="color:green; font-size:smaller;">Track name and Artist.</span>
+![Track name and Artist](./_internal/screen_1.png)</br><span style="color:green; font-size:smaller;">Track number, Track name and Artist.</span>
 
-![Server IP, status, playlist.](./_internal/screen_2.png)</br></br><span style="color:green; font-size:smaller;">Server, Status, PlayList and Elapsed vs Duration in seconds.</span>
+![Server IP, status, playlist.](./_internal/screen_2.png)</br><span style="color:green; font-size:smaller;">Server, Play Status, PlayList and Elapsed-vs-Duration in seconds.</span>
 
 The **'Art'** button toggles the small album art window.
 
 The **'Mode'** button toggles the titlebar like this:
 
 ![Titlebar on.](./_internal/titlebar.png)
+
+When the titlebars are on, you can drag the windows around. (You will likely have to expand the art window a bit).  Where you leave the upper-left corners gets saved when you press **'Mode'** again.  Your windows will stay there until you press **'Mode'** again.
+
+The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.
+
+### Searching
+
+There are three options under the **'Look'** menu related to search.
+
+  **- Play a Single**</br>
+  **- Play an Album**</br>
+  **- Find by Artist**</br>
+
+ All three options use the same window, just differently. There's a hint in the titlebar to help you out.
+
+**Note:** The Search window is resizeable.  
+
+ **Play a Single** opens the Search window and allows you to type some search term.  This is a **Title** search.  If any song title in the entire library contains the search term, it will be displayed when you press **[enter]**
+
+![Title Search.](./_internal/search_title.png)</br><span style="color:green; font-size:smaller;">Song title search.</span>
+
+ When you click on one of them, it plays that one title then stops.  Use another **'Look'** menu option to do something else.
+
+ **Play an Album** opens the same Search window.  This time you are searching for text contained in **Album** names.
+
+ Pressing enter on an entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that **Random Mode** has been turned off.  
+
+![Album Search.](./_internal/album_mode.png)</br><span style="color:green; font-size:smaller;">Album title search.</span>
+
+ I call this "**True Blue Album Mode**".  Use the **'Tools'** menu to turn Random playback on when you want it. No assumptions are made about whether you want random or sequential playback outside of Album Mode.
+
+**Find by Artist** opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  
+
+![Artist Search.](./_internal/search_artist.png)</br><span style="color:green; font-size:smaller;">Artist search. Click in field and hit Enter for all songs.</span>
+
+This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.
+
 
 ### Logging 
 
@@ -103,11 +148,9 @@ The resulting log file (**mmc4w.log**) can be found in the **_internal** folder 
 
 The DEBUG file (**mmc4w_DEBUG.log**) does not start fresh with each run, and is not deleted.
 
-### A Couple of Other Random Options
+### Other Random Options
 
-Under the **'Look'** menu there are options to turn MPD's **Random Mode** on or off.
-
-The **'Set Non-Standard Port'** option opens a pop-up that provides the details to set any port other than 6600 which is the default MPD port.  Most people will never use this.
+Under the **'Tools'** menu there is the **'Set Non-Standard Port'** option.  Choosing that opens a pop-up which provides details about how to set any port other than 6600 (the default MPD port).  Most people will never use this.
 
 ## Notes About What Happens Under the Hood
 
