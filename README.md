@@ -6,8 +6,7 @@ This one is written in Python, using Tkinter. It may not be sexy, but it does ex
 
 MMC4W is primarily a saved-playlist player.  There is also what I call "True Blue Album Mode" that plays all songs on an album sequentially, first to last.
 
-This works for me. [More details are here in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
-This is playlist-centered.  I wanted to start a playlist and then leave it alone.  I did add the ability to search and play a single title.  I'm planning to make an 'album' mode that plays albums from beginning to end.  Like when I was a child. There I said it.
+[More details are here in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
 
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
