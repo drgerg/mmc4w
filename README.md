@@ -1,5 +1,6 @@
-# MMC4W - No-Cloud, Local Music Library</br> - Minimal MPD Client for Windows 
-### Intentionally tiny and simple. Basic and yet very capable.
+# MMC4W - Minimal MPD Client for Windows 
+### Intentionally tiny. Basic and yet very capable.
+"I don't rent music. I don't trust 'the cloud' to be there when I want it." - me.
 
 I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  
 
