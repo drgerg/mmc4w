@@ -4,7 +4,7 @@
 
 I needed a tiny set of controls for a couple of different **[Music Player Daemon](https://www.musicpd.org/)** (MPD) servers here.  
 
-I could not find a Windows MPD client with an interface that was as small as what I wanted.  So I wrote this one.
+I could not find a Windows MPD client with an interface as small as what I wanted.  So I wrote this one.
 
 Tkinter may not be sexy, but it gets the job done.  MMC4W does exactly what I need, simply and easily.  Play saved playlists, search your library easily for song titles, albums, or by text in an Artist's name.
 
