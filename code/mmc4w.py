@@ -26,7 +26,8 @@ import time
 import logging
 
 
-version = "v0.8.0"
+version = "v0.8.1"
+# v0.8.1 - Handle a new comm error.
 # v0.8.0 - Album mode, artist lookup, track number, vol indication, inidicator for 'not-random' mode, select PL, and more.
 # v0.0.7 - Added search and play a single title
 # v0.0.5 - improve reliability
@@ -127,16 +128,19 @@ def connext():  ## Checks connection, then connects if necessary.
     try:
         client.ping()  # Use ping() to see if we're connected.
         cxstat = 1
-    except  (mpd.base.ConnectionError,ConnectionRefusedError) as errvar:
+    except  (mpd.base.ConnectionError,ConnectionRefusedError,UnicodeDecodeError) as errvar:
+        print('Error received: ' + str(errvar))
         logger.debug("errvar: {}".format(errvar))
         cxstat = 0
         try:
             logger.debug("Try to connect to {} on port {}".format(serverip,serverport))
             client.connect(serverip, int(serverport))
             cxstat = 1
+            print('2nd try. cxstat is : ' + str(cxstat))
         except  (ValueError, mpd.base.ConnectionError,ConnectionRefusedError) as errvar:
             logger.debug("Second level errvar: {}".format(errvar))
             cxstat = 0
+            print('2nd try. errvar is : {}. \ncxstat is : {}'.format(errvar,cxstat))
             pass
     return cxstat
 
@@ -275,6 +279,45 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     confparse.set('serverstats','lastvol',lastvol)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
+
+def toglrepeat():
+    cxstat = connext()
+    if cxstat == 1:
+        cstats = client.status()
+        rptstat = cstats['repeat']
+        if rptstat == '0':
+            client.repeat(1)
+            msg = 'Repeat is set to 1.'
+        else:
+            client.repeat(0)
+            msg = 'Repeat is set to 0.'
+        displaytext1(msg)
+
+def toglconsume():
+    cxstat = connext()
+    if cxstat == 1:
+        cstats = client.status()
+        cnsmstat = cstats['consume']
+        if cnsmstat == '0':
+            client.consume(1)
+            msg = 'Consume is set to 1.'
+        else:
+            client.consume(0)
+            msg = 'Consume is set to 0.'
+        displaytext1(msg)
+
+def toglsingle():
+    cxstat = connext()
+    if cxstat == 1:
+        cstats = client.status()
+        snglstat = cstats['single']
+        if snglstat == '0':
+            client.single(1)
+            msg = 'Single is set to 1.'
+        else:
+            client.single(0)
+            msg = 'Single is set to 0.'
+        displaytext1(msg)
 #
 ##  DEFINE getcurrsong() - THE MOST POPULAR FUNCTION HERE.
 #
@@ -601,8 +644,8 @@ class FaultTolerantTk(tk.Tk):
 ## WRAP UP AND DISPLAY ==========================================================================================
 #
 ##  THIS IS THE 'ROOT' WINDOW.  IT IS NAMED 'window' rather than 'root'.  ##
-# window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
-window = Tk()  # Create the root window with errors in console, invisible to Windows.
+window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
+# window = Tk()  # Create the root window with errors in console, invisible to Windows.
 window.title("Minimal MPD Client " + version)  # Set window title
 winWd = 380  # Set window size
 winHt = 80
@@ -636,52 +679,82 @@ def lookupwin(lookupT):
     cxstat = connext()
     if cxstat == 1:
         ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
-        def select(event):
+        def clickedit(event):
             global lastpl
-            i = listbx.curselection()[0]
-            editing_item.set(items[i])
-            if lookupT == 'album':
-                albsngs = client.search(lookupT,str(itemsraw[i]['album']))
-                ## We turn random mode off for albums. ##
-                rstat = client.status()['random']
-                if rstat == '1':
-                    client.random(0)
-                    text1['bg']='navy'  # True Blue album mode
-                    text1['fg']='white' # Random mode
-                client.clear()
-                for s in albsngs:
-                    client.add(s['file'])
-                play()
-            else:
-                client.clear()
-                client.add(itemsraw[i]['file'])
-                play()
-            lastpl = confparse.get('serverstats','lookuppltext')  # default: 'That Thing You Looked For'
-            confparse.read(mmc4wIni)
-            confparse.set("serverstats","lookuppl",'1')
-            with open(mmc4wIni, 'w') as SLcnf:
-                confparse.write(SLcnf)
-            plsngwin.update()
-            getcurrsong()
-            plsngwin.destroy()
-        ## The tk.Entry box runs this upon <Return>
-        def update(event):
-            srchterm = editing_item.get().replace('Search: ','')
-            findit = client.search(lookupT,srchterm)
-            lastf = ''
-            for f in findit:
-                thisf = '"'+f[lookupT] + ' - ' + f[secfind] + ' | ' + f['album']+'"'
-                thisfrec = dict([('song',thisf), ('file',f['file']),('album',f['album'])])
+            cxstat = connext()
+            if cxstat == 1:
+                i = listbx.curselection()[0]
+                # editing_item.set(dispitems[i])
                 if lookupT == 'album':
-                    if f[lookupT] != lastf:
-                        itemsraw.append(thisfrec)
-                        lastf = f[lookupT]
+                    albsngs = client.search(lookupT,str(itemsraw[i]['album']))
+                    ## We turn random mode off for albums. ##
+                    rstat = client.status()['random']
+                    if rstat == '1':
+                        client.random(0)
+                        text1['bg']='navy'  # True Blue album mode
+                        text1['fg']='white' # Random mode
+                    client.clear()
+                    for s in albsngs:
+                        client.add(s['file'])
+                    play()
                 else:
-                    itemsraw.append(thisfrec)
-            for sng in itemsraw:
-                items.append(sng['song'])
-            var.set(items)
-            plsngwin.update()
+                    client.clear()
+                    client.add(itemsraw[i]['file'])
+                    play()
+                lastpl = confparse.get('serverstats','lookuppltext')  # default: 'That Thing You Looked For'
+                confparse.read(mmc4wIni)
+                confparse.set("serverstats","lookuppl",'1')
+                with open(mmc4wIni, 'w') as SLcnf:
+                    confparse.write(SLcnf)
+                plsngwin.update()
+                getcurrsong()
+                plsngwin.destroy()
+        ## The tk.Entry box runs this upon <Return>
+        def pushret(event):
+            cxstat = connext()
+            if cxstat == 1:
+                dispitems = []
+                srchterm = editing_item.get().replace('Search: ','')
+                editing_item.set('Search: ')
+                if srchterm == 'status':
+                    stats = client.status()
+                    for s,v in stats.items():
+                        dispitems.append(s + ' : ' + v)
+                    for i in dispitems:
+                        listbx.insert(END,i)
+                    plsngwin.update()
+                if srchterm == 'stats':
+                    stats = client.stats()
+                    for s,v in stats.items():
+                        if s == 'uptime' or s == 'playtime' or s == 'db_playtime':
+                            v = int(v)
+                            v = time.strftime("%H:%M:%S", time.gmtime(v))
+                        if s == 'db_update':
+                            v = int(v)
+                            v = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime(v))
+                        dispitems.append(s + ' : ' + v)
+                    for i in dispitems:
+                        listbx.insert(END,i)
+                    plsngwin.update()
+                if srchterm != 'status' and srchterm != 'stats':
+                    findit = client.search(lookupT,srchterm)
+                    lastf = ''
+                    for f in findit:
+                        thisf = '"'+f[lookupT] + ' - ' + f[secfind] + ' | ' + f['album']+'"'
+                        thisfrec = dict([('song',thisf), ('file',f['file']),('album',f['album'])])
+                        if lookupT == 'album':
+                            if f[lookupT] != lastf:
+                                itemsraw.append(thisfrec)
+                                lastf = f[lookupT]
+                        else:
+                            itemsraw.append(thisfrec)
+                    for sng in itemsraw:
+                        dispitems.append(sng['song'])
+                    for i in dispitems:
+                        listbx.insert(END,i)
+                    plsngwin.update()
+                    if srchterm == 'quit;':
+                        plsngwin.destroy()
         ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
         plsngwin = Toplevel(window)
         plsngwin.title("Search & Play " + srchTxt)
@@ -695,19 +768,19 @@ def lookupwin(lookupT):
         plsngwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
         plsngwin.iconbitmap('./_internal/ico/mmc4w-ico.ico')
         itemsraw = []
-        items = []
-        var = tk.StringVar(value=items)
+        dispitems = []
+        var = tk.StringVar(value=dispitems)
         ## Feeds into update()
-        listbx = tk.Listbox(plsngwin, listvariable=var)
+        listbx = tk.Listbox(plsngwin)
         listbx.configure(bg='black',fg='white')
         listbx.grid(column=0,row=0,rowspan=6, padx=5,pady=5,sticky='NSEW')
-        listbx.bind('<<ListboxSelect>>', select)
+        listbx.bind('<<ListboxSelect>>', clickedit)
         ## Feeds into select()
         editing_item = tk.StringVar()
         entry = tk.Entry(plsngwin, textvariable=editing_item, width=200)
         entry.grid(row=6,column=0)
         entry.insert(0,'Search: ')
-        entry.bind('<Return>', update)
+        entry.bind('<Return>', pushret)
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
@@ -896,10 +969,13 @@ fileMenu.add_command(label="Exit", command=exit)
 menu.add_cascade(label="File", menu=fileMenu)
 
 toolMenu = Menu(menu, tearoff=False)
+toolMenu.add_command(label="Reload Current Title", command=getcurrsong)
 toolMenu.add_command(label="Turn Random On", command=plrandom)
 toolMenu.add_command(label="Turn Random Off", command=plnotrandom)
+toolMenu.add_command(label="Toggle Repeat", command=toglrepeat)
+toolMenu.add_command(label="Toggle Consume", command=toglconsume)
+toolMenu.add_command(label="Toggle Single", command=toglsingle)
 toolMenu.add_command(label="Toggle Titlebar", command=tbtoggle)
-toolMenu.add_command(label="Reload Current Title", command=getcurrsong)
 toolMenu.add_command(label="Set Non-Standard Port", command=nonstdport)
 menu.add_cascade(label="Tools", menu=toolMenu)
 

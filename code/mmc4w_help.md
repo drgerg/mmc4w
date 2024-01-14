@@ -1,14 +1,14 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v0.8.0 release.
+This help file was updated for the v0.8.1 release.
 
 ## Music Without the Bloat
 
-**MMC4W** is first and foremost **Minimal**.  That means it does what I need and nothing more.  
+**MMC4W** is first and foremost **Minimal**.  That means it does what I need and nothing more.  That may be a little misleading, because I expect quite a lot.  But the GUI is minimal so as not to take up much room. That was the original point of this exercise.
 
 **MMC4W** is a MPD Client.  To be clear, you must have access to a running MPD server for this app to be of any value to you.
 
-MMC4W is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)
+**MMC4W** is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)
 
 It takes up very little room on my screen. The interface contains the basic required buttons to control a MPD server:
 
@@ -26,15 +26,18 @@ It takes up very little room on my screen. The interface contains the basic requ
 
 ### The **'Tools'** menu has these functions:
 
+- Reload Current Title : Reloads data about the current playing song, including art.
 - Turn Random On : Turns on random playback. Text area background is white.
 - Turn Random Off : Turns on sequential playback. Text area background is navy blue.
-- Toggle Titlebar : Exposes the Windows titlebar.
-- Reload Current Title : Reloads data about the current playing song, including art.
+- Toggle Repeat : If repeat is 0, play stops when MPD gets to the end of the playlist.
+- Toggle Consume : If consume is 1, each song is removed from the playlist after playing.
+- Toggle Single : If single is 1, each song is only played once, but left in the list.
+- Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.
 - Set Non-Standard Port : Tells you how to set up a non-standard port.
 
 ### There is a **'Look'** menu that has these functions:
 
-- Play a Single : Select a single title by title.
+- Play a Single : Select a single title by title. (also emulates a little console. See Searching.)
 - Play an Album : Select an album by album title. Turns on sequential playback.
 - Find by Artist : Select a single title by artist. Also get info at the same time.
 - Reload Last Playlist : Restore your settings to the last configured playlist.
@@ -97,15 +100,15 @@ When the titlebars are on, you can drag the windows around. (You will likely hav
 
 The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.
 
-### Searching
+### Search and Play
 
 There are three options under the **'Look'** menu related to search.
 
-  **- Play a Single**</br>
-  **- Play an Album**</br>
-  **- Find by Artist**</br>
+- Play a Single
+- Play an Album
+- Find by Artist
 
- All three options use the same window, just differently. There's a hint in the titlebar to help you out.
+ All three options use the same window, just differently. There's a 'mode' hint in the titlebar to help you out.
 
 **Note:** The Search window is resizeable.  
 
@@ -129,6 +132,14 @@ There are three options under the **'Look'** menu related to search.
 
 This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.
 
+### The 'mini console'
+
+- Select the 'Play a Single' option.
+- In the Search: field, type 'status' (no quotes).  You'll see the current status info.
+- Type 'stats' and you'll get server stats appended to the bottom.  Scroll down.
+- Type 'quit;' (with the semicolon) and the window closes.
+
+This was something I just didn't want to do without.
 
 ### Logging 
 

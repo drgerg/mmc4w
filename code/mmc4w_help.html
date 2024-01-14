@@ -1,9 +1,9 @@
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<p>This help file was updated for the v0.8.0 release.</p>
+<p>This help file was updated for the v0.8.1 release.</p>
 <h2>Music Without the Bloat</h2>
-<p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That means it does what I need and nothing more.  </p>
+<p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That means it does what I need and nothing more.  That may be a little misleading, because I expect quite a lot.  But the GUI is minimal so as not to take up much room. That was the original point of this exercise.</p>
 <p><strong>MMC4W</strong> is a MPD Client.  To be clear, you must have access to a running MPD server for this app to be of any value to you.</p>
-<p>MMC4W is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)</p>
+<p><strong>MMC4W</strong> is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)</p>
 <p>It takes up very little room on my screen. The interface contains the basic required buttons to control a MPD server:</p>
 <ul>
 <li>Vol +, Vol -, Play, Stop, Prev, Pause, Next and Quit.</li>
@@ -22,15 +22,18 @@
 </ul>
 <h3>The <strong>'Tools'</strong> menu has these functions:</h3>
 <ul>
+<li>Reload Current Title : Reloads data about the current playing song, including art.</li>
 <li>Turn Random On : Turns on random playback. Text area background is white.</li>
 <li>Turn Random Off : Turns on sequential playback. Text area background is navy blue.</li>
-<li>Toggle Titlebar : Exposes the Windows titlebar.</li>
-<li>Reload Current Title : Reloads data about the current playing song, including art.</li>
+<li>Toggle Repeat : If repeat is 0, play stops when MPD gets to the end of the playlist.</li>
+<li>Toggle Consume : If consume is 1, each song is removed from the playlist after playing.</li>
+<li>Toggle Single : If single is 1, each song is only played once, but left in the list.</li>
+<li>Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.</li>
 <li>Set Non-Standard Port : Tells you how to set up a non-standard port.</li>
 </ul>
 <h3>There is a <strong>'Look'</strong> menu that has these functions:</h3>
 <ul>
-<li>Play a Single : Select a single title by title.</li>
+<li>Play a Single : Select a single title by title. (also emulates a little console. See Searching.)</li>
 <li>Play an Album : Select an album by album title. Turns on sequential playback.</li>
 <li>Find by Artist : Select a single title by artist. Also get info at the same time.</li>
 <li>Reload Last Playlist : Restore your settings to the last configured playlist.</li>
@@ -70,12 +73,14 @@
 <p><img alt="Titlebar on." src="./_internal/titlebar.png"></p>
 <p>When the titlebars are on, you can drag the windows around. (You will likely have to expand the art window a bit).  Where you leave the upper-left corners gets saved when you press <strong>'Mode'</strong> again.  Your windows will stay there until you press <strong>'Mode'</strong> again.</p>
 <p>The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.</p>
-<h3>Searching</h3>
+<h3>Search and Play</h3>
 <p>There are three options under the <strong>'Look'</strong> menu related to search.</p>
-<p><strong>- Play a Single</strong></br>
-  <strong>- Play an Album</strong></br>
-  <strong>- Find by Artist</strong></br></p>
-<p>All three options use the same window, just differently. There's a hint in the titlebar to help you out.</p>
+<ul>
+<li>Play a Single</li>
+<li>Play an Album</li>
+<li>Find by Artist</li>
+</ul>
+<p>All three options use the same window, just differently. There's a 'mode' hint in the titlebar to help you out.</p>
 <p><strong>Note:</strong> The Search window is resizeable.  </p>
 <p><strong>Play a Single</strong> opens the Search window and allows you to type some search term.  This is a <strong>Title</strong> search.  If any song title in the entire library contains the search term, it will be displayed when you press <strong>[enter]</strong></p>
 <p><img alt="Title Search." src="./_internal/search_title.png"></br><span style="color:green; font-size:smaller;">Song title search.</span></p>
@@ -87,6 +92,14 @@
 <p><strong>Find by Artist</strong> opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  </p>
 <p><img alt="Artist Search." src="./_internal/search_artist.png"></br><span style="color:green; font-size:smaller;">Artist search. Click in field and hit Enter for all songs.</span></p>
 <p>This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.</p>
+<h3>The 'mini console'</h3>
+<ul>
+<li>Select the 'Play a Single' option.</li>
+<li>In the Search: field, type 'status' (no quotes).  You'll see the current status info.</li>
+<li>Type 'stats' and you'll get server stats appended to the bottom.  Scroll down.</li>
+<li>Type 'quit;' (with the semicolon) and the window closes.</li>
+</ul>
+<p>This was something I just didn't want to do without.</p>
 <h3>Logging</h3>
 <p>Logging can be enabled by using the '<strong>Toggle Logging</strong>' option under the <strong>File</strong> menu.</p>
 <p><img alt="Toggle Logging" src="./_internal/toggle_logging.png"></p>
