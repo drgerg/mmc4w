@@ -10,7 +10,7 @@ Tkinter may not be sexy, but it gets the job done.  MMC4W does exactly what I ne
 
 MMC4W is natively a saved-playlist player.  There is also what I call "True Blue Album Mode" that plays all songs on an album sequentially, first to last.  Play single titles using 'Search by Title'.
 
-[More details are here in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
+There is one fairly simple config step after running the Windows installer.  [Find those details in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
 
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
