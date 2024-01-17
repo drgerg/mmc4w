@@ -26,7 +26,8 @@ import time
 import logging
 
 
-version = "v0.8.1"
+version = "v0.8.2"
+# v0.8.2 = I think I got that decode error this time.
 # v0.8.1 - Handle a new comm error.
 # v0.8.0 - Album mode, artist lookup, track number, vol indication, inidicator for 'not-random' mode, select PL, and more.
 # v0.0.7 - Added search and play a single title
@@ -324,16 +325,18 @@ def toglsingle():
 def getcurrsong():
     global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol
     if threading.active_count() < 2:
+        logger.debug("The threading.active_count() dropped below 2. Quitting.")
         exit()
     #
     logger.debug("Sent: {}".format(sent))
     # Sub-function definitions
     def getaartpic(**cs):
-        global aatgl
+        global aatgl,aartvar
         aadict = {}
         try:
             gaperr = 0
             aadict = client.readpicture(cs['file'])
+            logger.debug('len(aadict) is: {}'.format(len(aadict)))
             if 'binary' in aadict:
                 aartvar = 1
                 try:
@@ -355,6 +358,13 @@ def getcurrsong():
             gaperr = 1
             cs = []
             logger.warning("1) Got a ValueError in getaartpic().")
+            pass
+        except UnicodeDecodeError:
+            gaperr = 1
+            cs = []
+            logger.warning("1) Got a UnicodeDecodeError in getaartpic().")
+            aartvar = 0
+            aadict = {}
             pass
         return gaperr
     #
@@ -400,13 +410,14 @@ def getcurrsong():
             vol_int = int(lastvol)
             volbtncolor(vol_int)
             gpstate = stat['state']
+            logger.debug("Retrieving 'cs' in getcurrsong().")
             cs = client.currentsong()
             if cs:
                 gaperr = getaartpic(**cs)
             else:
                 gaperr = 0
             if gaperr == 1:
-                gaperr,cs = getaartpic(**cs)
+                gaperr = getaartpic(**cs)
             geterr,msg,gendtime = getendtime(**stat)  ### Generate 'endtime'.
             if geterr == 1:
                 geterr,msg,gendtime = getendtime(**stat)
@@ -522,7 +533,7 @@ def displaytext2(msg2):
     text1.insert(END, msg2)
 
 def albarttoggle():
-    global aatgl,artw
+    global aatgl,artw,aartvar
     cxstat = connext()
     if cxstat == 1:
         confparse.read(mmc4wIni)
