@@ -1,6 +1,7 @@
 # MMC4W - Minimal MPD Client for Windows 
 
 January 17, 2024 - Following v0.8.2, I'm currently reworking MMC4W to use the 'python-musicpd' client libary instead of what I started with (python-mpd2). v0.8.2 works pretty well, but will randomly get lost and need to be restarted.  I'm really looking forward to getting it to be 100% reliable. This will be my daily driver MPD client.
+
 January 18 - Good progress. Much hope.  
 
 ### Intentionally tiny. Unexpectedly mighty. Basic and yet very capable.
