@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-January 19 - Initial testing of v0.9.0 with the **python-musicpd** library is good.  Thirteen hours straight with no errors.  Testing continues today.
+January 19 - Initial testing of v0.9.0 with the **python-musicpd** library is good.  Thirteen hours straight with no errors.  Testing continues today.  I feel good enough about it to share the installer.  
 
 January 18 - Good progress. Much hope.  
 
