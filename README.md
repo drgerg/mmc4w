@@ -4,12 +4,6 @@ January 20 PM - This is coming along very nicely now.  v0.9.2 is getting really 
 
 January 20 AM - "When you rush, that's when accidents happen." - v0.9.1 fixes a couple of annoying bugs birthed by my rushing things.  I feel like I have a solid foundation.  There are still things to adjust, but this is looking good.
 
-January 19 - Initial testing of v0.9.0 with the **python-musicpd** library is good.  Thirteen hours straight with no errors.  Testing continues today.  I feel good enough about it to share the installer.  
-
-January 18 - Good progress. Much hope.  
-
-January 17, 2024 - Following v0.8.2, I'm currently reworking MMC4W to use the 'python-musicpd' client libary instead of what I started with (python-mpd2). v0.8.2 works pretty well, but will randomly get lost and need to be restarted.  I'm really looking forward to getting it to be 100% reliable. This will be my daily driver MPD client.
-
 ### Intentionally tiny. Unexpectedly mighty. Basic and yet very capable.
 > "I don't rent music. I don't trust 'the cloud' to be there when I want it." - me.
 
