@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-January 20 - "When you rush, that's when accidents happen." - v0.9.1 fixes a couple of annoying bugs birthed by my rushing things.
+January 20 - "When you rush, that's when accidents happen." - v0.9.1 fixes a couple of annoying bugs birthed by my rushing things.  I feel like I have a solid foundation.  There are still things to adjust, but this is looking good.
 
 January 19 - Initial testing of v0.9.0 with the **python-musicpd** library is good.  Thirteen hours straight with no errors.  Testing continues today.  I feel good enough about it to share the installer.  
 
