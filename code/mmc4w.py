@@ -3,12 +3,11 @@
 # mmc4w.py - 2024 by Gregory A. Sanders (dr.gerg@drgerg.com)
 # Minimal MPD Client for Windows - basic set of controls for an MPD server.
 # Take up as little space as possible to get the job done.
-# mmc4w.py uses the python-mpd2 library.
+# mmc4w.py uses the python-musicpd library.
 ##
 
 from tkinter import *
 import tkinter as tk
-# from tkinter import ttk
 from tkinter import messagebox
 from tkinter.font import Font
 from time import sleep
@@ -17,17 +16,15 @@ from configparser import ConfigParser
 from os import path
 import os
 from tkhtmlview import HTMLScrolledText, RenderHTML, HTMLLabel
-# import mpd  ## <--- This was Python-MPD2. Last updated 2017
 import musicpd
-# import threading
 import threading
 from PIL import ImageTk, Image
-from io import BytesIO
 import time
 import logging
 
 
-version = "v0.9.0"
+version = "v0.9.1"
+# v0.9.1 - Bugs left over from being in a hurry.
 # v0.9.0 - Start over with a different approach.
 # v0.8.2 - I think I got that decode error this time. NOPE. NOT.
 # v0.8.1 - Handle a new comm error.
@@ -338,9 +335,10 @@ def getcurrsong():
             text1['bg']='navy'
             text1['fg']='white'
             window.update()
-        lastvol = stat['volume']
-        vol_int = int(lastvol)
-        volbtncolor(vol_int)
+        if 'volume' in stat:
+            lastvol = stat['volume']
+            vol_int = int(lastvol)
+            volbtncolor(vol_int)
         gpstate = stat['state']
         logger.debug("D3| Retrieving 'cs' in getcurrsong().")
         logger.debug("D3| Got cs. Headed to getaartpic.")
@@ -349,7 +347,7 @@ def getcurrsong():
         if firstrun != '1' and prevbtnstate != 'stop':
             if msg != confparse.get('serverstats','lastsongtitle'):
                 gsent = 0
-                logger.info("4) This is a new title.")
+                logger.info("4) This is a new title. Writing title to mmc4w.ini.")
                 confparse.set("serverstats","lastsongtitle",str(msg))
                 with open(mmc4wIni, 'w') as SLcnf:
                     confparse.write(SLcnf)
@@ -362,8 +360,8 @@ def getcurrsong():
                     next()
         else:
             logger.debug("Firstrun was set. {}".format(firstrun))
-            logger.info("4) This is the last song you listened to.")
-        logger.debug('D7| gendtime: {}, gpstate: {}, gsent {}.'.format(gendtime,gpstate,gsent))
+            logger.info("4) This is the last song you played during your last session.")
+        logger.debug('D7| lastvol: {}, gendtime: {}, gpstate: {}, gsent {}.'.format(lastvol,gendtime,gpstate,gsent))
         endtime = gendtime
         pstate = gpstate
         sent = gsent
@@ -491,6 +489,7 @@ def plupdate():
     pl = ""
     for plv in cpl:
         pl = plv['playlist'] + "," + pl
+    logger.debug('Retrieved Playlists: {}.'.format(pl))
     confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
     confparse.set("serverstats","playlists",str(pl))
@@ -816,7 +815,7 @@ def SrvrWindow():
             confparse.write(SLcnf)
         srvrw.destroy()
         logger.debug("serverip: {}".format(serverip))
-        plupdate()
+        # plupdate()
         PLSelWindow()
         confparse.set('basic','firstrun','0')
         with open(mmc4wIni, 'w') as SLcnf:
@@ -833,6 +832,7 @@ def SrvrWindow():
 #
 def PLSelWindow():
     global serverip,lastpl
+    plupdate()
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     sw = Toplevel(window)
     sw.title("PlayLists")
