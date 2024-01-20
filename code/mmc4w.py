@@ -23,7 +23,7 @@ import time
 import logging
 
 
-version = "v0.9.1"
+version = "v0.9.2"
 # v0.9.1 - Bugs left over from being in a hurry.
 # v0.9.0 - Start over with a different approach.
 # v0.8.2 - I think I got that decode error this time. NOPE. NOT.
@@ -151,7 +151,7 @@ def connext():  ## Checks connection, then connects if necessary.
             except  (ValueError, musicpd.ConnectionError, ConnectionRefusedError) as errvar:
                 logger.debug("D1| Second level errvar: {}".format(errvar))
                 cxstat = 0
-                pass
+                endWithError('Second level connection error:\n' + str(errvar) + '\nQuitting now.')
     # return cxstat
 
 
@@ -321,7 +321,11 @@ def getcurrsong():
     cs = []
     stat = []
     stat = client.status()
+    logger.debug('D2| Got status. state: {}, rand: {}, rpt: {}.'.format(stat['state'],stat['random'],stat['repeat']))
+    buttonvar = stat['state']
+    logger.debug('D2| Retrieving "cs" in getcurrsong().')
     cs = client.currentsong()
+    logger.debug('D2| Got cs (client.currentsong()) with a length of {}.'.format(len(cs)))
     if cs == {}:
         client.stop()
         buttonvar = 'stop'
@@ -329,8 +333,8 @@ def getcurrsong():
         globsongtitle = "No song in the queue. Go find one."
     else:
         msg,gendtime = getendtime(cs,stat)
+        logger.debug('D2| Headed to getaartpic(**cs).')
         getaartpic(**cs)
-        logger.debug('D2| Got status. state: {}, song: {}.'.format(stat['state'],stat['song']))
         if stat['random'] == '0':
             text1['bg']='navy'
             text1['fg']='white'
@@ -339,10 +343,9 @@ def getcurrsong():
             lastvol = stat['volume']
             vol_int = int(lastvol)
             volbtncolor(vol_int)
+            logger.info('3) Volume is {}.'.format(lastvol))
         gpstate = stat['state']
-        logger.debug("D3| Retrieving 'cs' in getcurrsong().")
-        logger.debug("D3| Got cs. Headed to getaartpic.")
-        logger.info("3) {}.".format(msg))
+        logger.info('3) {}.'.format(msg))
         globsongtitle = msg
         if firstrun != '1' and prevbtnstate != 'stop':
             if msg != confparse.get('serverstats','lastsongtitle'):
@@ -387,7 +390,7 @@ def getendtime(cs,stat):
         elap = 0
     remaining = float(dur) - float(elap)
     gendtime = time.time() + remaining
-    logger.info("2) endtime generated: {}. Time Now: {}, Song dur: {}".format(gendtime,time.time(),dur))
+    logger.info("2) endtime generated: {}. Length: {}, Song dur: {}".format(gendtime,int(gendtime - time.time()),dur))
     msg = str(trk + '-' + cs["title"] + " - " + cs["artist"])
     return msg,gendtime
 #
@@ -395,7 +398,6 @@ def getendtime(cs,stat):
 def getaartpic(**cs):
     global aatgl,aartvar
     aadict = {}
-    gaperr = 0
     aadict = client.readpicture(cs['file'],0)
     if len(aadict) > 0:
         size = int(aadict['size'])
@@ -418,7 +420,8 @@ def getaartpic(**cs):
     if aatgl == '1':
         logger.info("1) Bottom of getaartpic(). Headed to artWindow(). aartvar is {}, len(aadict) is {}.".format(aartvar,len(aadict)))
         artWindow(aartvar)
-    logger.debug('D6| gaperr returned as: {}. aartvar is: {}, len(aadict): {}.'.format(gaperr,aartvar,len(aadict)))
+    else:
+        logger.debug('D6| aartvar is: {}, len(aadict): {}.'.format(aartvar,len(aadict)))
 #
 ## songtitlefollower() is the threaded timer.
 #
@@ -538,32 +541,38 @@ def albarttoggle():
         confparse.write(SLcnf)
 
 def tbtoggle():
-    argeo = artw.geometry()
-    argeo = argeo.replace('x',' ')
-    argeo = argeo.replace('+',' ')
-    argeo = argeo.split()
+    global aatgl
+    if aatgl == '1':
+        argeo = artw.geometry()
+        argeo = argeo.replace('x',' ')
+        argeo = argeo.replace('+',' ')
+        argeo = argeo.split()
     wingeo = window.geometry()
     wingeo = wingeo.replace('x',' ')
     wingeo = wingeo.replace('+',' ')
     wingeo = wingeo.split()
     x_Left = int(window.winfo_screenwidth())
     y_Top = int(window.winfo_screenheight())
-    xarw = int(x_Left)-int(argeo[2])
-    yarw = int(y_Top)-int(argeo[3])
+    if aatgl == '1':
+        xarw = int(x_Left)-int(argeo[2])
+        yarw = int(y_Top)-int(argeo[3])
     xwndw = int(x_Left)-int(wingeo[2])
     ywndw = int(y_Top)-int(wingeo[3])
-    confparse.set("albumart","aartwin_x",str(xarw))
-    confparse.set("albumart","aartwin_y",str(yarw))
+    if aatgl == '1':
+        confparse.set("albumart","aartwin_x",str(xarw))
+        confparse.set("albumart","aartwin_y",str(yarw))
     confparse.set("mainwindow","win_x",str(xwndw))
     confparse.set("mainwindow","win_y",str(ywndw))
     tbstatus = window.overrideredirect()
     if tbstatus == None or tbstatus == False:
         window.overrideredirect(1)
-        artw.overrideredirect(1)
+        if aatgl == '1':
+            artw.overrideredirect(1)
         confparse.set("mainwindow","titlebarstatus",'0')  # Titlebar off (overridden)
     else:
         window.overrideredirect(0)
-        artw.overrideredirect(0)
+        if aatgl == '1':
+            artw.overrideredirect(0)
         confparse.set("mainwindow","titlebarstatus",'1')  # Titlebar on (not overridden)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
@@ -604,13 +613,14 @@ def nonstdport():
 
 def endWithError(msg):
     messagebox.showinfo("UhOh",msg)
-    pause()
     sys.exit()
 
 def exit():
     quitvar = halt()
     if quitvar == 'stop':
         logger.info("Connections closed.  Quitting.")
+        sys.exit()
+    else:
         sys.exit()
 
 
@@ -806,16 +816,17 @@ def SrvrWindow():
     srvrw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
     def rtnplsel(ipvar):
         global serverip
+        client.close()
         msg = ipvar
         displaytext1(msg)
         serverip = ipvar
         confparse.read(mmc4wIni)
+        connext()
         confparse.set("serverstats","lastsrvr",ipvar)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         srvrw.destroy()
         logger.debug("serverip: {}".format(serverip))
-        # plupdate()
         PLSelWindow()
         confparse.set('basic','firstrun','0')
         with open(mmc4wIni, 'w') as SLcnf:
@@ -848,22 +859,16 @@ def PLSelWindow():
     sw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
     def rtnplsel(plvar):
         global serverip,lastpl
-        if plvar == "" or plvar == None:
-            plvar = "Unchanged"
-            confparse.read(mmc4wIni)
-            msg = confparse.get("serverstats","lastsetpl")
-        else:
-            msg = plvar
         displaytext1(plvar)
-        if plvar != "Unchanged":
-            client.clear()
-            client.load(plvar)
-            confparse.read(mmc4wIni)
-            confparse.set("serverstats","lastsetpl",plvar)
-            confparse.set("serverstats","lookuppl",'0')
-            with open(mmc4wIni, 'w') as SLcnf:
-                confparse.write(SLcnf)
-            lastpl = plvar
+        logger.info('Set playlist to {}.'.format(plvar))
+        client.clear()
+        client.load(plvar)
+        confparse.read(mmc4wIni)
+        confparse.set("serverstats","lastsetpl",plvar)
+        confparse.set("serverstats","lookuppl",'0')
+        with open(mmc4wIni, 'w') as SLcnf:
+            confparse.write(SLcnf)
+        lastpl = plvar
         sw.destroy()
         sleep(1)
         text1['bg']='white'
