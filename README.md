@@ -2,9 +2,7 @@
 
 ![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
 
-January 20 PM - This is coming along very nicely now.  v0.9.2 is getting really close to my finish-line goals. 
-
-January 20 AM - "When you rush, that's when accidents happen." - v0.9.1 fixes a couple of annoying bugs birthed by my rushing things.  I feel like I have a solid foundation.  There are still things to adjust, but this is looking good.
+January 21 - v0.9.3 feels like a good stopping point for the foreseeable future.  I'm really happy with it.
 
 ### Intentionally tiny. Unexpectedly mighty. Basic and yet very capable.
 > "I don't rent music. I don't trust 'the cloud' to be there when I want it." - me.
