@@ -355,10 +355,10 @@ def getcurrsong():
                 with open(mmc4wIni, 'w') as SLcnf:
                     confparse.write(SLcnf)
             else:
-                logger.info("4) This is NOT a new title. - - - Rolling back gendtime and gsent.")
-                gendtime = endtime
+                logger.info("4) This title is still playing or just finished. Modifying endtime based on dur-elap.")
+                gendtime = time.time() + (float(dur)-float(elap))
                 gsent = 0
-                logger.info("5) gendtime returned to {}. Duration is {}.".format(gendtime,cs['duration']))
+                logger.info("5) gendtime returned to {}. Remaining is {}.".format(gendtime,(float(cs['duration'])-float(elap))))
                 if float(cs['duration']) == 0.00:
                     next()
         else:
@@ -390,7 +390,7 @@ def getendtime(cs,stat):
         elap = 0
     remaining = float(dur) - float(elap)
     gendtime = time.time() + remaining
-    logger.info("2) endtime generated: {}. Length: {}, Song dur: {}".format(gendtime,int(gendtime - time.time()),dur))
+    logger.info("2) endtime generated: {}. Length: {}, Song dur: {}, Elapsed: {}.".format(gendtime,int(gendtime - time.time()),dur,elap))
     msg = str(trk + '-' + cs["title"] + " - " + cs["artist"])
     return msg,gendtime
 #
@@ -443,7 +443,7 @@ def songtitlefollower():
             if endtime != thisendtime:
                 logger.info("5) Threaded timer got new endtime.")
                 thisendtime = endtime
-                logger.info("6) New endtime: {}, Time now: {} sent: {}.".format(thisendtime,time.time(),sent))
+                logger.info("6) New endtime: {}, Length: {}. sent: {}.".format(thisendtime,int(thisendtime - time.time()),sent))
             if thisendtime <= time.time() and sent == 0:
                 logger.info("0) Threaded timer ran down. Getting new current song data.")
                 sent = 1
