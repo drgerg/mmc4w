@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)
+![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
 
 January 20 PM - This is coming along very nicely now.  v0.9.2 is getting really close to my finish-line goals. 
 
