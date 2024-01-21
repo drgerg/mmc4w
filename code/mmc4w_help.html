@@ -1,10 +1,10 @@
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<p>This help file was updated for the v0.8.1 release.</p>
-<h2>Music Without the Bloat</h2>
-<p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That means it does what I need and nothing more.  That may be a little misleading, because I expect quite a lot.  But the GUI is minimal so as not to take up much room. That was the original point of this exercise.</p>
+<p>This help file was updated for the v0.9.3 release.</p>
+<h2>Putting the Music First</h2>
+<p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as not to take up much room. That was the original point of this exercise.</p>
 <p><strong>MMC4W</strong> is a MPD Client.  To be clear, you must have access to a running MPD server for this app to be of any value to you.</p>
 <p><strong>MMC4W</strong> is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)</p>
-<p>It takes up very little room on my screen. The interface contains the basic required buttons to control a MPD server:</p>
+<p>The interface contains the basic required buttons to control a MPD server:</p>
 <ul>
 <li>Vol +, Vol -, Play, Stop, Prev, Pause, Next and Quit.</li>
 <li>A 'Mode' button eliminates the Windows title bar if desired.</li>
@@ -18,6 +18,7 @@
 <li>Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)</li>
 <li>Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.</li>
 <li>Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.</li>
+<li>Reset Win Positions: Puts the two primary windows back where they were originally.</li>
 <li>Exit : Same as the 'Quit' button: exits the app.</li>
 </ul>
 <h3>The <strong>'Tools'</strong> menu has these functions:</h3>
@@ -46,28 +47,31 @@
 </ul>
 <h2>Some Things MMC4W Does NOT Do:</h2>
 <ul>
-<li>Constantly poll the server. - Based on song duration, <strong>MMC4W</strong> checks back with the server when the song is ending.</li>
-<li>Discover servers.  You need to know the IP address of any servers you wish to control.</li>
-<li>Edit tags, display lyrics, get art from the web, display artist info, provide stats on servers, wash dishes or vacuum floors.</li>
+<li>Does not constantly poll the server. - Based on song duration, <strong>MMC4W</strong> checks back with the server when the song is ending.</li>
+<li>Does not discover servers.  You need to know the IP address of any servers you wish to control.</li>
+<li>Does not edit tags, display lyrics, get art from the web, display artist info, wash dishes or vacuum floors.</li>
+<li>Does not tell you what saved playlist was loaded into the queue on a server you just joined. Nobody can do that.</li>
 </ul>
 <h2>First Run Process</h2>
 <p>MMC4W ships with a blank .ini file.  The first time you run it, it will pop up a box like this:</p>
 <p><img alt="The Configure dialog." src="./_internal/edit_config_dialog.png"></p>
-<p>When you press the 'OK' button, <strong>mmc4w</strong> opens mmc4w.ini using the default Windows text editor.  On my system it's Notepad++.  If you never specified an editor for .ini files, you will likely be informed of that fact at this point.</p>
-<p><strong>Notepad</strong> is perfectly fine for this job.  Word processors like <strong>Microsoft Word</strong> or <strong>Wordpad</strong> will cause you problems.  </p>
-<p>Do not use a word processor.  Only use a text editor that edits and saves plain ASCII text.</p>
-<p>You need to type in your preferred MPD server's IP address in the [basic] section as shown.  Be sure to put that trailing comma on there.</p>
+<p>When you press the 'OK' button, <strong>mmc4w</strong> opens mmc4w.ini using the default Windows text editor.  On my system it's Notepad++.  Word processors like <strong>Microsoft Word</strong> should be avoided.  Only use a text editor that edits and saves plain ASCII text.  <strong>Notepad</strong> is perfectly fine for this job.</p>
+<p>You need to type in your preferred MPD servers' IP address(es) in the [basic] section as shown.  Be sure to put that trailing comma on there whether you have one or several.</p>
 <p><img alt="inside the mmc4w.ini file" src="./_internal/config_ini_basics.png"></p>
 <p>If you have more than one server, just string those IP addresses together as seen there.</p>
-<p>Don't worry about the playlists or ports.  Type your server info in the [basic] section, save and close the file.</p>
-<p>Restart <strong>MMC4W</strong>.  Go to the <strong>File</strong> menu and click <strong>Select Server</strong>.  You'll be prompted to select one of the servers you just put into the <strong>mmc4w.ini</strong> file.  Click on one.</p>
-<p><img alt="Select server and playlist" src="./_internal/select_playlist.png"></p>
-<p>Next you are prompted to select one of that server's playlists.  Click on it.  Now you can click the <strong>'Play'</strong> button.</p>
+<p>After typing your server IP address(es) in the [basic] section, save and close the file.</p>
+<p>Restart <strong>MMC4W</strong>.  When it starts, it will attempt to connect to the first server you provided.  You can change the server by using the option under the <strong>'File'</strong> menu.</p>
+<p>In the text bar of the app you will see a prompt to select one of that server's playlists.</p>
+<p><img alt="Select a playlist prompt" src="./_internal/select_playlist_prompt.png"></p>
+<p>Click on the Look menu and select "Select a Playlist". Once you've clicked on a playlist, you can hit the <strong>'Play'</strong> button.  You may notice an entry following "Current Playlist - ".  You will still want to click on a list in the dropdown even if you choose the same one.</p>
+<p><img alt="Select a playlist" src="./_internal/select_playlist.png"></p>
 <h3>Normal Operation</h3>
 <p>After you press <strong>'Play'</strong>, just kick back and enjoy the music.</p>
 <p>MMC4W will show you these basic statistics, alternating between the two lines of text shown in these two images:</p>
 <p><img alt="Track name and Artist" src="./_internal/screen_1.png"></br><span style="color:green; font-size:smaller;">Track number, Track name and Artist.</span></p>
 <p><img alt="Server IP, status, playlist." src="./_internal/screen_2.png"></br><span style="color:green; font-size:smaller;">Server, Play Status, PlayList and Elapsed-vs-Duration in seconds.</span></p>
+<p>Random, rePeat, Single and Consume status is shown here.  A capital letter means 'ON', lower case means 'OFF'. 'P' is for rePeat because you can't have two 'R's.</p>
+<p><img alt="Random, rePeat, Single and Consume" src="./_internal/screen_2b.png"></p>
 <p>The <strong>'Art'</strong> button toggles the small album art window.</p>
 <p>The <strong>'Mode'</strong> button toggles the titlebar like this:</p>
 <p><img alt="Titlebar on." src="./_internal/titlebar.png"></p>
@@ -86,7 +90,7 @@
 <p><img alt="Title Search." src="./_internal/search_title.png"></br><span style="color:green; font-size:smaller;">Song title search.</span></p>
 <p>When you click on one of them, it plays that one title then stops.  Use another <strong>'Look'</strong> menu option to do something else.</p>
 <p><strong>Play an Album</strong> opens the same Search window.  This time you are searching for text contained in <strong>Album</strong> names.</p>
-<p>Pressing enter on an entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that <strong>Random Mode</strong> has been turned off.  </p>
+<p>Clicking on a list entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that <strong>Random Mode</strong> has been turned off.  </p>
 <p><img alt="Album Search." src="./_internal/album_mode.png"></br><span style="color:green; font-size:smaller;">Album title search.</span></p>
 <p>I call this "<strong>True Blue Album Mode</strong>".  Use the <strong>'Tools'</strong> menu to turn Random playback on when you want it. No assumptions are made about whether you want random or sequential playback outside of Album Mode.</p>
 <p><strong>Find by Artist</strong> opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  </p>
@@ -121,4 +125,5 @@
 <p>I hope you enjoy using this as much as I do.<br><br></p>
 <p>-------------------------------------------- <br>
 <strong>MMC4W</strong> is written in <span style="color:red;">Python</span> and complied using <span style="color:red;">Pyinstaller</span>.  The Windows installer is built using the <span style="color:red;">Inno Setup Compiler</span>.<br>
-<strong>Many thanks</strong> to <span style="color:green;">bauripalash (Palash Bauri)</span> for <a href="https://github.com/bauripalash/tkhtmlview">tkhtmlview</a>, which makes this help file window look so good!<br>&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)</p>
+<strong>Many thanks</strong> to <span style="color:green;">bauripalash (Palash Bauri)</span> for <a href="https://github.com/bauripalash/tkhtmlview">tkhtmlview</a>, which makes this help file window look so good!</br>
+<strong>Also thanks</strong> to <a href="https://gitlab.com/kaliko">kaliko</a> for the <a href="https://gitlab.com/kaliko/python-musicpd">python-musicpd</a> library!</br>&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)</p>

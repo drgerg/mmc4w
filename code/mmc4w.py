@@ -23,15 +23,11 @@ import time
 import logging
 
 
-version = "v0.9.2"
+version = "v0.9.3"
+# v0.9.3 - Updates to Help text and general tweaks.
+# v0.9.2 - Finally reached a solid foundation.
 # v0.9.1 - Bugs left over from being in a hurry.
 # v0.9.0 - Start over with a different approach.
-# v0.8.2 - I think I got that decode error this time. NOPE. NOT.
-# v0.8.1 - Handle a new comm error.
-# v0.8.0 - Album mode, artist lookup, track number, vol indication, inidicator for 'not-random' mode, select PL, and more.
-# v0.0.7 - Added search and play a single title
-# v0.0.5 - improve reliability
-# v0.0.4 - a boatload of changes, including albumart display option, config editing, error catching.
 
 client = musicpd.MPDClient()                    # create client object
 
@@ -56,7 +52,7 @@ logtoggle = confparse.get('program','logging').upper()
 if logtoggle == 'OFF':
     logLevel = 'WARNING'
 
-if logLevel.upper() == "INFO":
+if logLevel == "INFO":
     if os.path.isfile(path_to_dat + "./mmc4w.log"):
         os.remove(path_to_dat + './mmc4w.log')
 
@@ -85,8 +81,8 @@ if logLevel == 'WARNING':
     )
 
 logger = logging.getLogger(__name__)
-mpd_logger = logging.getLogger('mpd')
-mpd_logger.setLevel(logging.CRITICAL)
+musicpd_logger = logging.getLogger('musicpd')
+musicpd_logger.setLevel(logging.WARNING)
 
 global serverip,serverport,tbarini,endtime,firstrun
 endtime = time.time()
@@ -101,11 +97,18 @@ serverlist = confparse.get('basic','serverlist')
 serverip = confparse.get('serverstats', 'lastsrvr')
 serverport = confparse.get('basic','serverport')
 firstrun = confparse.get('basic','firstrun')
+if firstrun == '1':
+    ran = 'r'
+    rpt = 'p'
+    sin = 's'
+    con = 'c'
+
 if serverlist == "":
     proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
     if proceed == True:
         os.startfile(mmc4wIni)
         sys.exit()
+
 if serverip == '':
     cp.read(mmc4wIni)
     iplist = cp.getlist('basic','serverlist')
@@ -113,6 +116,7 @@ if serverip == '':
     confparse.set('serverstats','lastsrvr',serverip)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
+
 if confparse.get('serverstats','lastport') != "":
     serverport = confparse.get('serverstats','lastport')
 else:
@@ -120,15 +124,14 @@ else:
     # logger.info("Writing port to .ini file.")
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
+
 if version != confparse.get('program','version'):
     confparse.set('program','version',version)
     # logger.info("Writing version to .ini file.")
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
-if confparse.get('serverstats','lookuppl') == '1':
-    lastpl = confparse.get('serverstats','lookuppltext')
-else:
-    lastpl = confparse.get('serverstats','lastsetpl')
+
+lastpl = confparse.get('serverstats','lastsetpl')
 
 
 def connext():  ## Checks connection, then connects if necessary.
@@ -136,7 +139,7 @@ def connext():  ## Checks connection, then connects if necessary.
     try:
         client.ping()  # Use ping() to see if we're connected.
         cxstat = 1
-    except (musicpd.ConnectionError, ConnectionRefusedError) as errvar:
+    except (musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as errvar:
         logger.debug("D1| Initial errvar: {}".format(errvar))
         if errvar == 'Already connected':
             cxstat = 1
@@ -148,7 +151,7 @@ def connext():  ## Checks connection, then connects if necessary.
                 client.connect(serverip, int(serverport))
                 cxstat = 1
                 logger.debug('D1| 2nd try. cxstat is : ' + str(cxstat))
-            except  (ValueError, musicpd.ConnectionError, ConnectionRefusedError) as errvar:
+            except  (ValueError, musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as errvar:
                 logger.debug("D1| Second level errvar: {}".format(errvar))
                 cxstat = 0
                 endWithError('Second level connection error:\n' + str(errvar) + '\nQuitting now.')
@@ -156,12 +159,16 @@ def connext():  ## Checks connection, then connects if necessary.
 
 
 def plrandom():  # Set random playback mode.
+    global ran
     client.random(1)
+    ran = 'R'
     text1['bg']='white'
     text1['fg']='black'
 
 def plnotrandom():  # Set sequential playback mode.
+    global ran
     client.random(0)
+    ran = 'r'
     text1['bg']='navy'
     text1['fg']='white'
 
@@ -183,12 +190,20 @@ def play():
 
 def next():
     connext()
-    client.next()
+    try:
+        client.next()
+    except musicpd.CommandError:
+        client.play()
+        client.next()
     getcurrsong()
 
 def previous():
     connext()
-    client.previous()
+    try:
+        client.previous()
+    except musicpd.CommandError:
+        client.play()
+        client.previous()
     getcurrsong()
 
 def pause():  # Pause is complicated because of time-keeping.
@@ -226,7 +241,6 @@ def volup():
         client.volume(+5)
         vol_int = vol_int + 5
         volbtncolor(vol_int)
-    lastvol = str(vol_int)
 
 
 def voldn():
@@ -237,79 +251,113 @@ def voldn():
         client.volume(-5)
         vol_int = vol_int - 5
         volbtncolor(vol_int)
-    lastvol = str(vol_int)
+
 
 
 def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
+    global lastvol
+    lastvol = str(vol_int)
     thisvol = vol_int
+    upconf = ['Vol +','SystemButtonFace','black']
+    dnconf = ['Vol -','SystemButtonFace','black']
     if thisvol == 100:
-        button_volup.configure(text='100',bg="#8B8378",fg='white')
+        upconf = ['100','gray13','white']
     if thisvol == 95:
-        button_volup.configure(text='95',bg="#8B8378",fg='white')
+        upconf = ['95','gray12','white']
     if thisvol == 90:
-        button_volup.configure(text='90',bg="#CDC0B0",fg='black')
+        upconf = ['90','AntiqueWhite4','black']
     if thisvol == 85:
-        button_volup.configure(text='85',bg="#CDC0B0",fg='black')
+        upconf = ['85','AntiqueWhite4','black']
     if thisvol == 80:
-        button_volup.configure(text='80',bg="#FFEFDB",fg='black')
+        upconf = ['80','AntiqueWhite3','black']
     if thisvol == 75:
-        button_volup.configure(text='75',bg="#FFEFDB",fg='black')
-    if thisvol <= 70 and thisvol >=30:
-        button_volup.configure(text='Vol +',bg='SystemButtonFace')
-        button_voldn.configure(text='Vol -',bg='SystemButtonFace')
+        upconf = ['75','AntiqueWhite3','black']
+    if thisvol == 70:
+        upconf = ['70','AntiqueWhite2','black']
+    if thisvol == 65:
+        upconf = ['65','AntiqueWhite2','black']
+    if thisvol == 60:
+        upconf = ['60','AntiqueWhite1','black']
+    if thisvol == 55:
+        upconf = ['55','AntiqueWhite1','black']
+    if thisvol == 50:
+        upconf = ['Vol +','SystemButtonFace','black']
+        dnconf = ['Vol -','SystemButtonFace','black']
+    if thisvol == 45:
+        dnconf = ['45','CadetBlue1','black']
+    if thisvol == 40:
+        dnconf = ['40','CadetBlue1','black']
+    if thisvol == 35:
+        dnconf = ['35','turquoise1','black']
+    if thisvol == 30:
+        dnconf = ['30','turquoise1','black']
     if thisvol == 25:
-        button_voldn.configure(text='25',bg="#98F5FF",fg='black')
+        dnconf = ['25','turquoise2','black']
     if thisvol == 20:
-        button_voldn.configure(text='20',bg="#98F5FF",fg='black')
+        dnconf = ['20','turquoise2','black']
     if thisvol == 15:
-        button_voldn.configure(text='15',bg="#7AC5CD",fg='black')
+        dnconf = ['15','turquoise3','black']
     if thisvol == 10:
-        button_voldn.configure(text='10',bg="#7AC5CD",fg='black')
+        dnconf = ['10','turquoise3','black']
     if thisvol == 5:
-        button_voldn.configure(text='5',bg="#53868B",fg='white')
+        dnconf = ['5','turquoise4','white']
     if thisvol == 0:
-        button_voldn.configure(text='0',bg="#53868B",fg='white')
-    confparse.set('serverstats','lastvol',lastvol)
-    with open(mmc4wIni, 'w') as SLcnf:
-        confparse.write(SLcnf)
+        dnconf = ['0','turquoise4','white']
+    button_volup.configure(text=upconf[0],bg=upconf[1],fg=upconf[2])
+    button_voldn.configure(text=dnconf[0],bg=dnconf[1],fg=dnconf[2])
+    currvolconf = confparse.get('serverstats','lastvol')
+    if lastvol != currvolconf:
+        confparse.set('serverstats','lastvol',lastvol)
+        with open(mmc4wIni, 'w') as SLcnf:
+            confparse.write(SLcnf)
+        logger.info('Saved volume to mmc4w.ini. lastvol is {}.'.format(lastvol))
 
 def toglrepeat():
+    global rpt
     cstats = client.status()
     rptstat = cstats['repeat']
     if rptstat == '0':
         client.repeat(1)
+        rpt = 'P'
         msg = 'Repeat is set to ON.'
     else:
         client.repeat(0)
+        rpt = 'p'
         msg = 'Repeat is set to OFF.'
     displaytext1(msg)
 
 def toglconsume():
+    global con
     cstats = client.status()
     cnsmstat = cstats['consume']
     if cnsmstat == '0':
         client.consume(1)
+        con = 'C'
         msg = 'Consume is set to ON.'
     else:
         client.consume(0)
+        con = 'c'
         msg = 'Consume is set to OFF.'
     displaytext1(msg)
 
 def toglsingle():
+    global sin
     cstats = client.status()
     snglstat = cstats['single']
     if snglstat == '0':
         client.single(1)
+        sin = 'S'
         msg = 'Single is set to ON.'
     else:
         client.single(0)
+        sin = 's'
         msg = 'Single is set to OFF.'
     displaytext1(msg)
 #
 ##  DEFINE getcurrsong() - THE MOST POPULAR FUNCTION HERE.
 #
 def getcurrsong():
-    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,cxstat,buttonvar
+    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,cxstat,buttonvar,ran,rpt,sin,con
     connext()
     if threading.active_count() < 2:
         logger.debug("D9| The threading.active_count() dropped below 2. Quitting.")
@@ -321,7 +369,27 @@ def getcurrsong():
     cs = []
     stat = []
     stat = client.status()
-    logger.debug('D2| Got status. state: {}, rand: {}, rpt: {}.'.format(stat['state'],stat['random'],stat['repeat']))
+    if stat['random'] == '0':
+        ran = 'r'
+        text1['bg']='navy'
+        text1['fg']='white'
+    else:
+        ran = 'R'
+        text1['bg']='white'
+        text1['fg']='black'
+    if stat['repeat'] == '1':
+        rpt = 'P'
+    else:
+        rpt = 'p'
+    if stat['single'] == '1':
+        sin = 'S'
+    else:
+        sin = 's'
+    if stat['consume'] == '1':
+        con = 'C'
+    else:
+        con = 'c'
+    logger.debug('D2| Got status. state: {}, rand: {}, rpt: {}.'.format(stat['state'],ran,rpt))
     buttonvar = stat['state']
     logger.debug('D2| Retrieving "cs" in getcurrsong().')
     cs = client.currentsong()
@@ -335,15 +403,12 @@ def getcurrsong():
         msg,gendtime = getendtime(cs,stat)
         logger.debug('D2| Headed to getaartpic(**cs).')
         getaartpic(**cs)
-        if stat['random'] == '0':
-            text1['bg']='navy'
-            text1['fg']='white'
-            window.update()
+        window.update()
         if 'volume' in stat:
             lastvol = stat['volume']
             vol_int = int(lastvol)
             volbtncolor(vol_int)
-            logger.info('3) Volume is {}.'.format(lastvol))
+            logger.info('3) Volume is {}, Random is {}, Repeat is {}.'.format(lastvol,stat['random'],stat['repeat']))
         gpstate = stat['state']
         logger.info('3) {}.'.format(msg))
         globsongtitle = msg
@@ -362,13 +427,11 @@ def getcurrsong():
                 if float(cs['duration']) == 0.00:
                     next()
         else:
-            logger.debug("Firstrun was set. {}".format(firstrun))
             logger.info("4) This is the last song you played during your last session.")
         logger.debug('D7| lastvol: {}, gendtime: {}, gpstate: {}, gsent {}.'.format(lastvol,gendtime,gpstate,gsent))
         endtime = gendtime
         pstate = gpstate
         sent = gsent
-        # firstrun = 0
         prevbtnstate = 'play'
         if threading.active_count() < 2:
             logger.debug("D10| The threading.active_count() dropped below 2. Quitting.")
@@ -390,7 +453,7 @@ def getendtime(cs,stat):
         elap = 0
     remaining = float(dur) - float(elap)
     gendtime = time.time() + remaining
-    logger.info("2) endtime generated: {}. Length: {}, Song dur: {}, Elapsed: {}.".format(gendtime,int(gendtime - time.time()),dur,elap))
+    logger.info('1) endtime generated: {}. Length: {}, Song dur: {}, Elapsed: {}.'.format(gendtime,int(gendtime - time.time()),dur,elap))
     msg = str(trk + '-' + cs["title"] + " - " + cs["artist"])
     return msg,gendtime
 #
@@ -418,7 +481,7 @@ def getaartpic(**cs):
     else:
         aartvar = 0
     if aatgl == '1':
-        logger.info("1) Bottom of getaartpic(). Headed to artWindow(). aartvar is {}, len(aadict) is {}.".format(aartvar,len(aadict)))
+        logger.info('2) Bottom of getaartpic(). Headed to artWindow(). aartvar is {}, len(aadict) is {}.'.format(aartvar,len(aadict)))
         artWindow(aartvar)
     else:
         logger.debug('D6| aartvar is: {}, len(aadict): {}.'.format(aartvar,len(aadict)))
@@ -447,7 +510,7 @@ def songtitlefollower():
             if thisendtime <= time.time() and sent == 0:
                 logger.info("0) Threaded timer ran down. Getting new current song data.")
                 sent = 1
-                logger.debug("D0| Bottom of songtitlefollower(). Calling getcurrsong().")
+                logger.debug("D0| time.time() reached endtime. Calling getcurrsong().")
                 logger.info(" - - - - -  songtitlefollower - - - - - - ")
                 getcurrsong()
 
@@ -464,11 +527,14 @@ def logtoggler():
     logtog = confparse.get("program","logging")
     if logtog.upper() == "ON":
         confparse.set('program','logging','off')
+        msg = 'Logging turned OFF.'
     elif logtog.upper() == 'OFF':
         confparse.set('program','logging','on')
-    logger.debug("Writing log toggle to .ini file.")
+        msg = 'Logging turned ON.'
+    logger.debug("{}. Wrote to .ini file.".format(msg))
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
+    displaytext1(msg)
 
 def getcurrstat():
     global buttonvar,lastpl
@@ -583,9 +649,9 @@ def returntoPL():
     global lastpl
     confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
-    confparse.set("serverstats","lookuppl",'0')
-    with open(mmc4wIni, 'w') as SLcnf:
-        confparse.write(SLcnf)
+    # confparse.set("serverstats","lookuppl",'0')
+    # with open(mmc4wIni, 'w') as SLcnf:
+    #     confparse.write(SLcnf)
     client.clear()
     client.load(lastpl)
 
@@ -697,10 +763,10 @@ def lookupwin(lookupT):
         global lastpl
         connext()
         i = listbx.curselection()[0]
-        # editing_item.set(dispitems[i])
         if lookupT == 'album':
             albsngs = client.search(lookupT,str(itemsraw[i]['album']))
-            ## We turn random mode off for albums. ##
+            ## We turn rePeat and Random mode off for albums. ##
+            client.repeat(0)
             rstat = client.status()['random']
             if rstat == '1':
                 client.random(0)
@@ -716,13 +782,7 @@ def lookupwin(lookupT):
             client.add(itemsraw[i]['file'])
             logger.info('Repeat turned OFF, queue cleared, added {}.'.format(itemsraw[i]['file']))
             play()
-        lastpl = confparse.get('serverstats','lookuppltext')  # default: 'Results of Look menu query.'
-        confparse.read(mmc4wIni)
-        confparse.set("serverstats","lookuppl",'1')
-        with open(mmc4wIni, 'w') as SLcnf:
-            confparse.write(SLcnf)
         plsngwin.update()
-        # getcurrsong()
         plsngwin.destroy()
     ##
     ## The tk.Entry box runs this upon <Return>
@@ -772,13 +832,16 @@ def lookupwin(lookupT):
                 plsngwin.destroy()
     ##
     ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
+    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+    swin_x = int(confparse.get("searchwin","swin_x"))
+    swin_y = int(confparse.get("searchwin","swin_y"))
     plsngwin = Toplevel(window)
     plsngwin.title("Search & Play " + srchTxt)
     plsngwin.configure(bg='black')
     plsngwin_x=200
     plsngwin_y=200
-    plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (plsngwin_x + 400)))
-    plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(plsngwin_y + 640)))
+    plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (plsngwin_x + swin_x)))
+    plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(plsngwin_y + swin_y)))
     plsngwin.geometry('300x300+' + plsngwin_xpos + '+' +  plsngwin_ypos)
     plsngwin.columnconfigure([0,1,2,3,4],weight=1)
     plsngwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
@@ -800,8 +863,7 @@ def lookupwin(lookupT):
 ## DEFINE THE SERVER SELECTION WINDOW
 #
 def SrvrWindow():
-    global serverip,firstrun
-    text1['bg']='orange'
+    global serverip,firstrun,lastpl
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     srvrw = Toplevel(window)
     srvrw.title("Servers")
@@ -816,7 +878,7 @@ def SrvrWindow():
     srvrw.geometry(str(srvrwinWd) + "x" + str(srvrwinHt) + "+{}+{}".format(x_Left, y_Top))
     srvrw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
     def rtnplsel(ipvar):
-        global serverip
+        global serverip,firstrun,lastpl
         client.close()
         msg = ipvar
         displaytext1(msg)
@@ -828,10 +890,12 @@ def SrvrWindow():
             confparse.write(SLcnf)
         srvrw.destroy()
         logger.debug("serverip: {}".format(serverip))
-        PLSelWindow()
-        confparse.set('basic','firstrun','0')
+        lastpl = 'Joined Server Queue'
+        confparse.set('serverstats','lastsetpl',lastpl)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
+        logger.info ('0) Connected to server {}.'.format(serverip))
+        getcurrsong()
     cp.read(mmc4wIni)
     iplist = cp.getlist('basic','serverlist')
     ipvar = StringVar(srvrw)
@@ -866,13 +930,12 @@ def PLSelWindow():
         client.load(plvar)
         confparse.read(mmc4wIni)
         confparse.set("serverstats","lastsetpl",plvar)
-        confparse.set("serverstats","lookuppl",'0')
+        # confparse.set("serverstats","lookuppl",'0')
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         lastpl = plvar
         sw.destroy()
         sleep(1)
-        text1['bg']='white'
     cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
     lastpl = confparse.get("serverstats","lastsetpl")
@@ -904,8 +967,8 @@ def aboutWindow():
     aw.rowconfigure(0, weight=1)
     aboutText = Text(aw, height=20, width=170, bd=3, padx=10, pady=10, wrap=WORD, font=nnFont)
     aboutText.grid(column=0, row=1)
-    aboutText.insert(INSERT, "MMC4W is installed at\n" + path_to_dat + "\n\nMusic without the bloat.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
-                     "This little app holds forth the smallest set of functions I could think of to just play the music without being frustrating.\n\nCopyright 2023-2024 Gregory A. Sanders\nhttps://www.drgerg.com")
+    aboutText.insert(INSERT, "MMC4W is installed at\n" + path_to_dat + "\n\nPutting the Music First.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
+                     "This little app holds forth the smallest possible GUI hiding a full set of MPD control functions. Just play the music.\n\nCopyright 2023-2024 Gregory A. Sanders\nhttps://www.drgerg.com")
 #
 ## DEFINE THE HELP WINDOW
 #
@@ -1057,7 +1120,7 @@ songused = 0
 # lastpl is "Last Playlist". dur is "Song Duration". eptime is "Elasped Pause Time".
 ###
 def threesecdisplaytext():
-    global evenodd, globsongtitle,buttonvar,lastpl,endtime,dur,eptime
+    global evenodd, globsongtitle,buttonvar,lastpl,endtime,dur,eptime,ran,rpt,sin,con
     def eo1():
         global evenodd, globsongtitle
         if evenodd == 1:
@@ -1066,9 +1129,9 @@ def threesecdisplaytext():
             displaytext1(msg)
     def eo2():
         global evenodd,buttonvar,dur,endtime,songused
+        songlen = dur[:3]
         if buttonvar != 'stop' and buttonvar != 'pause':
             songused = float(dur) - (endtime - time.time())
-            songlen = dur[:3]
             if songused >= float(songlen):
                 songused = float(songlen)
             songused = str(int(songused))
@@ -1078,8 +1141,9 @@ def threesecdisplaytext():
             songused = '0'
             songlen = '0'
         if evenodd == 2:
-            msg = str("Svr: " + serverip[-3:] +" | " + buttonvar + " | PL: " + lastpl)
-            msg2=str(' | {}/{} secs.'.format(songused,songlen))
+            # msg = str("Svr: " + serverip[-3:] +" | " + buttonvar + " | PL: " + lastpl)
+            msg = str("S: {} | {} | {}{}{}{} | PL:{}".format(serverip[-3:],buttonvar,ran,rpt,sin,con,lastpl))
+            msg2=str(' | {}/{}s.'.format(songused,songlen))
             evenodd = 1
             displaytext1(msg)
             displaytext2(msg2)

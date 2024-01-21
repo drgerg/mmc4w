@@ -1,16 +1,16 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v0.8.1 release.
+This help file was updated for the v0.9.3 release.
 
-## Music Without the Bloat
+## Putting the Music First
 
-**MMC4W** is first and foremost **Minimal**.  That means it does what I need and nothing more.  That may be a little misleading, because I expect quite a lot.  But the GUI is minimal so as not to take up much room. That was the original point of this exercise.
+**MMC4W** is first and foremost **Minimal**.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as not to take up much room. That was the original point of this exercise.
 
 **MMC4W** is a MPD Client.  To be clear, you must have access to a running MPD server for this app to be of any value to you.
 
 **MMC4W** is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)
 
-It takes up very little room on my screen. The interface contains the basic required buttons to control a MPD server:
+The interface contains the basic required buttons to control a MPD server:
 
 - Vol +, Vol -, Play, Stop, Prev, Pause, Next and Quit.
 - A 'Mode' button eliminates the Windows title bar if desired.
@@ -22,6 +22,7 @@ It takes up very little room on my screen. The interface contains the basic requ
 - Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)
 - Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
 - Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.
+- Reset Win Positions: Puts the two primary windows back where they were originally.
 - Exit : Same as the 'Quit' button: exits the app.
 
 ### The **'Tools'** menu has these functions:
@@ -50,9 +51,10 @@ It takes up very little room on my screen. The interface contains the basic requ
 
 ## Some Things MMC4W Does NOT Do:
 
-- Constantly poll the server. - Based on song duration, **MMC4W** checks back with the server when the song is ending.
-- Discover servers.  You need to know the IP address of any servers you wish to control.
-- Edit tags, display lyrics, get art from the web, display artist info, provide stats on servers, wash dishes or vacuum floors.
+- Does not constantly poll the server. - Based on song duration, **MMC4W** checks back with the server when the song is ending.
+- Does not discover servers.  You need to know the IP address of any servers you wish to control.
+- Does not edit tags, display lyrics, get art from the web, display artist info, wash dishes or vacuum floors.
+- Does not tell you what saved playlist was loaded into the queue on a server you just joined. Nobody can do that.
 
 ## First Run Process
 
@@ -60,25 +62,25 @@ MMC4W ships with a blank .ini file.  The first time you run it, it will pop up a
 
 ![The Configure dialog.](./_internal/edit_config_dialog.png)
 
-When you press the 'OK' button, **mmc4w** opens mmc4w.ini using the default Windows text editor.  On my system it's Notepad++.  If you never specified an editor for .ini files, you will likely be informed of that fact at this point.
+When you press the 'OK' button, **mmc4w** opens mmc4w.ini using the default Windows text editor.  On my system it's Notepad++.  Word processors like **Microsoft Word** should be avoided.  Only use a text editor that edits and saves plain ASCII text.  **Notepad** is perfectly fine for this job.
 
-**Notepad** is perfectly fine for this job.  Word processors like **Microsoft Word** or **Wordpad** will cause you problems.  
-
-Do not use a word processor.  Only use a text editor that edits and saves plain ASCII text.
-
-You need to type in your preferred MPD server's IP address in the [basic] section as shown.  Be sure to put that trailing comma on there.
+You need to type in your preferred MPD servers' IP address(es) in the [basic] section as shown.  Be sure to put that trailing comma on there whether you have one or several.
 
 ![inside the mmc4w.ini file](./_internal/config_ini_basics.png)
 
 If you have more than one server, just string those IP addresses together as seen there.
 
-Don't worry about the playlists or ports.  Type your server info in the [basic] section, save and close the file.
+After typing your server IP address(es) in the [basic] section, save and close the file.
 
-Restart **MMC4W**.  Go to the **File** menu and click **Select Server**.  You'll be prompted to select one of the servers you just put into the **mmc4w.ini** file.  Click on one.
+Restart **MMC4W**.  When it starts, it will attempt to connect to the first server you provided.  You can change the server by using the option under the **'File'** menu.
 
-![Select server and playlist](./_internal/select_playlist.png)
+In the text bar of the app you will see a prompt to select one of that server's playlists.
 
-Next you are prompted to select one of that server's playlists.  Click on it.  Now you can click the **'Play'** button.
+![Select a playlist prompt](./_internal/select_playlist_prompt.png)
+
+Click on the Look menu and select "Select a Playlist". Once you've clicked on a playlist, you can hit the **'Play'** button.  You may notice an entry following "Current Playlist - ".  You will still want to click on a list in the dropdown even if you choose the same one.
+
+![Select a playlist](./_internal/select_playlist.png)
 
 ### Normal Operation
 
@@ -89,6 +91,10 @@ MMC4W will show you these basic statistics, alternating between the two lines of
 ![Track name and Artist](./_internal/screen_1.png)</br><span style="color:green; font-size:smaller;">Track number, Track name and Artist.</span>
 
 ![Server IP, status, playlist.](./_internal/screen_2.png)</br><span style="color:green; font-size:smaller;">Server, Play Status, PlayList and Elapsed-vs-Duration in seconds.</span>
+
+Random, rePeat, Single and Consume status is shown here.  A capital letter means 'ON', lower case means 'OFF'. 'P' is for rePeat because you can't have two 'R's.
+
+![Random, rePeat, Single and Consume](./_internal/screen_2b.png)
 
 The **'Art'** button toggles the small album art window.
 
@@ -120,7 +126,7 @@ There are three options under the **'Look'** menu related to search.
 
  **Play an Album** opens the same Search window.  This time you are searching for text contained in **Album** names.
 
- Pressing enter on an entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that **Random Mode** has been turned off.  
+ Clicking on a list entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that **Random Mode** has been turned off.  
 
 ![Album Search.](./_internal/album_mode.png)</br><span style="color:green; font-size:smaller;">Album title search.</span>
 
@@ -181,4 +187,5 @@ I hope you enjoy using this as much as I do.<br><br>
 
   -------------------------------------------- <br>
 **MMC4W** is written in <span style="color:red;">Python</span> and complied using <span style="color:red;">Pyinstaller</span>.  The Windows installer is built using the <span style="color:red;">Inno Setup Compiler</span>.<br>
-**Many thanks** to <span style="color:green;">bauripalash (Palash Bauri)</span> for [tkhtmlview](https://github.com/bauripalash/tkhtmlview), which makes this help file window look so good!<br>&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)
+**Many thanks** to <span style="color:green;">bauripalash (Palash Bauri)</span> for [tkhtmlview](https://github.com/bauripalash/tkhtmlview), which makes this help file window look so good!</br>
+**Also thanks** to [kaliko](https://gitlab.com/kaliko) for the [python-musicpd](https://gitlab.com/kaliko/python-musicpd) library!</br>&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)
