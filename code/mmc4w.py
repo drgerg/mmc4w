@@ -501,6 +501,7 @@ def plupdate():
         lastpl = 'Select a saved playlist. "Look" menu.'
     if firstrun == '1':
         confparse.set('basic','firstrun','0')
+        firstrun = '0'
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
 
