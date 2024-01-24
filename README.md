@@ -2,7 +2,7 @@
 
 ![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
 
-January 21 - v0.9.3 feels like a good stopping point for the foreseeable future.  I'm really happy with it.
+January 24 - v0.9.4 - **Working with Saved Playlists** - Check out the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md) for the details, but this is a big deal to me.
 
 ### Intentionally tiny. Unexpectedly mighty. Basic and yet very capable.
 > "I don't rent music. I don't trust 'the cloud' to be there when I want it." - me.
