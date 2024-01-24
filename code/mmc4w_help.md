@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v0.9.3 release.
+This help file was updated for the v0.9.4 release.
 
 ## Putting the Music First
 
@@ -23,6 +23,8 @@ The interface contains the basic required buttons to control a MPD server:
 - Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
 - Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.
 - Reset Win Positions: Puts the two primary windows back where they were originally.
+- Create New Saved Playlist : Creates a new empty playlist with your specified name
+- Remove Saved Playlist : Permanently deletes a saved playlist. Permanently.
 - Exit : Same as the 'Quit' button: exits the app.
 
 ### The **'Tools'** menu has these functions:
@@ -43,6 +45,7 @@ The interface contains the basic required buttons to control a MPD server:
 - Find by Artist : Select a single title by artist. Also get info at the same time.
 - Reload Last Playlist : Restore your settings to the last configured playlist.
 - Select a Playlist : Select any playlist available on the connected server.
+- Toggle Art/Add : Turns the **'Art'** button into an **'Add'** button. Sets PL Build Mode.
 
 ### The 'Help' menu contains:
 
@@ -51,7 +54,7 @@ The interface contains the basic required buttons to control a MPD server:
 
 ## Some Things MMC4W Does NOT Do:
 
-- Does not constantly poll the server. - Based on song duration, **MMC4W** checks back with the server when the song is ending.
+- Does not constantly poll the server. - **MMC4W** checks back with the server when the song is ending.
 - Does not discover servers.  You need to know the IP address of any servers you wish to control.
 - Does not edit tags, display lyrics, get art from the web, display artist info, wash dishes or vacuum floors.
 - Does not tell you what saved playlist was loaded into the queue on a server you just joined. Nobody can do that.
@@ -138,7 +141,36 @@ There are three options under the **'Look'** menu related to search.
 
 This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.
 
-### The 'mini console'
+## Working with Saved Playlists
+
+Saved playlists are the heart of **MMC4W**. To differentiate between the active list of songs that is being played, it is called **the queue**.  **Playlists** are lists of songs saved to a file on disk with some meaningful name.  
+
+You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.
+
+#### You can manipulate playlists in these ways:
+
+ - Load a playlist into the queue.  **Look Menu** - Select a Playlist.
+ - Reload the last playlist into the queue.  **Look Menu** - Reload Last Playlist.
+ - Create a new empty playlist. **File Menu** - Create New Saved Playlist.
+ - Delete a playlist. **File Menu** - Remove Saved Playlist.
+
+### Adding Songs to a Saved Playlist:
+
+**MMC4W** lets you add songs to playlists as you go.  No need to stop playback.
+
+1) Use the **Toggle Art/Add** button to turn on PL Build Mode.  The button turns green.  
+2) Play your music.  When you are listening to a song you want to add to a playlist, hit the green **Add** button.  
+3) Click on the playlist you want the song in from the list.  
+
+**That's it.**
+
+You can choose to be intentional or just add as you go.  
+
+Use the **Play a Single**, **Play an Album**, or **Find By Artist** options under the **Look** menu to play a specific song or album.  When it's playing, hit the green **Add** button and select the playlist.
+
+More playlist functions are in the planning. Stay tuned.
+
+## The 'mini console'
 
 - Select the 'Play a Single' option.
 - In the Search: field, type 'status' (no quotes).  You'll see the current status info.
@@ -147,7 +179,7 @@ This can be useful when you don't know what you're looking for.  Otherwise, type
 
 This was something I just didn't want to do without.
 
-### Logging 
+## Logging 
 
 Logging can be enabled by using the '**Toggle Logging**' option under the **File** menu.
 
@@ -186,6 +218,8 @@ MMC4W was developed and tested in Windows 10.  **MPD** is running on three diffe
 I hope you enjoy using this as much as I do.<br><br>
 
   -------------------------------------------- <br>
-**MMC4W** is written in <span style="color:red;">Python</span> and complied using <span style="color:red;">Pyinstaller</span>.  The Windows installer is built using the <span style="color:red;">Inno Setup Compiler</span>.<br>
-**Many thanks** to <span style="color:green;">bauripalash (Palash Bauri)</span> for [tkhtmlview](https://github.com/bauripalash/tkhtmlview), which makes this help file window look so good!</br>
-**Also thanks** to [kaliko](https://gitlab.com/kaliko) for the [python-musicpd](https://gitlab.com/kaliko/python-musicpd) library!</br>&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)
+**MMC4W** is written in <span style="color:red;">Python</span> and complied using <span style="color:red;">Pyinstaller</span>.  The Windows installer is built using the <span style="color:red;">Inno Setup Compiler</span>.  
+**Many thanks** to <span style="color:green;">bauripalash (Palash Bauri)</span> for [tkhtmlview](https://github.com/bauripalash/tkhtmlview), which makes this help file window look so good!  
+**Also thanks** to [kaliko](https://gitlab.com/kaliko) for the [python-musicpd](https://gitlab.com/kaliko/python-musicpd) library!  
+And of course none of this would be possible without the excellent contribution of [MPD](https://github.com/MusicPlayerDaemon) by Max Kellermann.  **Thanks!!**  
+&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)

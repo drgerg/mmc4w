@@ -9,6 +9,7 @@
 from tkinter import *
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import simpledialog
 from tkinter.font import Font
 from time import sleep
 import sys
@@ -23,7 +24,8 @@ import time
 import logging
 
 
-version = "v0.9.3"
+version = "v0.9.4"
+# v0.9.4 - Adds ability to create new saved playlists and add songs to existing PLs.
 # v0.9.3 - Updates to Help text and general tweaks.
 # v0.9.2 - Finally reached a solid foundation.
 # v0.9.1 - Bugs left over from being in a hurry.
@@ -85,6 +87,7 @@ musicpd_logger = logging.getLogger('musicpd')
 musicpd_logger.setLevel(logging.WARNING)
 
 global serverip,serverport,tbarini,endtime,firstrun
+aartvar = 0
 endtime = time.time()
 cxstat = 0
 buttonvar = 'stop'
@@ -558,7 +561,6 @@ def plupdate():
     pl = ""
     for plv in cpl:
         pl = plv['playlist'] + "," + pl
-    logger.debug('Retrieved Playlists: {}.'.format(pl))
     confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
     confparse.set("serverstats","playlists",str(pl))
@@ -859,6 +861,51 @@ def lookupwin(lookupT):
     entry.grid(row=6,column=0)
     entry.insert(0,'Search: ')
     entry.bind('<Return>', pushret)
+    if aatgl == '1':
+        artWindow(aartvar)
+        #
+## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
+#
+def addtopl(plaction):
+    ##
+    ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
+    def plclickedit(event):
+        selectlst = listbx.curselection()[0]
+        connext()
+        if plaction == 'add':
+            cs = client.currentsong()
+            client.playlistadd(pllist[selectlst],cs['file'])
+            logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
+        if plaction == 'remove':
+            client.rm(pllist[selectlst])
+            logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
+        a2plwin.update()
+        a2plwin.destroy()
+    ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
+    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+    swin_x = int(confparse.get("searchwin","swin_x"))
+    swin_y = int(confparse.get("searchwin","swin_y"))
+    a2plwin = Toplevel(window)
+    a2plwin.title("Add a Song")
+    a2plwin.configure(bg='black')
+    a2plwin_x=200
+    a2plwin_y=200
+    a2plwin_xpos = str(int(a2plwin.winfo_screenwidth()- (a2plwin_x + swin_x)))
+    a2plwin_ypos = str(int(a2plwin.winfo_screenheight()-(a2plwin_y + swin_y)))
+    a2plwin.geometry('300x300+' + a2plwin_xpos + '+' +  a2plwin_ypos)
+    a2plwin.columnconfigure([0,1,2,3,4],weight=1)
+    a2plwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
+    a2plwin.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+    listbx = tk.Listbox(a2plwin)
+    listbx.configure(bg='black',fg='white')
+    listbx.grid(column=0,row=0,rowspan=6, padx=5,pady=5,sticky='NSEW')
+    listbx.bind('<<ListboxSelect>>', plclickedit)
+    cp.read(mmc4wIni)
+    pllist = cp.getlist('serverstats','playlists')
+    for lst in pllist:
+        listbx.insert(END,lst)
+    if aatgl == '1':
+        artWindow(aartvar)
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
@@ -907,7 +954,7 @@ def SrvrWindow():
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
 def PLSelWindow():
-    global serverip,lastpl
+    global serverip,lastpl, aartvar,aatgl
     plupdate()
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     sw = Toplevel(window)
@@ -925,7 +972,7 @@ def PLSelWindow():
     def rtnplsel(plvar):
         global serverip,lastpl
         displaytext1(plvar)
-        logger.info('Set playlist to {}.'.format(plvar))
+        logger.info('PLSel) Set playlist to "{}".'.format(plvar))
         client.clear()
         client.load(plvar)
         confparse.read(mmc4wIni)
@@ -946,7 +993,8 @@ def PLSelWindow():
     plselwin.grid(column=1,row=1)
     window.update()
     window.update_idletasks()
-
+    if aatgl == '1':
+        artWindow(aartvar)
 #
 ## DEFINE THE ABOUT WINDOW
 #
@@ -1028,6 +1076,35 @@ def artWindow(aartvar):
         artw.overrideredirect(1)
     artw.update()
 #
+## DEFINE BUILD PLAYLIST MODE
+#
+def buildpl():
+    confparse.read(mmc4wIni)
+    bpltgl = confparse.get('program','buildmode')
+    if bpltgl == '0':  ## If zero (OFF), set to ON and set up for ON.
+        confparse.set('program','buildmode','1')
+        button_load.configure(text='Add', bg='green', fg='white', command=lambda: addtopl('add'))
+    else:
+        confparse.set('program','buildmode','0')
+        button_load.configure(text='Art', bg='SystemButtonFace', fg='black', command=albarttoggle)
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+    window.update()
+#
+## CREATE NEW SAVED PLAYLIST
+#
+def createnewpl():
+    global aartvar,aatgl
+    connext()
+    artw.destroy()
+    newpl = simpledialog.askstring('Playlist Name','Name the New Playlist',parent=window)
+    if newpl > "":
+        client.clear()
+        client.save(newpl)
+        PLSelWindow()
+        logger.info('NPL) A new saved Playlist named {} was created.'.format(newpl))
+#
+#
 ## MENU AND MENU ITEMS
 #
 Frame(window)
@@ -1039,6 +1116,8 @@ fileMenu.add_command(label="Configure", command=configurator)
 fileMenu.add_command(label="Select a Server", command=SrvrWindow)
 fileMenu.add_command(label='Toggle Logging', command=logtoggler)
 fileMenu.add_command(label='Reset Win Positions', command=resetwins)
+fileMenu.add_command(label='Create New Saved Playlist', command=createnewpl)
+fileMenu.add_command(label='Remove Saved Playlist',command=lambda: addtopl('remove'))
 fileMenu.add_command(label="Exit", command=exit)
 menu.add_cascade(label="File", menu=fileMenu)
 
@@ -1059,6 +1138,7 @@ lookMenu.add_command(label='Play an Album',command=lambda: lookupwin('album'))
 lookMenu.add_command(label='Find by Artist',command=lambda: lookupwin('artist'))
 lookMenu.add_command(label='Reload Last Playlist',command=returntoPL)
 lookMenu.add_command(label="Select a Playlist", command=PLSelWindow)
+lookMenu.add_command(label="Toggle Art/Add", command=buildpl)
 menu.add_cascade(label="Look", menu=lookMenu)
 
 helpMenu = Menu(menu, tearoff=False)

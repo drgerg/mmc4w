@@ -1,11 +1,13 @@
-Minimal MPD Client - v0.9.3
+Minimal MPD Client - v0.9.4
 
-Check out the offline help under the Help menu. (updated for v0.9.3)
+Check out the offline help under the Help menu. (updated for v0.9.4)
 
-- Removed the 'Lookup results' playlist text.  Configured PL is always shown now, regardless of whether the current song is the result of a search.
-- Fixed failure to check and follow server 'random' status at startup.
-- Updated the Help text to this release.
-- Improved the feedback on volume. Buttons display volume unless it's at 50.
-- Corrected sequence errors in INFO level log output.  Increased some detail.
-- Modified the status text display. Random, rePeat, Single and Consume now show up there. Uppercase means ON.
-- Tweaks and more tweaks . . . hopefully down to the end of that for a while.
+- Added more Playlist options:
+    - Create a new empty saved playlist
+    - Remove a saved playlist
+    - Toggle Art/Add changes the Art button to a green Add button. 
+    - Use it to add the currently playing song to any saved playlist 
+    - To add specific songs, search and play the song using the normal means. 
+    - When the song you want is playing, push the Add button and select the Playlist.
+
+More playlist functions are coming.
