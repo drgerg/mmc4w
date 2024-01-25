@@ -24,7 +24,8 @@ import time
 import logging
 
 
-version = "v0.9.4"
+version = "v0.9.5"
+# v0.9.5 = Adds two missing PL actions: List songs, and Delete a song.
 # v0.9.4 - Adds ability to create new saved playlists and add songs to existing PLs.
 # v0.9.3 - Updates to Help text and general tweaks.
 # v0.9.2 - Finally reached a solid foundation.
@@ -881,29 +882,59 @@ def addtopl(plaction):
             logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
         a2plwin.update()
         a2plwin.destroy()
+    def songlistclick(event):
+        songsel = listbx.curselection()[0]
+        thissonguri = songlist[songsel]
+        thissongsplit = thissonguri.split('/')
+        tsslen = len(thissongsplit)
+        thissong = (thissongsplit[tsslen-1])
+        gonogo = messagebox.askyesnocancel(parent=a2plwin,message='Are you sure you want to delete\n{}?'.format(thissong))
+        if gonogo == True:
+            connext()
+            client.playlistdelete(thislist,songsel)
+        a2plwin.destroy()
     ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
     swin_x = int(confparse.get("searchwin","swin_x"))
     swin_y = int(confparse.get("searchwin","swin_y"))
     a2plwin = Toplevel(window)
-    a2plwin.title("Add a Song")
+    if plaction == 'list':
+        a2plwin.title("List All - Delete Selected Song")
+    if plaction == 'add':
+        a2plwin.title("Add Current Song to Playlist")
+    if plaction == 'remove':
+        a2plwin.title("Delete the Selected Playlist")
     a2plwin.configure(bg='black')
     a2plwin_x=200
     a2plwin_y=200
     a2plwin_xpos = str(int(a2plwin.winfo_screenwidth()- (a2plwin_x + swin_x)))
     a2plwin_ypos = str(int(a2plwin.winfo_screenheight()-(a2plwin_y + swin_y)))
     a2plwin.geometry('300x300+' + a2plwin_xpos + '+' +  a2plwin_ypos)
-    a2plwin.columnconfigure([0,1,2,3,4],weight=1)
+    a2plwin.columnconfigure([0,1,2,3],weight=1)
     a2plwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
     a2plwin.iconbitmap('./_internal/ico/mmc4w-ico.ico')
     listbx = tk.Listbox(a2plwin)
     listbx.configure(bg='black',fg='white')
-    listbx.grid(column=0,row=0,rowspan=6, padx=5,pady=5,sticky='NSEW')
-    listbx.bind('<<ListboxSelect>>', plclickedit)
-    cp.read(mmc4wIni)
-    pllist = cp.getlist('serverstats','playlists')
-    for lst in pllist:
-        listbx.insert(END,lst)
+    listbx.grid(column=0,row=0,columnspan = 5, rowspan=7, padx=5,pady=5,sticky='NSEW')
+    if plaction != 'list':
+        listbx.bind('<<ListboxSelect>>', plclickedit)
+    if plaction == 'list':
+        listbx.bind('<<ListboxSelect>>', songlistclick)
+    scrollbar = Scrollbar(a2plwin, orient='vertical')
+    listbx.config(yscrollcommand = scrollbar.set)
+    scrollbar.config(command=listbx.yview)
+    scrollbar.grid(column=5,row=0, rowspan=7,sticky='NS')
+    if plaction == 'add' or plaction == 'remove':
+        cp.read(mmc4wIni)
+        pllist = cp.getlist('serverstats','playlists')
+        for lst in pllist:
+            listbx.insert(END,lst)
+    if plaction == 'list':
+        thislist = confparse.get('serverstats','lastsetpl')
+        connext()
+        songlist = client.listplaylist(thislist)
+        for s in songlist:
+            listbx.insert(END,s)
     if aatgl == '1':
         artWindow(aartvar)
 #
@@ -1137,6 +1168,7 @@ lookMenu.add_command(label='Play a Single',command=lambda: lookupwin('title'))
 lookMenu.add_command(label='Play an Album',command=lambda: lookupwin('album'))
 lookMenu.add_command(label='Find by Artist',command=lambda: lookupwin('artist'))
 lookMenu.add_command(label='Reload Last Playlist',command=returntoPL)
+lookMenu.add_command(label='Show Songs in Last Playlist', command=lambda: addtopl('list'))
 lookMenu.add_command(label="Select a Playlist", command=PLSelWindow)
 lookMenu.add_command(label="Toggle Art/Add", command=buildpl)
 menu.add_cascade(label="Look", menu=lookMenu)

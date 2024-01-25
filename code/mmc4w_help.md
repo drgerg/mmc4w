@@ -147,28 +147,31 @@ Saved playlists are the heart of **MMC4W**. To differentiate between the active 
 
 You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.
 
-#### You can manipulate playlists in these ways:
+### You can manipulate playlists in these ways:
 
  - Load a playlist into the queue.  **Look Menu** - Select a Playlist.
  - Reload the last playlist into the queue.  **Look Menu** - Reload Last Playlist.
+ - List the songs in the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
+    - (moveable, resizable window)
+ - Delete a selected song from the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
  - Create a new empty playlist. **File Menu** - Create New Saved Playlist.
  - Delete a playlist. **File Menu** - Remove Saved Playlist.
+ - Add the currently playing song to any saved playlist.
 
-### Adding Songs to a Saved Playlist:
+## Adding Songs to a Saved Playlist:
 
 **MMC4W** lets you add songs to playlists as you go.  No need to stop playback.
 
-1) Use the **Toggle Art/Add** button to turn on PL Build Mode.  The button turns green.  
-2) Play your music.  When you are listening to a song you want to add to a playlist, hit the green **Add** button.  
-3) Click on the playlist you want the song in from the list.  
+1) Use the **Toggle Art/Add** option in the **Look Menu** to turn on PL Build Mode.  The button turns green.  
+2) If you're not already, play your music.  
+3) When you are listening to a song you want to add to a playlist, hit the green **Add** button.  
+4) Click on the playlist you want from the list.  
 
 **That's it.**
 
 You can choose to be intentional or just add as you go.  
 
 Use the **Play a Single**, **Play an Album**, or **Find By Artist** options under the **Look** menu to play a specific song or album.  When it's playing, hit the green **Add** button and select the playlist.
-
-More playlist functions are in the planning. Stay tuned.
 
 ## The 'mini console'
 
