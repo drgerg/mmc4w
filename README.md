@@ -46,5 +46,5 @@ The windows are intended to be placed and left alone.  If you want to move them,
 
 I find this to be a perfectly acceptable arrangement.
 
-Again, check the help file for more details.  I hope you enjoy using this as much as I do.  Let me know if you like it.
+Again, check the help file for more details.  I hope you enjoy using this as much as I do.
 
