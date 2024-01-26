@@ -44,8 +44,10 @@ The interface contains the basic required buttons to control a MPD server:
 - Play an Album : Select an album by album title. Turns on sequential playback.
 - Find by Artist : Select a single title by artist. Also get info at the same time.
 - Reload Last Playlist : Restore your settings to the last configured playlist.
+- Show Songs in Last Playlist : View the list of songs in the last selected PL. Click to play.
 - Select a Playlist : Select any playlist available on the connected server.
-- Toggle Art/Add : Turns the **'Art'** button into an **'Add'** button. Sets PL Build Mode.
+- Update "Everything" Playlist : Make sure all songs are in the "Everything" playlist.
+- Toggle PL Build Mode : Sets PL Build Mode. Easily add or delete songs from saved playlists.
 
 ### The 'Help' menu contains:
 
@@ -143,9 +145,11 @@ This can be useful when you don't know what you're looking for.  Otherwise, type
 
 ## Working with Saved Playlists
 
-Saved playlists are the heart of **MMC4W**. To differentiate between the active list of songs that is being played, it is called **the queue**.  **Playlists** are lists of songs saved to a file on disk with some meaningful name.  
+Saved playlists are the heart of **MMC4W**. To differentiate between **saved playlists** and the list of songs currently being played, the latter is called **"the queue"**.  **Playlists** are lists of songs saved to a file on disk with some meaningful name.
 
-You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.
+You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  
+
+MMC4W will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Look'** Menu.
 
 ### You can manipulate playlists in these ways:
 
@@ -153,26 +157,37 @@ You load playlists into the queue and then MPD plays that queue using the settin
  - Reload the last playlist into the queue.  **Look Menu** - Reload Last Playlist.
  - List the songs in the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
     - (moveable, resizable window)
- - Delete a selected song from the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
+ - Jump to and play a selected song from the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
  - Create a new empty playlist. **File Menu** - Create New Saved Playlist.
  - Delete a playlist. **File Menu** - Remove Saved Playlist.
  - Add the currently playing song to any saved playlist.
+ - Delete the currently playing song from the last loaded saved playlist.
 
-## Adding Songs to a Saved Playlist:
+## Adding and Removing Songs in a Saved Playlist:
 
 **MMC4W** lets you add songs to playlists as you go.  No need to stop playback.
 
-1) Use the **Toggle Art/Add** option in the **Look Menu** to turn on PL Build Mode.  The button turns green.  
+![Toggle PL Build Mode](./_internal/plbuildmode1.png)
+![PL Build Mode](./_internal/plbuildmode2.png)
+
+1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  
 2) If you're not already, play your music.  
 3) When you are listening to a song you want to add to a playlist, hit the green **Add** button.  
 4) Click on the playlist you want from the list.  
 
 **That's it.**
 
-You can choose to be intentional or just add as you go.  
+#### Deleting a song from the current saved playlist is just as easy:
 
-Use the **Play a Single**, **Play an Album**, or **Find By Artist** options under the **Look** menu to play a specific song or album.  When it's playing, hit the green **Add** button and select the playlist.
+1) In **PL Build Mode**, when you hear a song you want to remove, click the red **'Delete'** button.  
+2) Respond to the prompt, and if you selected OK, the song will be gone from the saved playlist.
 
+**You can be intentional:**  
+Use the **Play a Single**, **Play an Album**, or **Find By Artist** options under the **Look** menu to play a specific song or album.  
+When it's playing, hit the green **Add** button and select the playlist.  
+
+Use **Look** "Show Songs in Last Playlist".  Select the odious song you want to remove.  
+Hit the **Delete** button to get rid of it. (or **Add** if you wish. I mean, you never know.)
 ## The 'mini console'
 
 - Select the 'Play a Single' option.

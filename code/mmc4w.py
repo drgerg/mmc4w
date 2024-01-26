@@ -24,8 +24,9 @@ import time
 import logging
 
 
-version = "v0.9.5"
-# v0.9.5 = Adds two missing PL actions: List songs, and Delete a song.
+version = "v0.9.6"
+# v0.9.6 - Add 'delete current song' to the PL Builder mode and play from 'List Songs'.
+# v0.9.5 - Adds two missing PL actions: List songs, and Delete a song.
 # v0.9.4 - Adds ability to create new saved playlists and add songs to existing PLs.
 # v0.9.3 - Updates to Help text and general tweaks.
 # v0.9.2 - Finally reached a solid foundation.
@@ -44,7 +45,7 @@ mmc4wIni = path_to_dat + "/mmc4w.ini"
 workDir = os.path.expanduser("~")
 confparse.read(mmc4wIni)
 
-lastpl = confparse.get("serverstats","lastsetpl")
+lastpl = confparse.get("serverstats","lastsetpl") ## 'lastpl' is the most currently loaded playlist.
 if confparse.get('basic','installation') == "":
     confparse.set('basic','installation',path_to_dat)
     with open(mmc4wIni, 'w') as SLcnf:
@@ -88,12 +89,12 @@ musicpd_logger = logging.getLogger('musicpd')
 musicpd_logger.setLevel(logging.WARNING)
 
 global serverip,serverport,tbarini,endtime,firstrun
-aartvar = 0
+aartvar = 0     ## aartvar tells us whether or not to display the art window.
 endtime = time.time()
-cxstat = 0
+cxstat = 0      ## 'cxstat' indicates the connection status. '1' is connected.
 buttonvar = 'stop'
-pstart = 0
-dur='0'
+pstart = 0      ## the time the pause button was pressed.
+dur='0'         ## the value from client.getcurrentsong() showing the song's duration.
 pause_duration = 0.0
 sent = 0
 lastvol = confparse.get('serverstats','lastvol')
@@ -159,7 +160,7 @@ def connext():  ## Checks connection, then connects if necessary.
                 logger.debug("D1| Second level errvar: {}".format(errvar))
                 cxstat = 0
                 endWithError('Second level connection error:\n' + str(errvar) + '\nQuitting now.')
-    # return cxstat
+    return cxstat
 
 
 def plrandom():  # Set random playback mode.
@@ -318,6 +319,7 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
 
 def toglrepeat():
     global rpt
+    connext()
     cstats = client.status()
     rptstat = cstats['repeat']
     if rptstat == '0':
@@ -332,6 +334,7 @@ def toglrepeat():
 
 def toglconsume():
     global con
+    connext()
     cstats = client.status()
     cnsmstat = cstats['consume']
     if cnsmstat == '0':
@@ -346,6 +349,7 @@ def toglconsume():
 
 def toglsingle():
     global sin
+    connext()
     cstats = client.status()
     snglstat = cstats['single']
     if snglstat == '0':
@@ -444,6 +448,7 @@ def getcurrsong():
             logger.info("6) pstate: {}.".format(pstate))
         if cxstat == 0:
             globsongtitle = "Not Connected."
+    return cs
 #
 #
 def getendtime(cs,stat):
@@ -583,6 +588,7 @@ def displaytext2(msg2):
 
 def albarttoggle():
     global aatgl,artw,aartvar
+    connext()
     confparse.read(mmc4wIni)
     aatgl = confparse.get("albumart","albarttoggle")
     if aatgl == '1':
@@ -650,11 +656,9 @@ def tbtoggle():
 
 def returntoPL():
     global lastpl
+    connext()
     confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
-    # confparse.set("serverstats","lookuppl",'0')
-    # with open(mmc4wIni, 'w') as SLcnf:
-    #     confparse.write(SLcnf)
     client.clear()
     client.load(lastpl)
 
@@ -688,6 +692,8 @@ def endWithError(msg):
 def exit():
     quitvar = halt()
     if quitvar == 'stop':
+        if confparse.get('program','buildmode') == '1':
+            buildpl()
         logger.info("Connections closed.  Quitting.")
         sys.exit()
     else:
@@ -700,6 +706,30 @@ artw = None
 globsongtitle = ""
 aatgl = '0'
 
+def makeeverything():
+    connext()
+    client.clear()
+    pllist = client.listplaylists()
+    if 'Everything' in str(pllist):
+        client.rm('Everything')
+    client.add('/')
+    client.save('Everything')
+    logger.info('The playlist named "Everything" was just updated.')
+    PLSelWindow()
+#
+##
+#
+def deletecurrent():
+    connext()
+    ret = client.listplaylistinfo(lastpl)
+    cs = client.currentsong()
+    for x in enumerate(ret):
+        if x[1]['title'] == cs['title']:
+            yeah = x[0]
+            doublecheck = messagebox.askyesno(message='Are you sure you want to delete \n"{}" from \n{}?'.format(cs['title'],lastpl))
+            if doublecheck == True:
+                logger.info('DELCUR) Deleting {}, song number {} from {}.'.format(cs['title'],yeah,lastpl))
+                client.playlistdelete(lastpl,yeah)
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
 ## https://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
@@ -868,9 +898,11 @@ def lookupwin(lookupT):
 ## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
 #
 def addtopl(plaction):
+
     ##
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
     def plclickedit(event):
+        global lastpl
         selectlst = listbx.curselection()[0]
         connext()
         if plaction == 'add':
@@ -884,22 +916,21 @@ def addtopl(plaction):
         a2plwin.destroy()
     def songlistclick(event):
         songsel = listbx.curselection()[0]
-        thissonguri = songlist[songsel]
-        thissongsplit = thissonguri.split('/')
-        tsslen = len(thissongsplit)
-        thissong = (thissongsplit[tsslen-1])
-        gonogo = messagebox.askyesnocancel(parent=a2plwin,message='Are you sure you want to delete\n{}?'.format(thissong))
-        if gonogo == True:
-            connext()
-            client.playlistdelete(thislist,songsel)
+        logger.debug('ADTPL) Playlist "{}" was listed in addtopl().'.format(lastpl))
+        connext()
+        client.play(songsel)
+        cs = getcurrsong()
+        logger.debug('ADTPL) "{}" was selected to play.'.format(cs['title']))
+        # getcurrsong()
         a2plwin.destroy()
+        # addtopl('list')
     ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
     swin_x = int(confparse.get("searchwin","swin_x"))
     swin_y = int(confparse.get("searchwin","swin_y"))
     a2plwin = Toplevel(window)
     if plaction == 'list':
-        a2plwin.title("List All - Delete Selected Song")
+        a2plwin.title("List {} - Play Selected".format(lastpl))
     if plaction == 'add':
         a2plwin.title("Add Current Song to Playlist")
     if plaction == 'remove':
@@ -1115,9 +1146,11 @@ def buildpl():
     if bpltgl == '0':  ## If zero (OFF), set to ON and set up for ON.
         confparse.set('program','buildmode','1')
         button_load.configure(text='Add', bg='green', fg='white', command=lambda: addtopl('add'))
+        button_tbtog.configure(text='Delete', bg='red', fg='white',command=deletecurrent)
     else:
         confparse.set('program','buildmode','0')
         button_load.configure(text='Art', bg='SystemButtonFace', fg='black', command=albarttoggle)
+        button_tbtog.configure(text="Mode", bg='SystemButtonFace', fg='black', command=tbtoggle)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
     window.update()
@@ -1170,7 +1203,8 @@ lookMenu.add_command(label='Find by Artist',command=lambda: lookupwin('artist'))
 lookMenu.add_command(label='Reload Last Playlist',command=returntoPL)
 lookMenu.add_command(label='Show Songs in Last Playlist', command=lambda: addtopl('list'))
 lookMenu.add_command(label="Select a Playlist", command=PLSelWindow)
-lookMenu.add_command(label="Toggle Art/Add", command=buildpl)
+lookMenu.add_command(label='Update "Everything" Playlist', command=makeeverything)
+lookMenu.add_command(label="Toggle PL Build Mode", command=buildpl)
 menu.add_cascade(label="Look", menu=lookMenu)
 
 helpMenu = Menu(menu, tearoff=False)
