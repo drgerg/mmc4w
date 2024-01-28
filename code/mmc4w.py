@@ -22,9 +22,10 @@ import threading
 from PIL import ImageTk, Image
 import time
 import logging
+import webbrowser
 
-
-version = "v0.9.6"
+version = "v0.9.7"
+# v0.9.7 - Add output selection and local HTTP playback via browser.
 # v0.9.6 - Add 'delete current song' to the PL Builder mode and play from 'List Songs'.
 # v0.9.5 - Adds two missing PL actions: List songs, and Delete a song.
 # v0.9.4 - Adds ability to create new saved playlists and add songs to existing PLs.
@@ -138,6 +139,17 @@ if version != confparse.get('program','version'):
 
 lastpl = confparse.get('serverstats','lastsetpl')
 
+def getoutputs():
+    connext()
+    outputs = []
+    outputsraw = client.outputs()
+    for thisop in outputsraw:
+        if thisop['outputenabled'] == '1':
+            openab = 'Enabled'
+        else:
+            openab = 'Disabled'
+        outputs.append(str('ID: {} "{}" Status: {}'.format(thisop['outputid'],thisop['outputname'],openab)))
+    return outputsraw,outputs
 
 def connext():  ## Checks connection, then connects if necessary.
     global serverip,serverport,cxstat
@@ -187,14 +199,21 @@ def halt():
 
 def play():
     global buttonvar,prevbtnstate
-    connext()
-    prevbtnstate = buttonvar
-    buttonvar = 'play'
-    client.play()
-    getcurrsong()
+    if buttonvar == 'pause':
+        pause()
+    else:
+        connext()
+        prevbtnstate = buttonvar
+        buttonvar = 'play'
+        client.play()
+        getcurrsong()
 
 def next():
-    connext()
+    global buttonvar
+    if buttonvar == 'pause':
+        pause()
+    else:
+        connext()
     try:
         client.next()
     except musicpd.CommandError:
@@ -203,7 +222,11 @@ def next():
     getcurrsong()
 
 def previous():
-    connext()
+    global buttonvar
+    if buttonvar == 'pause':
+        pause()
+    else:
+        connext()
     try:
         client.previous()
     except musicpd.CommandError:
@@ -524,12 +547,11 @@ def songtitlefollower():
                 getcurrsong()
 
 def configurator():
-        halt()
-        proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
-        if proceed == True:
-            os.startfile(mmc4wIni)
-            sleep(1)
-            exit()
+    proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
+    if proceed == True:
+        os.startfile(mmc4wIni)
+        sleep(1)
+        exit()
 
 def logtoggler():
     confparse.read(mmc4wIni)
@@ -660,7 +682,11 @@ def returntoPL():
     confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
     client.clear()
-    client.load(lastpl)
+    try:
+        client.load(lastpl)
+    except musicpd.CommandError:
+        logger.info('R2PL) The last playlist loaded is not available. Select new one.')
+        PLSelWindow()
 
 def resetwins():
     confparse.read(mmc4wIni)
@@ -690,14 +716,10 @@ def endWithError(msg):
     sys.exit()
 
 def exit():
-    quitvar = halt()
-    if quitvar == 'stop':
-        if confparse.get('program','buildmode') == '1':
-            buildpl()
-        logger.info("Connections closed.  Quitting.")
-        sys.exit()
-    else:
-        sys.exit()
+    if confparse.get('program','buildmode') == '1':
+        buildpl()
+    logger.info("EXIT) Connections closed. Playback not affected. Quitting.")
+    sys.exit()
 
 
 client.timeout = None                     # network timeout in seconds (floats allowed), default: None
@@ -916,11 +938,11 @@ def addtopl(plaction):
         a2plwin.destroy()
     def songlistclick(event):
         songsel = listbx.curselection()[0]
-        logger.debug('ADTPL) Playlist "{}" was listed in addtopl().'.format(lastpl))
+        logger.debug('ATPL) Playlist "{}" was listed in addtopl().'.format(lastpl))
+        logger.debug('ATPL) "{}" was selected to play.'.format(songlist[songsel].split('/')[2]))
         connext()
         client.play(songsel)
         cs = getcurrsong()
-        logger.debug('ADTPL) "{}" was selected to play.'.format(cs['title']))
         # getcurrsong()
         a2plwin.destroy()
         # addtopl('list')
@@ -963,7 +985,15 @@ def addtopl(plaction):
     if plaction == 'list':
         thislist = confparse.get('serverstats','lastsetpl')
         connext()
-        songlist = client.listplaylist(thislist)
+        songlist=[]
+        if thislist == 'Joined Server Queue':
+            songlistq = client.playlistinfo()
+            for s in songlistq:
+                songlist.append(s['file'])
+            logger.info('ATPL) Listed queue songs. Saved PL not known.')
+        else:
+            songlist = client.listplaylist(thislist)
+            logger.info('ATPL) Listed songs from {}.'.format(thislist))
         for s in songlist:
             listbx.insert(END,s)
     if aatgl == '1':
@@ -971,11 +1001,12 @@ def addtopl(plaction):
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
-def SrvrWindow():
+def SrvrWindow(swaction):
     global serverip,firstrun,lastpl
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     srvrw = Toplevel(window)
-    srvrw.title("Servers")
+    if swaction == 'server':
+        srvrw.title("Servers")
     srvrwinWd = 300
     srvrwinHt = 30
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
@@ -1003,15 +1034,28 @@ def SrvrWindow():
         confparse.set('serverstats','lastsetpl',lastpl)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
-        logger.info ('0) Connected to server {}.'.format(serverip))
+        logger.info('0) Connected to server {}.'.format(serverip))
         getcurrsong()
-    cp.read(mmc4wIni)
-    iplist = cp.getlist('basic','serverlist')
-    ipvar = StringVar(srvrw)
-    ipvar.set('Currently - ' + serverip + ' - Click for dropdown list.')
-    plselwin = OptionMenu(srvrw,ipvar,*iplist,command=rtnplsel)
+    #
+    def outputtggl(outputvar):
+        oid = outputvar[4:5]
+        client.toggleoutput(oid)
+        logger.info('0) Output [{}] toggled to opposite state.'.format(outputvar))
+        srvrw.destroy()
+    #
+    if swaction == 'server':
+        cp.read(mmc4wIni)
+        iplist = cp.getlist('basic','serverlist')
+        ipvar = StringVar(srvrw)
+        ipvar.set('Currently - ' + serverip + ' - Click for dropdown list.')
+        plselwin = OptionMenu(srvrw,ipvar,*iplist,command=rtnplsel)
+    if swaction == 'output':
+        outputs = getoutputs()[1]
+        outputvar = StringVar(srvrw)
+        outputvar.set('  Select Output to Toggle.  ')
+        plselwin = OptionMenu(srvrw,outputvar,*outputs,command=outputtggl)
     plselwin.config(width=44)
-    plselwin.grid(column=1,row=1)
+    plselwin.grid(column=1,row=1,sticky='EW')
 #
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
@@ -1086,7 +1130,7 @@ def helpWindow():
     global aatgl
     if aatgl == '1':
         albarttoggle()
-    pause()
+    # pause()
     hw = Toplevel(window)
     hw.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
     hw.title("MMC4W Help")
@@ -1099,7 +1143,8 @@ def helpWindow():
     hw.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
     hwlabel = HTMLLabel(hw, height=3, html='<h2 style="text-align: center">MMC4W Help</h2>')
     hw.columnconfigure(0, weight=1)
-    helpText = HTMLScrolledText(hw, height=44, padx=10, pady=10, html=RenderHTML(path_to_dat + "\\mmc4w_help.html"))
+    hw.rowconfigure(1, weight=1)
+    helpText = HTMLScrolledText(hw, padx=10, pady=10, html=RenderHTML(path_to_dat + "\\mmc4w_help.html"))
     hwlabel.grid(column=0, row=0, sticky="NSEW")  # Place label in grid
     helpText.grid(column=0, row=1, ipadx=10, ipady=10, sticky="NSEW")
 #
@@ -1147,10 +1192,12 @@ def buildpl():
         confparse.set('program','buildmode','1')
         button_load.configure(text='Add', bg='green', fg='white', command=lambda: addtopl('add'))
         button_tbtog.configure(text='Delete', bg='red', fg='white',command=deletecurrent)
+        logger.debug('BPM) PL Build Mode turned ON.') 
     else:
         confparse.set('program','buildmode','0')
         button_load.configure(text='Art', bg='SystemButtonFace', fg='black', command=albarttoggle)
         button_tbtog.configure(text="Mode", bg='SystemButtonFace', fg='black', command=tbtoggle)
+        logger.debug('BPM) PL Build Mode turned OFF.') 
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
     window.update()
@@ -1168,6 +1215,26 @@ def createnewpl():
         PLSelWindow()
         logger.info('NPL) A new saved Playlist named {} was created.'.format(newpl))
 #
+def browserplayer():
+    global buttonvar
+    outputsraw = getoutputs()[0]
+    thisurl = ''
+    for thisop in outputsraw:
+        if thisop['plugin'] == 'httpd':
+            if thisop['outputenabled'] == '1':
+                thisport = confparse.get('serverstats','httpport')
+                thisurl = str('http://' + serverip + ':' + thisport)
+            else:
+                messagebox.showinfo('MMC4W BrowserPlayer','The http output is not enabled.')
+    if 'httpd' not in str(outputsraw):
+        messagebox.showinfo('MMC4W BrowserPlayer','There is no http output configured on this server.')
+    if thisurl > '':
+        if buttonvar == 'play':
+            webbrowser.open_new(thisurl)
+            logger.info('BP) A call to the default browser was made. Music should play.')
+        else:
+            messagebox.showinfo('MMC4W BrowserPlayer','Press Play before starting BrowserPlayer.')
+
 #
 ## MENU AND MENU ITEMS
 #
@@ -1177,7 +1244,8 @@ window.config(menu=menu)
 nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
 fileMenu = Menu(menu, tearoff=False)
 fileMenu.add_command(label="Configure", command=configurator)
-fileMenu.add_command(label="Select a Server", command=SrvrWindow)
+fileMenu.add_command(label="Select a Server", command=lambda: SrvrWindow('server'))
+fileMenu.add_command(label="Toggle an Output", command=lambda: SrvrWindow('output'))
 fileMenu.add_command(label='Toggle Logging', command=logtoggler)
 fileMenu.add_command(label='Reset Win Positions', command=resetwins)
 fileMenu.add_command(label='Create New Saved Playlist', command=createnewpl)
@@ -1205,6 +1273,7 @@ lookMenu.add_command(label='Show Songs in Last Playlist', command=lambda: addtop
 lookMenu.add_command(label="Select a Playlist", command=PLSelWindow)
 lookMenu.add_command(label='Update "Everything" Playlist', command=makeeverything)
 lookMenu.add_command(label="Toggle PL Build Mode", command=buildpl)
+lookMenu.add_command(label="Launch Browser Player", command=browserplayer)
 menu.add_cascade(label="Look", menu=lookMenu)
 
 helpMenu = Menu(menu, tearoff=False)
@@ -1260,6 +1329,7 @@ t1.start()
 #
 confparse.read(mmc4wIni)
 aatgl = confparse.get("albumart","albarttoggle")
+abp = confparse.get('program','autobrowserplayer')
 evenodd = 1
 songused = 0
 ###
@@ -1305,6 +1375,10 @@ if firstrun == '1':
 else:
     threesecdisplaytext()
     getcurrsong()
+    getoutputs()
+    if abp == '1':
+        if buttonvar == 'play':
+            browserplayer()
 logger.info("Down at the bottom. Firstrun: {}".format(firstrun))
 window.mainloop()  # Run the (not defined with 'def') main window loop.
 

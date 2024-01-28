@@ -4,9 +4,9 @@ This help file was updated for the v0.9.6 release.
 
 ## Putting the Music First
 
-**MMC4W** is first and foremost **Minimal**.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as not to take up much room. That was the original point of this exercise.
+**MMC4W** is first and foremost **Minimal**.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.
 
-**MMC4W** is a MPD Client.  To be clear, you must have access to a running MPD server for this app to be of any value to you.
+**MMC4W** is a MPD Client.  To be clear, you must have access to a running [MPD](https://www.drgerg.com/mpd-is-just-awesome.html) server for this app to be of any value to you.
 
 **MMC4W** is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)
 
@@ -21,6 +21,7 @@ The interface contains the basic required buttons to control a MPD server:
 
 - Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)
 - Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
+- Toggle an Output : Allows you to enable and disable configured outputs on the MPD server.
 - Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.
 - Reset Win Positions: Puts the two primary windows back where they were originally.
 - Create New Saved Playlist : Creates a new empty playlist with your specified name
@@ -48,6 +49,7 @@ The interface contains the basic required buttons to control a MPD server:
 - Select a Playlist : Select any playlist available on the connected server.
 - Update "Everything" Playlist : Make sure all songs are in the "Everything" playlist.
 - Toggle PL Build Mode : Sets PL Build Mode. Easily add or delete songs from saved playlists.
+- Launch Browser Player : If a streaming HTTP output is enabled on the server, opens your browser there.
 
 ### The 'Help' menu contains:
 
@@ -196,6 +198,26 @@ Hit the **Delete** button to get rid of it. (or **Add** if you wish. I mean, you
 - Type 'quit;' (with the semicolon) and the window closes.
 
 This was something I just didn't want to do without.
+
+## Playing with HTTP Outputs
+
+**MPD** has the option of serving an audio stream over HTTP.  If the server is configured this way, you'll see the output listed by using the "File / Toggle an Output" option.
+
+MMC4W offers basic support for MPD streams using HTTP. Note that is not HTTPS. That may make a difference.
+
+In order to get the stream, you will have to know what **port** the server is using.  MMC4W comes with port 8000 set in the **mmc4w.ini** configuration file.  That is the default in the MPD server config file, but people often change it.  You'll have to put the correct httpd port in the **[serverstats]** section of the mmc4w.ini file.
+
+![HTTP port settings.](./_internal/http-port-stuff.png)
+
+If an HTTP output is enabled, and music is playing, you can hear it through your default browser in Windows.  The **"Launch Browser Player"** option under the **'Look'** menu will start the playback if everything is on and running.  Simply close the browser or tab to stop it.  The server's playback is not affected. Other people listening to that stream will continue to hear it.
+
+**Be aware**: this method of listening has its drawbacks.  You have to deal with buffering, network latency, lack of real controls, etc.  But under some circumstances, this may be an acceptable way to listen to your music.
+
+**The "AutoBrowserPlayer"** setting might interest you if you regularly use the BrowserPlayer.  If you set this to 1 ('1' is ON), when you start MMC4W, *if there is an active stream* on the configured server, the browser will be called to play it.  Set the 'autobrowserplayer' to 0 to disable that behavior.
+
+### NOTE - 
+
+If you press **Stop**, the http stream stops. Browsers then close the connection, so if you restart playback, you'll need to refresh the browser window to regain the connection.  So will everyone else listening to that stream.  It's probably a good idea to avoid using the **Stop** button if there is more than one person listening to the http stream.
 
 ## Logging 
 
