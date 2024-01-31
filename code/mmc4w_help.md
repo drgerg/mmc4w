@@ -175,7 +175,7 @@ MMC4W will create a special playlist called "Everything" that contains all the s
 1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  
 2) If you're not already, play your music.  
 3) When you are listening to a song you want to add to a playlist, hit the green **Add** button.  
-4) Click on the playlist you want from the list.  
+4) Click on the playlist you want from the list. If the song isn't already in the playlist, it will be added.  
 
 **That's it.**
 
@@ -250,6 +250,64 @@ MMC4W uses the Python **threading** module to run a timer in conjunction with a 
 The Tkinter interface runs continuously waiting for button presses.  Blocking code (like sleep(10)) is avoided at all cost.  As a result, things work.  From my chair, it's perfect.  We'll see how long that perspective lasts, shan't we?
 
 The design of this utility is intentionally simple.  I'm sure there are several 'better' ways it can be done, I just don't know what they are. 
+
+### The mmc4w.ini File
+
+Here is some explanation of the entries in the .ini file.  This config .ini file is pretty standard.  It is made up of key/value pairs.  "win_x = 412" is a key/value pair.  "win_x" is the key, "412" is the value.  We look up the values in this file by asking for the value associated with the key.  So, for example, I tell Python **myWinX = confparse.get('mainwindow','win_x')** and it tells me **myWinX** is now assigned the value of 412.
+
+Items in <span style="color:red;">red</span> are filled in by the program.  You don't need to worry about those.  Other items that are not in red are things you can provide values for.  <span style="color:green;">Green text</span> following the key/value pair is intended to provide insights.
+
+**NOTE:** The values in the 'position X or Y' items below are values that get added into calculations based on the display MMC4W is running on.  If you want to play with those, you should.  Just be aware the change you make might not have the result you expected.  **Not to worry:** just use the values in the **[default_values]** section to get back to where you started.
+
+<span style='font-family:courier;'>
+  [basic] <span style="color:green;">You provide the list of servers on first run.</span>  
+  <span style="color:red;">installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W</span>  
+  serverlist = 192.168.1.22,192.168.1.16,192.168.1.28,  
+  <span style="color:red;">serverport = 6600</span> <span style="color:green;">You can change this if your server is not using the standard port.</span>  
+  <span style="color:red;">firstrun = 0</span>  
+  
+  [program] <span style="color:green;">The options in this section are covered in this help file above.</span>  
+  <span style="color:red;">version = v0.9.7</span>  
+  logging = on  
+  loglevel = info  
+  <span style="color:red;">buildmode = 0</span>  
+  autobrowserplayer = 0  
+  
+  [serverstats]  
+  <span style="color:red;">playlists = Heavy Listening,Easy,Everything_Edited,Everything,RRR,Short Songs,All-Time Favorites,Christmas Music,</span>  
+  <span style="color:red;">lastvol = 50</span>  
+  <span style="color:red;">lastsetpl = All-Time Favorites</span>  
+  <span style="color:red;">lastsrvr = 192.168.1.22</span>  
+  <span style="color:red;">lastport = 6600</span>  
+  <span style="color:red;">lastsongtitle = 08-When The Levee Breaks - Led Zeppelin</span>  
+  httpport = 8000 <span style="color:green;">This is the port number your MPD server is serving http stream on.  You provide it if the default isn't accurate.</span>  
+  
+  [mainwindow]  <span style="color:green;">Things that affect the window with the buttons.</span>  
+  win_x = 412  
+  win_y = 452  
+  titlebarstatus = 0  
+  
+  [albumart]  
+  aartwin_x = 412  <span style="color:green;">The position of the top left corner of art on the X axis (horizontal).</span>  
+  aartwin_y = 350  <span style="color:green;">The position of the top left corner of art on the Y axis (vertical).</span>  
+  <span style="color:red;">albarttoggle = 1</span>  
+  artwinwd = 110  <span style="color:green;">Width of the art window. You can change this and hit 'Next' to see it.</span>  
+  artwinht = 110  <span style="color:green;">Height of the art window. You can change this and hit 'Next' to see it.</span>  
+  
+  [searchwin]  
+  swin_x = 220  <span style="color:green;">The position of the top left corner of search windows on the X axis (horizonta).</span>  
+  swin_y = 600  <span style="color:green;">The position of the top left corner of search windows on the Y axis (vertical).</span>  
+  swinht = 400  <span style="color:green;">Height of search windows.</span>  
+  swinwd = 600  <span style="color:green;">Width of search windows.</span>  
+  
+  <span style="color:red;">[default_values]</span>  
+  <span style="color:red;">win_x = 412</span>  
+  <span style="color:red;">win_y = 452</span>  
+  <span style="color:red;">aartwin_x = 412</span>  
+  <span style="color:red;">aartwin_y = 350</span>  
+  <span style="color:red;">artwinwd = 110</span>  
+  <span style="color:red;">artwinht = 110</span>  
+</span>
 
 ### Minutia
 

@@ -24,7 +24,8 @@ import time
 import logging
 import webbrowser
 
-version = "v0.9.7"
+version = "v0.9.8"
+# v0.9.8 - More sociable with other clients. Follow server changes. Config all window sizes.
 # v0.9.7 - Add output selection and local HTTP playback via browser.
 # v0.9.6 - Add 'delete current song' to the PL Builder mode and play from 'List Songs'.
 # v0.9.5 - Adds two missing PL actions: List songs, and Delete a song.
@@ -58,12 +59,12 @@ if logtoggle == 'OFF':
     logLevel = 'WARNING'
 
 if logLevel == "INFO":
-    if os.path.isfile(path_to_dat + "./mmc4w.log"):
-        os.remove(path_to_dat + './mmc4w.log')
+    if os.path.isfile(path_to_dat + "/mmc4w.log"):
+        os.remove(path_to_dat + '/mmc4w.log')
 
 if logLevel == 'DEBUG':
     logging.basicConfig(
-        filename=path_to_dat + "./mmc4w_DEBUG.log",
+        filename=path_to_dat + "/mmc4w_DEBUG.log",
         format="%(asctime)s - %(message)s",
         datefmt="%a, %d %b %Y %H:%M:%S",
         level=logging.DEBUG,
@@ -71,7 +72,7 @@ if logLevel == 'DEBUG':
 
 if logLevel == 'INFO':
     logging.basicConfig(
-        filename=path_to_dat + "./mmc4w.log",
+        filename=path_to_dat + "/mmc4w.log",
         format="%(asctime)s - %(message)s",
         datefmt="%a, %d %b %Y %H:%M:%S",
         level=logging.INFO,
@@ -79,7 +80,7 @@ if logLevel == 'INFO':
 
 if logLevel == 'WARNING':
     logging.basicConfig(
-        filename=path_to_dat + "./mmc4w.log",
+        filename=path_to_dat + "/mmc4w.log",
         format="%(asctime)s - %(message)s",
         datefmt="%a, %d %b %Y %H:%M:%S",
         level=logging.WARNING,
@@ -96,6 +97,7 @@ cxstat = 0      ## 'cxstat' indicates the connection status. '1' is connected.
 buttonvar = 'stop'
 pstart = 0      ## the time the pause button was pressed.
 dur='0'         ## the value from client.getcurrentsong() showing the song's duration.
+elap='0'
 pause_duration = 0.0
 sent = 0
 lastvol = confparse.get('serverstats','lastvol')
@@ -234,37 +236,56 @@ def previous():
         client.previous()
     getcurrsong()
 
+def pause2play():
+    global pstate,endtime,pstart,buttonvar,pstart,pause_duration,dur,elap
+    oldendtime = endtime
+    endtime = time.time() + int(float(dur) - float(elap))
+    logger.info('2) New endtime generated in pause(). Old: {}, New {}'.format(oldendtime,endtime))
+    button_pause.configure(text='Pause',bg='SystemButtonFace') ## 'systemButtonFace' is the magic word.
+    pstate = 'play'
+    buttonvar = 'play'
+    pstart = 0 
+    #                           ## Now client.pause() sets it to PLAY
+def play2pause():
+    global buttonvar,pstate,endtime,pstart
+    pstart = time.time()
+    buttonvar = 'pause'
+    button_pause.configure(text='Resume',bg="orange")
+    logger.info("0) Playback paused at {}.".format(pstart))
+    pstate = 'pause'
+    #                           ## Now client.pause() sets it to PAUSE
+
 def pause():  # Pause is complicated because of time-keeping.
-    global buttonvar,endtime,pstart,pause_duration,eptime,pstate
-    logger.debug('Play state at button press: {}.'.format(buttonvar))
-    #
+    global buttonvar,pstate,dur,elap
+    logger.debug('Buttonvar state at button press: {}.'.format(buttonvar))
+    cstat = getcurrstat()
     if buttonvar == 'pause':        ## SYSTEM WAS PAUSED
-        logger.debug("pause() pstart: {}".format(pstart))
-        pause_duration = time.time() - pstart
-        logger.debug("time.time(): {}, pstart: {}.".format(time.time(),pstart))
-        logger.info(f"0) Playback resumed at {time.time()}. Pause duration: {pause_duration:.2f}")
-        oldendtime = endtime
-        endtime = endtime + pause_duration
-        logger.info('2) New endtime generated in pause(). Old: {}, New {}'.format(oldendtime,endtime))
-        button_pause.configure(text='Pause',bg='SystemButtonFace') ## 'systemButtonFace' is the magic word.
-        pstate = 'play'
-        pstart = 0 
-        #                           ## Now client.pause() sets it to PLAY
-    if buttonvar == 'play':         ## SYSTEM WAS PLAYING
-        pstart = time.time()
-        buttonvar = 'pause'
-        button_pause.configure(text='Resume',bg="orange")
-        logger.info("0) Playback paused at {}.".format(pstart))
-        pstate = 'pause'
-        #                           ## Now client.pause() sets it to PAUSE
-    connext()
-    client.pause()
-    getcurrstat()
+        if cstat["state"] == 'pause':
+            dur = cstat['duration']
+            elap = cstat['elapsed']
+            pause2play()
+            client.pause()
+        if cstat['state'] == 'play':
+            getcurrsong()
+    elif buttonvar == 'play':         ## SYSTEM WAS PLAYING
+        if cstat['state'] == 'pause':
+            play2pause()
+        if cstat["state"] == 'play':
+            elap = cstat['elapsed']
+            play2pause()
+            connext()
+            client.pause()
+            # start timer here to check pstate after a time.
+            if threading.active_count() < 3:
+                t3 = threading.Thread(target=lambda: pausethreadtimer(cstat))
+                t3.daemon = True
+                t3.start()
 
 def volup():
     global lastvol
     connext()
     vol_int = int(lastvol)
+    vpre = lastvol[:]
     if vol_int < 100:
         client.volume(+5)
         vol_int = vol_int + 5
@@ -280,11 +301,42 @@ def voldn():
         vol_int = vol_int - 5
         volbtncolor(vol_int)
 
+def pausethreadtimer(cstat):
+    global buttonvar
+    songdur = float(cstat['duration'])
+    songelap = float(cstat['elapsed'])
+    leftover = int(songdur - songelap)
+    for i in range(leftover,0,-1):
+        time.sleep(1)
+    logger.debug('PTT) PauseThreadedTimer ran down after {} seconds.'.format(leftover))
+    getcurrsong()
+
+
+
+def btnupdater(newstate):
+    global buttonvar, endtime
+    if newstate == 'pause':
+        button_pause.configure(text='Pause',bg='orange')
+        cstat = getcurrstat()
+        ## Threaded timer during pause state.
+        t2 = threading.Thread(target=lambda: pausethreadtimer(cstat))
+        t2.daemon = True
+        t2.start()
+    if newstate == 'stop' and buttonvar == 'pause':
+        button_pause.configure(bg='SystemButtonFace')
+        endtime = time.time()
+    if newstate == 'play' and buttonvar == 'pause':
+        # button_pause.configure(bg='SystemButtonFace')
+        pause2play()
 
 
 def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     global lastvol
+    if lastvol != str(vol_int):
+        connext()
+        client.setvol(vol_int)
     lastvol = str(vol_int)
+    logger.debug('Set volume to {}.'.format(vol_int))
     thisvol = vol_int
     upconf = ['Vol +','SystemButtonFace','black']
     dnconf = ['Vol -','SystemButtonFace','black']
@@ -339,6 +391,36 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         logger.info('Saved volume to mmc4w.ini. lastvol is {}.'.format(lastvol))
+#
+##  FIVER() ROUNDS VOLUME NUMBERS TO MULTIPLES OF 5.
+#
+def fiver(invar):  # invar should be a string of numbers: 0 - 100. Returns string.
+    firDig = ""
+    secDig = ""
+    if len(invar) == 1:
+        secDig = invar
+    elif len(invar) == 2:
+        firDig = invar[:1]
+        secDig = invar[1:2]
+    else:
+        fivevar = invar  #  because invar is 100.
+    zerovals = ('0','1','2')
+    zeroplusvals = ('8','9')
+    fivevals = ('3','4','5','6','7')
+    if secDig in zerovals:
+        secDig = '0'
+    if secDig in zeroplusvals:
+        secDig = '0'
+        if firDig == '':
+            firDig = '0'
+        firDig = str(int(firDig) + 1)
+    if secDig in fivevals:
+        secDig = '5'
+    if firDig > "":
+        fivevar = firDig + secDig
+    else:
+        fivevar = secDig
+    return fivevar
 
 def toglrepeat():
     global rpt
@@ -421,7 +503,9 @@ def getcurrsong():
     else:
         con = 'c'
     logger.debug('D2| Got status. state: {}, rand: {}, rpt: {}.'.format(stat['state'],ran,rpt))
-    buttonvar = stat['state']
+    newstate = stat['state']
+    btnupdater(newstate)
+    buttonvar = newstate
     logger.debug('D2| Retrieving "cs" in getcurrsong().')
     cs = client.currentsong()
     logger.debug('D2| Got cs (client.currentsong()) with a length of {}.'.format(len(cs)))
@@ -437,7 +521,8 @@ def getcurrsong():
         window.update()
         if 'volume' in stat:
             lastvol = stat['volume']
-            vol_int = int(lastvol)
+            vol_fives = fiver(lastvol)
+            vol_int = int(vol_fives)
             volbtncolor(vol_int)
             logger.info('3) Volume is {}, Random is {}, Repeat is {}.'.format(lastvol,stat['random'],stat['repeat']))
         gpstate = stat['state']
@@ -481,8 +566,6 @@ def getendtime(cs,stat):
     trk = cs['track'].zfill(2)
     if 'elapsed' in stat:
         elap = stat['elapsed']
-    else:
-        elap = 0
     remaining = float(dur) - float(elap)
     gendtime = time.time() + remaining
     logger.info('1) endtime generated: {}. Length: {}, Song dur: {}, Elapsed: {}.'.format(gendtime,int(gendtime - time.time()),dur,elap))
@@ -525,13 +608,12 @@ def songtitlefollower():
     logger.info(" ")
     logger.info("---=== Start songtitlefollower() threaded timer. ===---")
     logger.info(" ")
-    global endtime,sent,pstate,pstart,pause_duration,eptime,elap
+    global endtime,sent,pstate,pstart,pause_duration,elap
     sent = 0
-    eptime = 0
     pstate = 'stop'
     thisendtime = endtime
     while True:
-        if threading.active_count() > 2:
+        if threading.active_count() > 3:
             logger.info("There are {} threads now.".format(threading.active_count()))
         sleep(.2)
         if pstate != 'stop' and pstate != 'pause':
@@ -568,19 +650,18 @@ def logtoggler():
     displaytext1(msg)
 
 def getcurrstat():
-    global buttonvar,lastpl
+    # global buttonvar,lastpl
     connext()
     try:
         cstat = client.status()
     except musicpd.ProtocolError as mproterr:
-        logger.info('Caught a ProtocolError at getcurrstat().')
+        logger.info('Caught a ProtocolError at getcurrstat(): {}'.format(mproterr))
         cstat = {}
         connext()
         cstat = client.status()
-    buttonvar = cstat["state"]
-    logger.debug("getcurrstat() buttonvar: {}".format(buttonvar))
-    msg = str("Server: " + serverip[-3:] +" | " + buttonvar + " | PlayList: " + lastpl)
-    return msg,buttonvar,lastpl
+    # buttonvar = cstat["state"]
+    # logger.debug("getcurrstat() buttonvar: {}".format(buttonvar))
+    return cstat
 
 def plupdate():
     global lastpl,firstrun
@@ -885,22 +966,21 @@ def lookupwin(lookupT):
             plsngwin.update()
             if srchterm == 'quit;':
                 plsngwin.destroy()
-    ##
-    ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
+    #
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
     swin_x = int(confparse.get("searchwin","swin_x"))
     swin_y = int(confparse.get("searchwin","swin_y"))
     plsngwin = Toplevel(window)
     plsngwin.title("Search & Play " + srchTxt)
     plsngwin.configure(bg='black')
-    plsngwin_x=200
-    plsngwin_y=200
-    plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (plsngwin_x + swin_x)))
-    plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(plsngwin_y + swin_y)))
-    plsngwin.geometry('300x300+' + plsngwin_xpos + '+' +  plsngwin_ypos)
+    plsngwin_x = confparse.get("searchwin","swinwd")
+    plsngwin_y = confparse.get("searchwin","swinht")
+    plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (int(plsngwin_x) + swin_x)))
+    plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(int(plsngwin_y) + swin_y)))
+    plsngwin.geometry(plsngwin_x + 'x'+ plsngwin_y + '+' + plsngwin_xpos + '+' +  plsngwin_ypos)
     plsngwin.columnconfigure([0,1,2,3,4],weight=1)
     plsngwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
-    plsngwin.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+    plsngwin.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     itemsraw = []
     dispitems = []
     ## Feeds into update()
@@ -916,6 +996,7 @@ def lookupwin(lookupT):
     entry.bind('<Return>', pushret)
     if aatgl == '1':
         artWindow(aartvar)
+    entry.focus_set()
         #
 ## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
 #
@@ -929,8 +1010,13 @@ def addtopl(plaction):
         connext()
         if plaction == 'add':
             cs = client.currentsong()
-            client.playlistadd(pllist[selectlst],cs['file'])
-            logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
+            addfile = cs['file']
+            addpllist = client.listplaylist(pllist[selectlst])
+            if addfile in addpllist:
+                messagebox.showinfo('Song Already There','{} is already in {}.'.format(addfile.split('/')[2],pllist[selectlst]))
+            else:
+                client.playlistadd(pllist[selectlst],cs['file'])
+                logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
         if plaction == 'remove':
             client.rm(pllist[selectlst])
             logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
@@ -958,14 +1044,14 @@ def addtopl(plaction):
     if plaction == 'remove':
         a2plwin.title("Delete the Selected Playlist")
     a2plwin.configure(bg='black')
-    a2plwin_x=200
-    a2plwin_y=200
-    a2plwin_xpos = str(int(a2plwin.winfo_screenwidth()- (a2plwin_x + swin_x)))
-    a2plwin_ypos = str(int(a2plwin.winfo_screenheight()-(a2plwin_y + swin_y)))
-    a2plwin.geometry('300x300+' + a2plwin_xpos + '+' +  a2plwin_ypos)
+    a2plwin_x = confparse.get("searchwin","swinwd")
+    a2plwin_y = confparse.get("searchwin","swinht")
+    a2plwin_xpos = str(int(a2plwin.winfo_screenwidth()- (int(a2plwin_x) + swin_x)))
+    a2plwin_ypos = str(int(a2plwin.winfo_screenheight()-(int(a2plwin_y) + swin_y)))
+    a2plwin.geometry(a2plwin_x + 'x'+ a2plwin_y + '+' + a2plwin_xpos + '+' +  a2plwin_ypos)
     a2plwin.columnconfigure([0,1,2,3],weight=1)
     a2plwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
-    a2plwin.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+    a2plwin.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     listbx = tk.Listbox(a2plwin)
     listbx.configure(bg='black',fg='white')
     listbx.grid(column=0,row=0,columnspan = 5, rowspan=7, padx=5,pady=5,sticky='NSEW')
@@ -1016,7 +1102,7 @@ def SrvrWindow(swaction):
     y_Top = int(window.winfo_screenheight() - srvrwinHt - (win_y+120))
     srvrw.config(background="gray")  
     srvrw.geometry(str(srvrwinWd) + "x" + str(srvrwinHt) + "+{}+{}".format(x_Left, y_Top))
-    srvrw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+    srvrw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     def rtnplsel(ipvar):
         global serverip,firstrun,lastpl
         client.close()
@@ -1074,7 +1160,7 @@ def PLSelWindow():
     y_Top = int(window.winfo_screenheight() - swinHt - (win_y+120))
     sw.config(background="white")  
     sw.geometry(str(swinWd) + "x" + str(swinHt) + "+{}+{}".format(x_Left, y_Top))
-    sw.iconbitmap('./_internal/ico/mmc4w-ico.ico')
+    sw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     def rtnplsel(plvar):
         global serverip,lastpl
         displaytext1(plvar)
@@ -1113,8 +1199,7 @@ def aboutWindow():
     y_Top = int(window.winfo_screenheight() / 2 - awinHt / 2)
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
-    # aw.iconbitmap(path_to_dat + './_internal/ico/mmc4w-ico.ico')
-    aw.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
+    aw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     awlabel = Label(aw, font=18, text ="About MMC4W " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
@@ -1134,13 +1219,13 @@ def helpWindow():
     hw = Toplevel(window)
     hw.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
     hw.title("MMC4W Help")
-    hwinWd = 800  # Set window size and placement
-    hwinHt = 600
+    hwinWd = 1000  # Set window size and placement
+    hwinHt = int(window.winfo_screenheight() * 0.66)
     x_Left = int(window.winfo_screenwidth() / 2 - hwinWd / 2)
     y_Top = int(window.winfo_screenheight() / 2 - hwinHt / 2)
     hw.config(background="white")  # Set window background color
     hw.geometry(str(hwinWd) + "x" + str(hwinHt) + "+{}+{}".format(x_Left, y_Top))
-    hw.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
+    hw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     hwlabel = HTMLLabel(hw, height=3, html='<h2 style="text-align: center">MMC4W Help</h2>')
     hw.columnconfigure(0, weight=1)
     hw.rowconfigure(1, weight=1)
@@ -1168,12 +1253,12 @@ def artWindow(aartvar):
     y_Top = int(window.winfo_screenheight() - aartwin_y)
     artw.config(background="white")  # Set window background color
     artw.geometry(str(artwinWd) + "x" + str(artwinHt) + "+{}+{}".format(x_Left, y_Top))
-    artw.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
+    artw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     artw.columnconfigure([0,1,2], weight=1)
     artw.rowconfigure(0, weight=1)
     artw.rowconfigure(1, weight=1)
     aart = Image.open(thisimage)
-    aart = aart.resize((100,100))
+    aart = aart.resize((artwinHt-10,artwinWd-10))
     aart = ImageTk.PhotoImage(aart)
     aart.image = aart  # required for some reason
     aartLabel = Label(artw,image=aart)
@@ -1281,7 +1366,7 @@ helpMenu.add_command(label="Help", command=helpWindow)
 helpMenu.add_command(label="About", command=aboutWindow)
 menu.add_cascade(label="Help", menu=helpMenu)
 
-window.iconbitmap(path_to_dat + './ico/mmc4w-ico.ico')
+window.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
 
 ## Set up text window
 text1 = Text(window, height=1, width=52, wrap=WORD, font=nnFont)
@@ -1333,10 +1418,10 @@ abp = confparse.get('program','autobrowserplayer')
 evenodd = 1
 songused = 0
 ###
-# lastpl is "Last Playlist". dur is "Song Duration". eptime is "Elasped Pause Time".
+# lastpl is "Last Playlist". dur is "Song Duration".
 ###
 def threesecdisplaytext():
-    global evenodd, globsongtitle,buttonvar,lastpl,endtime,dur,eptime,ran,rpt,sin,con
+    global evenodd, globsongtitle,buttonvar,lastpl,endtime,dur,ran,rpt,sin,con,elap
     def eo1():
         global evenodd, globsongtitle
         if evenodd == 1:
@@ -1344,7 +1429,7 @@ def threesecdisplaytext():
             evenodd = 2
             displaytext1(msg)
     def eo2():
-        global evenodd,buttonvar,dur,endtime,songused
+        global evenodd,buttonvar,dur,endtime,songused,elap
         songlen = dur[:3]
         if buttonvar != 'stop' and buttonvar != 'pause':
             songused = float(dur) - (endtime - time.time())
@@ -1352,7 +1437,8 @@ def threesecdisplaytext():
                 songused = float(songlen)
             songused = str(int(songused))
         if buttonvar == 'pause':
-            songused = songused
+            songused = int(float(elap))
+            # songused = songused
         if buttonvar == 'stop':
             songused = '0'
             songlen = '0'
