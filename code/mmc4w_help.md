@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v0.9.6 release.
+This help file was updated for the v0.9.8 release.
 
 ## Putting the Music First
 
