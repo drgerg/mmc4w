@@ -24,7 +24,9 @@ import time
 import logging
 import webbrowser
 
-version = "v0.9.8"
+version = "v1.0.0"
+# v1.0.0 - Fixed error in the fiver() function.
+# v0.9.9 - Scrollbars on all windows. Windows are more uniform.
 # v0.9.8 - More sociable with other clients. Follow server changes. Config all window sizes.
 # v0.9.7 - Add output selection and local HTTP playback via browser.
 # v0.9.6 - Add 'delete current song' to the PL Builder mode and play from 'List Songs'.
@@ -311,8 +313,6 @@ def pausethreadtimer(cstat):
     logger.debug('PTT) PauseThreadedTimer ran down after {} seconds.'.format(leftover))
     getcurrsong()
 
-
-
 def btnupdater(newstate):
     global buttonvar, endtime
     if newstate == 'pause':
@@ -328,7 +328,6 @@ def btnupdater(newstate):
     if newstate == 'play' and buttonvar == 'pause':
         # button_pause.configure(bg='SystemButtonFace')
         pause2play()
-
 
 def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     global lastvol
@@ -395,15 +394,16 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
 ##  FIVER() ROUNDS VOLUME NUMBERS TO MULTIPLES OF 5.
 #
 def fiver(invar):  # invar should be a string of numbers: 0 - 100. Returns string.
-    firDig = ""
-    secDig = ""
+    fivevar = ''
+    firDig = ''
+    secDig = ''
     if len(invar) == 1:
         secDig = invar
     elif len(invar) == 2:
         firDig = invar[:1]
         secDig = invar[1:2]
-    else:
-        fivevar = invar  #  because invar is 100.
+    if invar == '100':
+        fivevar = invar
     zerovals = ('0','1','2')
     zeroplusvals = ('8','9')
     fivevals = ('3','4','5','6','7')
@@ -416,10 +416,11 @@ def fiver(invar):  # invar should be a string of numbers: 0 - 100. Returns strin
         firDig = str(int(firDig) + 1)
     if secDig in fivevals:
         secDig = '5'
-    if firDig > "":
-        fivevar = firDig + secDig
-    else:
-        fivevar = secDig
+    if fivevar != '100':
+        if firDig > "":
+            fivevar = firDig + secDig
+        else:
+            fivevar = secDig
     return fivevar
 
 def toglrepeat():
@@ -700,7 +701,7 @@ def albarttoggle():
             artw.title()
             artw.destroy()
             aatgl = '0'
-        except (AttributeError,NameError):
+        except (AttributeError,NameError,TclError):
             pass
     else:
         # logger.info("Set aatgl to '1'.")
@@ -978,7 +979,7 @@ def lookupwin(lookupT):
     plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (int(plsngwin_x) + swin_x)))
     plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(int(plsngwin_y) + swin_y)))
     plsngwin.geometry(plsngwin_x + 'x'+ plsngwin_y + '+' + plsngwin_xpos + '+' +  plsngwin_ypos)
-    plsngwin.columnconfigure([0,1,2,3,4],weight=1)
+    plsngwin.columnconfigure([0,1,2,3],weight=1)
     plsngwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
     plsngwin.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     itemsraw = []
@@ -986,12 +987,18 @@ def lookupwin(lookupT):
     ## Feeds into update()
     listbx = tk.Listbox(plsngwin)
     listbx.configure(bg='black',fg='white')
-    listbx.grid(column=0,row=0,rowspan=6, padx=5,pady=5,sticky='NSEW')
+    listbx.grid(column=0,row=0,columnspan=4,rowspan=6,sticky='NSEW')
+    # listbx.grid(column=0,row=0,columnspan = 5, rowspan=7, padx=5,pady=5,sticky='NSEW')
     listbx.bind('<<ListboxSelect>>', clickedit)
+    scrollbar = Scrollbar(plsngwin, orient='vertical')
+    listbx.config(yscrollcommand = scrollbar.set)
+    scrollbar.config(bg='black',command=listbx.yview)
+    scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
     ## Feeds into select()
     editing_item = tk.StringVar()
-    entry = tk.Entry(plsngwin, textvariable=editing_item, width=200)
-    entry.grid(row=6,column=0)
+    entry = tk.Entry(plsngwin, textvariable=editing_item, width=swin_x)
+    entry.grid(row=6,column=1,columnspan=5,sticky='EW')
+    # entry.config(bg='black',fg='white')
     entry.insert(0,'Search: ')
     entry.bind('<Return>', pushret)
     if aatgl == '1':
@@ -1054,7 +1061,7 @@ def addtopl(plaction):
     a2plwin.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
     listbx = tk.Listbox(a2plwin)
     listbx.configure(bg='black',fg='white')
-    listbx.grid(column=0,row=0,columnspan = 5, rowspan=7, padx=5,pady=5,sticky='NSEW')
+    listbx.grid(column=0,row=0,columnspan=4, rowspan=7,sticky='NSEW')
     if plaction != 'list':
         listbx.bind('<<ListboxSelect>>', plclickedit)
     if plaction == 'list':

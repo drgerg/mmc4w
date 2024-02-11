@@ -1,7 +1,7 @@
-Minimal MPD Client - v0.9.7
+Minimal MPD Client - v1.0.0
 
-Check out the offline help under the Help menu. (updated for v0.9.7)
+Check out the offline help under the Help menu. (updated for v1.0.0)
 
-- The ability to see and toggle outputs is added to the File menu.
-- Some support is added for listening to http output streams using the default browser on your system.
-- More tweaks of various little things that captured my interest. Read the Help.
+Well, we rolled into version 1.0.  wow. 
+OK. Some background tweaks, and fixed a bug just discovered in the function that rounds volumes up to multiples of 5.
+It was rearing its ugly head in odd ways, but I cut it off at the shoulders.
