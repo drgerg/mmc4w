@@ -1,7 +1,5 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-v2.0.0 is coming - much smoother and more reliable.  Code is here, installer is coming.
-
 You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md)
 
 ![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
