@@ -6,7 +6,7 @@
 # mmc4w.py uses the python-musicpd library.
 ##
 
-from tkinter import *
+# from tkinter import *
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
@@ -24,18 +24,10 @@ import time
 import logging
 import webbrowser
 
-version = "v1.0.0"
+version = "v2.0.0"
 # v1.0.0 - Fixed error in the fiver() function.
-# v0.9.9 - Scrollbars on all windows. Windows are more uniform.
-# v0.9.8 - More sociable with other clients. Follow server changes. Config all window sizes.
-# v0.9.7 - Add output selection and local HTTP playback via browser.
-# v0.9.6 - Add 'delete current song' to the PL Builder mode and play from 'List Songs'.
-# v0.9.5 - Adds two missing PL actions: List songs, and Delete a song.
-# v0.9.4 - Adds ability to create new saved playlists and add songs to existing PLs.
-# v0.9.3 - Updates to Help text and general tweaks.
-# v0.9.2 - Finally reached a solid foundation.
-# v0.9.1 - Bugs left over from being in a hurry.
-# v0.9.0 - Start over with a different approach.
+# v0.9.9 - tk.Scrollbars on all windows. Windows are more uniform.
+
 
 client = musicpd.MPDClient()                    # create client object
 
@@ -142,6 +134,52 @@ if version != confparse.get('program','version'):
         confparse.write(SLcnf)
 
 lastpl = confparse.get('serverstats','lastsetpl')
+#
+## ================= TOPLEVEL WINDOW CLASS DEFINITION ==========================
+class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
+    def __init__(self, parent, title, inidict):
+        tk.Toplevel.__init__(self)
+        self.swin_x = inidict['sw_x']
+        self.swin_y = inidict['sw_y']
+        self.swinht = inidict['swht']
+        self.swinwd = inidict['swwd']
+        self.title(title)
+        self.configure(bg='black')
+        srchwin_xpos = str(int(self.winfo_screenwidth() - self.swin_x))
+        srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
+        geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
+        self.geometry(geometrystring)
+        # window.update_idletasks()
+        self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        self.columnconfigure([0,1,2,3],weight=1)
+        self.rowconfigure([0,1,2,3,4,5],weight=1)
+        self.rowconfigure(6,weight=0)
+        self.listbx = tk.Listbox(self)
+        self.listbx.configure(bg='black',fg='white')
+        self.listbx.grid(column=0,row=0,columnspan=4,rowspan=6,sticky='NSEW')
+        scrollbar = tk.Scrollbar(self, orient='vertical')
+        self.listbx.config(yscrollcommand = scrollbar.set)
+        scrollbar.config(bg='black',command=self.listbx.yview)
+        scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
+
+class TlWin(tk.Toplevel):  ## plain - no scrollbar.
+    def __init__(self, parent, title, inidict):
+        tk.Toplevel.__init__(self)
+        self.swin_x = inidict['sw_x']
+        self.swin_y = inidict['sw_y']
+        self.swinht = inidict['swht']
+        self.swinwd = inidict['swwd']
+        self.title(title)
+        self.configure(bg='black')
+        srchwin_xpos = str(int(self.winfo_screenwidth() - self.swin_x))
+        srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
+        geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
+        self.geometry(geometrystring)
+        # window.update_idletasks()
+        self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+
+## ================  END OF CLASS DEFINITIONS ===================================
+
 
 def getoutputs():
     connext()
@@ -344,9 +382,9 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     if thisvol == 95:
         upconf = ['95','gray12','white']
     if thisvol == 90:
-        upconf = ['90','AntiqueWhite4','black']
+        upconf = ['90','AntiqueWhite4','white']
     if thisvol == 85:
-        upconf = ['85','AntiqueWhite4','black']
+        upconf = ['85','AntiqueWhite4','white']
     if thisvol == 80:
         upconf = ['80','AntiqueWhite3','black']
     if thisvol == 75:
@@ -592,7 +630,7 @@ def getaartpic(**cs):
         try:
             artw.title()
             artw.destroy()
-        except (AttributeError,NameError,TclError):
+        except (AttributeError,NameError,tk.TclError):
             pass
     else:
         aartvar = 0
@@ -688,7 +726,7 @@ def displaytext1(msg):
     text1.insert("1.0", msg)
 
 def displaytext2(msg2):
-    text1.insert(END, msg2)
+    text1.insert(tk.END, msg2)
 
 def albarttoggle():
     global aatgl,artw,aartvar
@@ -698,10 +736,10 @@ def albarttoggle():
     if aatgl == '1':
         try:
             # logger.info("Destroy AArt window.")
-            artw.title()
+            # artw.title()
             artw.destroy()
             aatgl = '0'
-        except (AttributeError,NameError,TclError):
+        except (AttributeError,NameError,tk.TclError):
             pass
     else:
         # logger.info("Set aatgl to '1'.")
@@ -715,45 +753,51 @@ def albarttoggle():
                 aartvar = 0
             artWindow(aartvar)
         except (ValueError,KeyError):
+            aartvar = 0
+            artWindow(aartvar)
             pass
     confparse.set("albumart","albarttoggle",aatgl)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
 
+def setWinStats():
+    mainwingeo = window.geometry()
+    mwgeo = mainwingeo.replace('x',' ')
+    mwgeo = mwgeo.replace('+',' ')
+    mwgeo = mwgeo.split()
+    artwingeo = artw.geometry()
+    awgeo = artwingeo.replace('x',' ')
+    awgeo = awgeo.replace('+',' ')
+    awgeo = awgeo.split()
+    disp_x = str(window.winfo_screenwidth())
+    disp_y = str(window.winfo_screenheight())
+    confparse.set("mainwindow","win_x",str(int(disp_x)-int(mwgeo[2])))
+    confparse.set("mainwindow","win_y",str(int(disp_y)-int(mwgeo[3])))
+    confparse.set("albumart","aartwin_x",str(int(disp_x)-int(awgeo[2])))
+    confparse.set("albumart","aartwin_y",str(int(disp_y)-int(awgeo[3])))
+    confparse.set("albumart","artwinwd",awgeo[0])
+    confparse.set("albumart","artwinht",awgeo[0])
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+    print("mwgeo: " + str(mwgeo))
+    print("awgeo: " + str(awgeo))
+    print("display: " + disp_x + " x " + disp_y)
+
+
 def tbtoggle():
     global aatgl
-    if aatgl == '1':
-        argeo = artw.geometry()
-        argeo = argeo.replace('x',' ')
-        argeo = argeo.replace('+',' ')
-        argeo = argeo.split()
-    wingeo = window.geometry()
-    wingeo = wingeo.replace('x',' ')
-    wingeo = wingeo.replace('+',' ')
-    wingeo = wingeo.split()
-    x_Left = int(window.winfo_screenwidth())
-    y_Top = int(window.winfo_screenheight())
-    if aatgl == '1':
-        xarw = int(x_Left)-int(argeo[2])
-        yarw = int(y_Top)-int(argeo[3])
-    xwndw = int(x_Left)-int(wingeo[2])
-    ywndw = int(y_Top)-int(wingeo[3])
-    if aatgl == '1':
-        confparse.set("albumart","aartwin_x",str(xarw))
-        confparse.set("albumart","aartwin_y",str(yarw))
-    confparse.set("mainwindow","win_x",str(xwndw))
-    confparse.set("mainwindow","win_y",str(ywndw))
     tbstatus = window.overrideredirect()
-    if tbstatus == None or tbstatus == False:
-        window.overrideredirect(1)
+    if tbstatus == None or tbstatus == False:  # Titlebar is visible, NOT overridden.
+        setWinStats()
+        window.overrideredirect(1) #             Override it. Turn it OFF.
         if aatgl == '1':
             artw.overrideredirect(1)
-        confparse.set("mainwindow","titlebarstatus",'0')  # Titlebar off (overridden)
-    else:
-        window.overrideredirect(0)
+        confparse.set("mainwindow","titlebarstatus",'0')  # Set Titlebar status off (overridden)
+    else: #                               When Titlebar is NOT visible, it is overridden.
+        window.overrideredirect(0) #           Disable Override. Turn titlebar ON.
         if aatgl == '1':
             artw.overrideredirect(0)
-        confparse.set("mainwindow","titlebarstatus",'1')  # Titlebar on (not overridden)
+        confparse.set("mainwindow","titlebarstatus",'1')  # Set Titlebar status ON (not overridden)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
     getcurrsong()
@@ -825,15 +869,27 @@ def makeeverything():
 #
 def deletecurrent():
     connext()
-    ret = client.listplaylistinfo(lastpl)
-    cs = client.currentsong()
-    for x in enumerate(ret):
-        if x[1]['title'] == cs['title']:
-            yeah = x[0]
-            doublecheck = messagebox.askyesno(message='Are you sure you want to delete \n"{}" from \n{}?'.format(cs['title'],lastpl))
-            if doublecheck == True:
-                logger.info('DELCUR) Deleting {}, song number {} from {}.'.format(cs['title'],yeah,lastpl))
-                client.playlistdelete(lastpl,yeah)
+    cp.read(mmc4wIni)
+    pllist = cp.getlist('serverstats','playlists')
+    artw.destroy()
+    if lastpl in pllist:
+        try:
+            ret = client.listplaylistinfo(lastpl)
+            cs = client.currentsong()
+            for x in enumerate(ret):
+                if x[1]['title'] == cs['title']:
+                    yeah = x[0]
+                    doublecheck = messagebox.askyesno(message='Are you sure you want to delete \n"{}" from \n{}?'.format(cs['title'],lastpl))
+                    if doublecheck == True:
+                        logger.info('DELCUR) Deleting {}, song number {} from {}.'.format(cs['title'],yeah,lastpl))
+                        client.playlistdelete(lastpl,yeah)
+        except KeyError:
+            messagebox.showinfo('No Song is Playing','"Delete" removes the currently playing song\nfrom the last selected playlist.')
+            pass
+    else:
+        messagebox.showinfo('No Playlist Selected','You have not yet selected a saved playlist.')
+    if aatgl == '1':
+        artWindow(aartvar)
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
 ## https://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
@@ -856,13 +912,13 @@ class FaultTolerantTk(tk.Tk):
             else:
                 self.destroy_unmapped_children(child)
 #
-##  END ERROR MESSAGEBOX SECTION
+##  tk.END ERROR MESSAGEBOX SECTION
 #
 ## WRAP UP AND DISPLAY ==========================================================================================
 #
 ##  THIS IS THE 'ROOT' WINDOW.  IT IS NAMED 'window' rather than 'root'.  ##
 # window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
-window = Tk()  # Create the root window with errors in console, invisible to Windows.
+window = tk.Tk()  # Create the root window with errors in console, invisible to Windows.
 window.title("Minimal MPD Client " + version)  # Set window title
 winWd = 380  # Set window size
 winHt = 80
@@ -879,6 +935,9 @@ window.rowconfigure([0,1,2], weight=0)
 if tbarini == '0':
     window.overrideredirect(1)
 nnFont = Font(family="Segoe UI", size=10, weight='bold')          ## Set the base font
+main_frame = tk.Frame(window, )
+main_frame.grid(column=0,row=0,padx=2)
+main_frame.columnconfigure([0,1,2,3,4], weight=0)
 #
 ## DEFINE THE LOOKUP WINDOW AND ASSOCIATED FUNCTIONS
 #
@@ -899,7 +958,7 @@ def lookupwin(lookupT):
     def clickedit(event):
         global lastpl
         connext()
-        i = listbx.curselection()[0]
+        i = plsngwin.listbx.curselection()[0]
         if lookupT == 'album':
             albsngs = client.search(lookupT,str(itemsraw[i]['album']))
             ## We turn rePeat and Random mode off for albums. ##
@@ -933,7 +992,7 @@ def lookupwin(lookupT):
             for s,v in stats.items():
                 dispitems.append(s + ' : ' + v)
             for i in dispitems:
-                listbx.insert(END,i)
+                plsngwin.listbx.insert(tk.END,i)
             plsngwin.update()
         if srchterm == 'stats':
             stats = client.stats()
@@ -946,7 +1005,7 @@ def lookupwin(lookupT):
                     v = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime(v))
                 dispitems.append(s + ' : ' + v)
             for i in dispitems:
-                listbx.insert(END,i)
+                plsngwin.listbx.insert(tk.END,i)
             plsngwin.update()
         if srchterm != 'status' and srchterm != 'stats':
             findit = client.search(lookupT,srchterm)
@@ -963,57 +1022,40 @@ def lookupwin(lookupT):
             for sng in itemsraw:
                 dispitems.append(sng['song'])
             for i in dispitems:
-                listbx.insert(END,i)
+                plsngwin.listbx.insert(tk.END,i)
             plsngwin.update()
             if srchterm == 'quit;':
                 plsngwin.destroy()
     #
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    swin_x = int(confparse.get("searchwin","swin_x"))
-    swin_y = int(confparse.get("searchwin","swin_y"))
-    plsngwin = Toplevel(window)
-    plsngwin.title("Search & Play " + srchTxt)
-    plsngwin.configure(bg='black')
-    plsngwin_x = confparse.get("searchwin","swinwd")
-    plsngwin_y = confparse.get("searchwin","swinht")
-    plsngwin_xpos = str(int(plsngwin.winfo_screenwidth()- (int(plsngwin_x) + swin_x)))
-    plsngwin_ypos = str(int(plsngwin.winfo_screenheight()-(int(plsngwin_y) + swin_y)))
-    plsngwin.geometry(plsngwin_x + 'x'+ plsngwin_y + '+' + plsngwin_xpos + '+' +  plsngwin_ypos)
-    plsngwin.columnconfigure([0,1,2,3],weight=1)
-    plsngwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
-    plsngwin.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+    inidict = {}
+    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+    inidict['swht'] = int(confparse.get("searchwin","swinht"))
+    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+    plsngwin = TlSbWin(window, 'Search & Play by ' + srchTxt, inidict)
     itemsraw = []
     dispitems = []
     ## Feeds into update()
-    listbx = tk.Listbox(plsngwin)
-    listbx.configure(bg='black',fg='white')
-    listbx.grid(column=0,row=0,columnspan=4,rowspan=6,sticky='NSEW')
-    # listbx.grid(column=0,row=0,columnspan = 5, rowspan=7, padx=5,pady=5,sticky='NSEW')
-    listbx.bind('<<ListboxSelect>>', clickedit)
-    scrollbar = Scrollbar(plsngwin, orient='vertical')
-    listbx.config(yscrollcommand = scrollbar.set)
-    scrollbar.config(bg='black',command=listbx.yview)
-    scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
+    plsngwin.listbx.bind('<<ListboxSelect>>', clickedit)
     ## Feeds into select()
     editing_item = tk.StringVar()
-    entry = tk.Entry(plsngwin, textvariable=editing_item, width=swin_x)
-    entry.grid(row=6,column=1,columnspan=5,sticky='EW')
-    # entry.config(bg='black',fg='white')
+    entry = tk.Entry(plsngwin, textvariable=editing_item, width=inidict['sw_x'])
+    entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
     entry.insert(0,'Search: ')
     entry.bind('<Return>', pushret)
-    if aatgl == '1':
-        artWindow(aartvar)
     entry.focus_set()
         #
 ## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
 #
 def addtopl(plaction):
-
     ##
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
+    plupdate()
     def plclickedit(event):
         global lastpl
-        selectlst = listbx.curselection()[0]
+        selectlst = a2plwin.listbx.curselection()[0]
+        pllist = cp.getlist('serverstats','playlists')
         connext()
         if plaction == 'add':
             cs = client.currentsong()
@@ -1025,57 +1067,53 @@ def addtopl(plaction):
                 client.playlistadd(pllist[selectlst],cs['file'])
                 logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
         if plaction == 'remove':
-            client.rm(pllist[selectlst])
-            logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
+            pllist = cp.getlist('serverstats','playlists')
+            doublecheck = messagebox.askyesno(message='Are you sure you want to PERMANENTLY delete \n"{}"?'.format(pllist[selectlst]))
+            if doublecheck == True:
+                client.rm(pllist[selectlst])
+                logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
+                # pllist = cp.getlist('serverstats','playlists')
+                plupdate()
         a2plwin.update()
         a2plwin.destroy()
+        if aatgl == '1':
+            artWindow(aartvar)
     def songlistclick(event):
-        songsel = listbx.curselection()[0]
+        songsel = a2plwin.listbx.curselection()[0]
         logger.debug('ATPL) Playlist "{}" was listed in addtopl().'.format(lastpl))
         logger.debug('ATPL) "{}" was selected to play.'.format(songlist[songsel].split('/')[2]))
         connext()
         client.play(songsel)
         cs = getcurrsong()
-        # getcurrsong()
         a2plwin.destroy()
-        # addtopl('list')
+        if aatgl == '1':
+            artWindow(aartvar)
     ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    swin_x = int(confparse.get("searchwin","swin_x"))
-    swin_y = int(confparse.get("searchwin","swin_y"))
-    a2plwin = Toplevel(window)
+    inidict = {}
+    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+    inidict['swht'] = int(confparse.get("searchwin","swinht"))
+    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
     if plaction == 'list':
-        a2plwin.title("List {} - Play Selected".format(lastpl))
+        a2title = "List {} - Play Selected".format(lastpl)
     if plaction == 'add':
-        a2plwin.title("Add Current Song to Playlist")
+        a2title = "Add Current Song to Playlist"
     if plaction == 'remove':
-        a2plwin.title("Delete the Selected Playlist")
+        a2title = "Delete the Selected Playlist"
+    a2plwin = TlSbWin(window, a2title, inidict)
     a2plwin.configure(bg='black')
-    a2plwin_x = confparse.get("searchwin","swinwd")
-    a2plwin_y = confparse.get("searchwin","swinht")
-    a2plwin_xpos = str(int(a2plwin.winfo_screenwidth()- (int(a2plwin_x) + swin_x)))
-    a2plwin_ypos = str(int(a2plwin.winfo_screenheight()-(int(a2plwin_y) + swin_y)))
-    a2plwin.geometry(a2plwin_x + 'x'+ a2plwin_y + '+' + a2plwin_xpos + '+' +  a2plwin_ypos)
-    a2plwin.columnconfigure([0,1,2,3],weight=1)
-    a2plwin.rowconfigure([0,1,2,3,4,5,6],weight=1)
-    a2plwin.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
-    listbx = tk.Listbox(a2plwin)
-    listbx.configure(bg='black',fg='white')
-    listbx.grid(column=0,row=0,columnspan=4, rowspan=7,sticky='NSEW')
     if plaction != 'list':
-        listbx.bind('<<ListboxSelect>>', plclickedit)
+        a2plwin.listbx.bind('<<ListboxSelect>>', plclickedit)
     if plaction == 'list':
-        listbx.bind('<<ListboxSelect>>', songlistclick)
-    scrollbar = Scrollbar(a2plwin, orient='vertical')
-    listbx.config(yscrollcommand = scrollbar.set)
-    scrollbar.config(command=listbx.yview)
-    scrollbar.grid(column=5,row=0, rowspan=7,sticky='NS')
+        a2plwin.listbx.bind('<<ListboxSelect>>', songlistclick)
     if plaction == 'add' or plaction == 'remove':
+        a2plwin.listbx.bind('<<ListboxSelect>>', plclickedit)
         cp.read(mmc4wIni)
         pllist = cp.getlist('serverstats','playlists')
         for lst in pllist:
-            listbx.insert(END,lst)
+            a2plwin.listbx.insert(tk.END,lst)
     if plaction == 'list':
+        a2plwin.listbx.bind('<<ListboxSelect>>', songlistclick)
         thislist = confparse.get('serverstats','lastsetpl')
         connext()
         songlist=[]
@@ -1088,37 +1126,36 @@ def addtopl(plaction):
             songlist = client.listplaylist(thislist)
             logger.info('ATPL) Listed songs from {}.'.format(thislist))
         for s in songlist:
-            listbx.insert(END,s)
-    if aatgl == '1':
-        artWindow(aartvar)
+            a2plwin.listbx.insert(tk.END,s)
+    artw.destroy()
+    # if aatgl == '1':
+    #     artWindow(aartvar)
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
 def SrvrWindow(swaction):
     global serverip,firstrun,lastpl
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
-    srvrw = Toplevel(window)
     if swaction == 'server':
-        srvrw.title("Servers")
-    srvrwinWd = 300
-    srvrwinHt = 30
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    win_x = int(confparse.get("mainwindow","win_x"))
-    win_y = int(confparse.get("mainwindow","win_y"))
-    x_Left = int(window.winfo_screenwidth() - srvrwinWd - (win_x+60))
-    y_Top = int(window.winfo_screenheight() - srvrwinHt - (win_y+120))
-    srvrw.config(background="gray")  
-    srvrw.geometry(str(srvrwinWd) + "x" + str(srvrwinHt) + "+{}+{}".format(x_Left, y_Top))
-    srvrw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        srvrwtitle = "Servers"
+    if swaction == 'output':
+        srvrwtitle = "MPD Server Outputs"
+    inidict = {}
+    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+    inidict['swht'] = int(confparse.get("searchwin","swinht"))
+    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+    srvrw = TlSbWin(window, srvrwtitle, inidict)
     def rtnplsel(ipvar):
         global serverip,firstrun,lastpl
         client.close()
+        selection = srvrw.listbx.curselection()[0]
         msg = ipvar
         displaytext1(msg)
-        serverip = ipvar
+        serverip = iplist[selection]
         confparse.read(mmc4wIni)
         connext()
-        confparse.set("serverstats","lastsrvr",ipvar)
+        confparse.set("serverstats","lastsrvr",serverip)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         srvrw.destroy()
@@ -1131,24 +1168,26 @@ def SrvrWindow(swaction):
         getcurrsong()
     #
     def outputtggl(outputvar):
-        oid = outputvar[4:5]
+        selection = srvrw.listbx.curselection()[0]
+        oid = outputs[selection][4:5]
         client.toggleoutput(oid)
         logger.info('0) Output [{}] toggled to opposite state.'.format(outputvar))
         srvrw.destroy()
+        if aatgl == '1':
+            artWindow(aartvar)
     #
     if swaction == 'server':
+        srvrw.listbx.bind('<<ListboxSelect>>', rtnplsel)
         cp.read(mmc4wIni)
         iplist = cp.getlist('basic','serverlist')
-        ipvar = StringVar(srvrw)
-        ipvar.set('Currently - ' + serverip + ' - Click for dropdown list.')
-        plselwin = OptionMenu(srvrw,ipvar,*iplist,command=rtnplsel)
+        for i in iplist:
+            srvrw.listbx.insert(tk.END,i)
     if swaction == 'output':
+        srvrw.listbx.bind('<<ListboxSelect>>', outputtggl)
         outputs = getoutputs()[1]
-        outputvar = StringVar(srvrw)
-        outputvar.set('  Select Output to Toggle.  ')
-        plselwin = OptionMenu(srvrw,outputvar,*outputs,command=outputtggl)
-    plselwin.config(width=44)
-    plselwin.grid(column=1,row=1,sticky='EW')
+        for o in outputs:
+            srvrw.listbx.insert(tk.END,o)
+    artw.destroy()
 #
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
@@ -1156,49 +1195,45 @@ def PLSelWindow():
     global serverip,lastpl, aartvar,aatgl
     plupdate()
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
-    sw = Toplevel(window)
-    sw.title("PlayLists")
-    swinWd = 300
-    swinHt = 30
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    win_x = int(confparse.get("mainwindow","win_x"))
-    win_y = int(confparse.get("mainwindow","win_y"))
-    x_Left = int(window.winfo_screenwidth() - swinWd - (win_x+60))
-    y_Top = int(window.winfo_screenheight() - swinHt - (win_y+120))
-    sw.config(background="white")  
-    sw.geometry(str(swinWd) + "x" + str(swinHt) + "+{}+{}".format(x_Left, y_Top))
-    sw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+    plswtitle = "PlayLists"
+    inidict = {}
+    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+    inidict['swht'] = int(confparse.get("searchwin","swinht"))
+    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+    plsw = TlSbWin(window, plswtitle, inidict)
     def rtnplsel(plvar):
         global serverip,lastpl
+        selection = plsw.listbx.curselection()[0]
+        plvar = pllist[selection]
         displaytext1(plvar)
         logger.info('PLSel) Set playlist to "{}".'.format(plvar))
-        client.clear()
-        client.load(plvar)
+        loadit = messagebox.askyesno("Load Playlist Now?","Load it now?\n'No' will remember your selection.")
+        if loadit == 'yes':
+            client.clear()
+            client.load(plvar)
         confparse.read(mmc4wIni)
         confparse.set("serverstats","lastsetpl",plvar)
-        # confparse.set("serverstats","lookuppl",'0')
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         lastpl = plvar
-        sw.destroy()
+        plsw.destroy()
         sleep(1)
+        if aatgl == '1':
+            artWindow(aartvar)
     cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
     lastpl = confparse.get("serverstats","lastsetpl")
-    plvar =StringVar(sw)
-    plvar.set('Current Playlist - ' + lastpl + ' - Click for list.')
-    plselwin = OptionMenu(sw,plvar,*pllist,command=rtnplsel)
-    plselwin.config(width=44)
-    plselwin.grid(column=1,row=1)
-    window.update()
-    window.update_idletasks()
-    if aatgl == '1':
-        artWindow(aartvar)
+    plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
+    for pl in pllist:
+        plsw.listbx.insert(tk.END,pl)
+    artw.destroy()
+    
 #
 ## DEFINE THE ABOUT WINDOW
 #
 def aboutWindow():
-    aw = Toplevel(window)
+    aw = tk.Toplevel(window)
     aw.title("About MMC4W")
     awinWd = 400  # Set window size and albumart
     awinHt = 400
@@ -1207,13 +1242,13 @@ def aboutWindow():
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
     aw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
-    awlabel = Label(aw, font=18, text ="About MMC4W " + version)
+    awlabel = tk.Label(aw, font=18, text ="About MMC4W " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
     aw.rowconfigure(0, weight=1)
-    aboutText = Text(aw, height=20, width=170, bd=3, padx=10, pady=10, wrap=WORD, font=nnFont)
+    aboutText = tk.Text(aw, height=20, width=170, bd=3, padx=10, pady=10, wrap=tk.WORD, font=nnFont)
     aboutText.grid(column=0, row=1)
-    aboutText.insert(INSERT, "MMC4W is installed at\n" + path_to_dat + "\n\nPutting the Music First.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
+    aboutText.insert( tk.INSERT, "MMC4W is installed at\n" + path_to_dat + "\n\nPutting the Music First.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
                      "This little app holds forth the smallest possible GUI hiding a full set of MPD control functions. Just play the music.\n\nCopyright 2023-2024 Gregory A. Sanders\nhttps://www.drgerg.com")
 #
 ## DEFINE THE HELP WINDOW
@@ -1223,7 +1258,7 @@ def helpWindow():
     if aatgl == '1':
         albarttoggle()
     # pause()
-    hw = Toplevel(window)
+    hw = tk.Toplevel(window)
     hw.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
     hw.title("MMC4W Help")
     hwinWd = 1000  # Set window size and placement
@@ -1249,28 +1284,25 @@ def artWindow(aartvar):
         thisimage = (path_to_dat + '/cover.png')
     if aartvar == 0:
         thisimage = path_to_dat + '/ico/mmc4w.png'
-    artw = Toplevel(window)
-    artw.title("AlbumArt")
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    aartwin_x = int(confparse.get("albumart","aartwin_x"))
-    aartwin_y = int(confparse.get("albumart","aartwin_y"))
-    artwinWd = int(confparse.get("albumart","artwinWd"))
-    artwinHt = int(confparse.get("albumart","artwinHt"))
-    x_Left = int(window.winfo_screenwidth() - aartwin_x)
-    y_Top = int(window.winfo_screenheight() - aartwin_y)
-    artw.config(background="white")  # Set window background color
-    artw.geometry(str(artwinWd) + "x" + str(artwinHt) + "+{}+{}".format(x_Left, y_Top))
-    artw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
-    artw.columnconfigure([0,1,2], weight=1)
+    inidict = {}
+    inidict['sw_x'] = int(confparse.get("albumart","aartwin_x"))
+    inidict['sw_y'] = int(confparse.get("albumart","aartwin_y"))
+    inidict['swht'] = int(confparse.get("albumart","artwinht"))
+    inidict['swwd'] = int(confparse.get("albumart","artwinwd"))
+    artw = TlWin(window, "AlbumArt",inidict)
+    # art_frame = tk.Frame(artw, height=inidict['swht'], width=inidict['swwd'])
+    # art_frame.grid(row=0,column=0)
+    artw.update_idletasks()
+    artw.columnconfigure(0, weight=1)
     artw.rowconfigure(0, weight=1)
     artw.rowconfigure(1, weight=1)
+    artw.config(bg="white")  # Set window background color
     aart = Image.open(thisimage)
-    aart = aart.resize((artwinHt-10,artwinWd-10))
+    aart = aart.resize((inidict['swht']-10,inidict['swwd']-10))
     aart = ImageTk.PhotoImage(aart)
     aart.image = aart  # required for some reason
-    aartLabel = Label(artw,image=aart)
+    aartLabel = tk.Label(artw,image=aart)
     aartLabel.grid(column=0, row=0, padx=5, pady=5)
-
     if tbarini == '0':
         artw.overrideredirect(1)
     artw.update()
@@ -1330,11 +1362,11 @@ def browserplayer():
 #
 ## MENU AND MENU ITEMS
 #
-Frame(window)
-menu = Menu(window)
+tk.Frame(window)
+menu = tk.Menu(window)
 window.config(menu=menu)
 nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
-fileMenu = Menu(menu, tearoff=False)
+fileMenu = tk.Menu(menu, tearoff=False)
 fileMenu.add_command(label="Configure", command=configurator)
 fileMenu.add_command(label="Select a Server", command=lambda: SrvrWindow('server'))
 fileMenu.add_command(label="Toggle an Output", command=lambda: SrvrWindow('output'))
@@ -1345,7 +1377,7 @@ fileMenu.add_command(label='Remove Saved Playlist',command=lambda: addtopl('remo
 fileMenu.add_command(label="Exit", command=exit)
 menu.add_cascade(label="File", menu=fileMenu)
 
-toolMenu = Menu(menu, tearoff=False)
+toolMenu = tk.Menu(menu, tearoff=False)
 toolMenu.add_command(label="Reload Current Title", command=getcurrsong)
 toolMenu.add_command(label="Turn Random On", command=plrandom)
 toolMenu.add_command(label="Turn Random Off", command=plnotrandom)
@@ -1356,11 +1388,11 @@ toolMenu.add_command(label="Toggle Titlebar", command=tbtoggle)
 toolMenu.add_command(label="Set Non-Standard Port", command=nonstdport)
 menu.add_cascade(label="Tools", menu=toolMenu)
 
-lookMenu = Menu(menu, tearoff=False)
+lookMenu = tk.Menu(menu, tearoff=False)
 lookMenu.add_command(label='Play a Single',command=lambda: lookupwin('title'))
 lookMenu.add_command(label='Play an Album',command=lambda: lookupwin('album'))
 lookMenu.add_command(label='Find by Artist',command=lambda: lookupwin('artist'))
-lookMenu.add_command(label='Reload Last Playlist',command=returntoPL)
+lookMenu.add_command(label='Load Last Selected Playlist',command=returntoPL)
 lookMenu.add_command(label='Show Songs in Last Playlist', command=lambda: addtopl('list'))
 lookMenu.add_command(label="Select a Playlist", command=PLSelWindow)
 lookMenu.add_command(label='Update "Everything" Playlist', command=makeeverything)
@@ -1368,7 +1400,7 @@ lookMenu.add_command(label="Toggle PL Build Mode", command=buildpl)
 lookMenu.add_command(label="Launch Browser Player", command=browserplayer)
 menu.add_cascade(label="Look", menu=lookMenu)
 
-helpMenu = Menu(menu, tearoff=False)
+helpMenu = tk.Menu(menu, tearoff=False)
 helpMenu.add_command(label="Help", command=helpWindow)
 helpMenu.add_command(label="About", command=aboutWindow)
 menu.add_cascade(label="Help", menu=helpMenu)
@@ -1376,44 +1408,44 @@ menu.add_cascade(label="Help", menu=helpMenu)
 window.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
 
 ## Set up text window
-text1 = Text(window, height=1, width=52, wrap=WORD, font=nnFont)
+text1 = tk.Text(main_frame, height=1, width=52, wrap= tk.WORD, font=nnFont)
 text1.grid(column=0, columnspan=5, row=0, padx=5)
 #
 # Define buttons
-button_volup = tk.Button(window, width=9, text="Vol +", font=nnFont, command=volup)                  # 
+button_volup = tk.Button(main_frame, width=9, text="Vol +", font=nnFont, command=volup)                  # 
 button_volup.grid(column=0, sticky='E', row=1, padx=1)                     # Place button in grid
 
-button_voldn = tk.Button(window, width=9, text="Vol -", font=nnFont, command=voldn)                  # 
+button_voldn = tk.Button(main_frame, width=9, text="Vol -", font=nnFont, command=voldn)                  # 
 button_voldn.grid(column=1, sticky='W', row=1, padx=1)                     # Place button in grid
 
-button_play = tk.Button(window, width=9, text="Play", font=nnFont, command=play)                  # 
+button_play = tk.Button(main_frame, width=9, text="Play", font=nnFont, command=play)                  # 
 button_play.grid(column=0, sticky='E', row=2, padx=1)                     # Place button in grid
 
-button_stop = tk.Button(window, width=9, text="Stop", font=nnFont, command=halt)                  # 
+button_stop = tk.Button(main_frame, width=9, text="Stop", font=nnFont, command=halt)                  # 
 button_stop.grid(column=1, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_prev = tk.Button(window, width=9, text="Prev", font=nnFont, command=previous)                  # 
+button_prev = tk.Button(main_frame, width=9, text="Prev", font=nnFont, command=previous)                  # 
 button_prev.grid(column=2, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_pause = tk.Button(window, width=9, text="Pause", font=nnFont, command=pause)                  # 
+button_pause = tk.Button(main_frame, width=9, text="Pause", font=nnFont, command=pause)                  # 
 button_pause.grid(column=3, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_next = tk.Button(window, width=9, text="Next", font=nnFont, command=next)                  # 
+button_next = tk.Button(main_frame, width=9, text="Next", font=nnFont, command=next)                  # 
 button_next.grid(column=4, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_tbtog = tk.Button(window, width=9, text="Mode", font=nnFont, command=tbtoggle)                  # 
+button_tbtog = tk.Button(main_frame, width=9, text="Mode", font=nnFont, command=tbtoggle)                  # 
 button_tbtog.grid(column=2, sticky='W', row=1, padx=1)                     # Place button in grid
 
-button_load = tk.Button(window, width=9, text="Art", font=nnFont, command=albarttoggle)                  #
+button_load = tk.Button(main_frame, width=9, text="Art", font=nnFont, command=albarttoggle)                  #
 button_load.grid(column=3, sticky='W', row=1, padx=1)                     # Place button in grid
 
-button_exit = tk.Button(window, width=9, text="Quit", font=nnFont, command=exit)                  #
+button_exit = tk.Button(main_frame, width=9, text="Quit", font=nnFont, command=exit)                  #
 button_exit.grid(column=4, sticky='W', row=1, padx=1)                     # Place button in grid
 
 ## THREADING NOTES =========================================
 # while threading.active_count() > 0:
 # Make all threads daemon threads, and whenever the main thread dies all threads will die with it.
-## END THREADING NOTES =====================================
+## tk.END THREADING NOTES =====================================
 #
 t1 = threading.Thread(target=songtitlefollower)
 t1.daemon = True
