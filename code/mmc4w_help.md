@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v0.9.8 release.
+This help file was updated for the v2.0.0 release.
 
 ## Putting the Music First
 
@@ -33,9 +33,9 @@ The interface contains the basic required buttons to control a MPD server:
 - Reload Current Title : Reloads data about the current playing song, including art.
 - Turn Random On : Turns on random playback. Text area background is white.
 - Turn Random Off : Turns on sequential playback. Text area background is navy blue.
-- Toggle Repeat : If repeat is 0, play stops when MPD gets to the end of the playlist.
-- Toggle Consume : If consume is 1, each song is removed from the playlist after playing.
-- Toggle Single : If single is 1, each song is only played once, but left in the list.
+- Toggle Repeat : If repeat is 0, play stops when MPD gets to the end of the queue.
+- Toggle Consume : If consume is 1, each song is removed from the queue after playing.
+- Toggle Single : If single is 1, each song is only played once, but left in the queue.
 - Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.
 - Set Non-Standard Port : Tells you how to set up a non-standard port.
 
@@ -44,7 +44,7 @@ The interface contains the basic required buttons to control a MPD server:
 - Play a Single : Select a single title by title. (also emulates a little console. See Searching.)
 - Play an Album : Select an album by album title. Turns on sequential playback.
 - Find by Artist : Select a single title by artist. Also get info at the same time.
-- Reload Last Playlist : Restore your settings to the last configured playlist.
+- Load Last Selected Playlist : Restore your settings to the last configured playlist.
 - Show Songs in Last Playlist : View the list of songs in the last selected PL. Click to play.
 - Select a Playlist : Select any playlist available on the connected server.
 - Update "Everything" Playlist : Make sure all songs are in the "Everything" playlist.
@@ -141,7 +141,7 @@ There are three options under the **'Look'** menu related to search.
 
 **Find by Artist** opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  
 
-![Artist Search.](./_internal/search_artist.png)</br><span style="color:green; font-size:smaller;">Artist search. Click in field and hit Enter for all songs.</span>
+![Artist Search.](./_internal/search_artist.png)</br><span style="color:green; font-size:smaller;">Artist search. Hit Enter for all songs.</span>
 
 This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.
 
@@ -151,7 +151,7 @@ Saved playlists are the heart of **MMC4W**. To differentiate between **saved pla
 
 You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  
 
-MMC4W will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Look'** Menu.
+**MMC4W** will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Look'** Menu.
 
 ### You can manipulate playlists in these ways:
 
@@ -174,7 +174,7 @@ MMC4W will create a special playlist called "Everything" that contains all the s
 
 1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  
 2) If you're not already, play your music.  
-3) When you are listening to a song you want to add to a playlist, hit the green **Add** button.  
+3) When you are listening to a song and you want to add it to a playlist, hit the green **Add** button.  
 4) Click on the playlist you want from the list. If the song isn't already in the playlist, it will be added.  
 
 **That's it.**
@@ -235,7 +235,7 @@ To set the logging level, use the '**Configure**' option and edit the **mmc4w.in
 
 The resulting log file (**mmc4w.log**) can be found in the **_internal** folder in the installation folder.  The log file is deleted and started fresh each time you start **MMC4W**.  If you toggle Off logging, the last log file will remain until you delete it or create a new one by toggling logging On again.
 
-The DEBUG file (**mmc4w_DEBUG.log**) does not start fresh with each run, and is not deleted.
+The DEBUG file (**mmc4w_DEBUG.log**) does not start fresh with each run, and is not deleted. If you make the mistake of leaving MMC4W with debug logging turned on, that log file will continue to grow until you run out of disk space.  Don't be that guy. Turn debug logging off when you don't need it.
 
 ### Other Random Options
 

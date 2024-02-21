@@ -118,6 +118,7 @@ if serverip == '':
     confparse.set('serverstats','lastsrvr',serverip)
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
+    messagebox.showinfo("Server Set","Current server is set to\n" + serverip)
 
 if confparse.get('serverstats','lastport') != "":
     serverport = confparse.get('serverstats','lastport')
@@ -1187,7 +1188,8 @@ def SrvrWindow(swaction):
         outputs = getoutputs()[1]
         for o in outputs:
             srvrw.listbx.insert(tk.END,o)
-    artw.destroy()
+    if artw.winfo_exists():
+        artw.destroy()
 #
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
@@ -1227,7 +1229,8 @@ def PLSelWindow():
     plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
     for pl in pllist:
         plsw.listbx.insert(tk.END,pl)
-    artw.destroy()
+    if artw.winfo_exists():
+        artw.destroy()
     
 #
 ## DEFINE THE ABOUT WINDOW
