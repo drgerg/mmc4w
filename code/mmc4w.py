@@ -1208,8 +1208,8 @@ def PLSelWindow():
         plvar = pllist[selection]
         displaytext1(plvar)
         logger.info('PLSel) Set playlist to "{}".'.format(plvar))
-        loadit = messagebox.askyesno("Load Playlist Now?","Load it now?\n'No' will remember your selection.")
-        if loadit == 'yes':
+        loadit = messagebox.askyesno("Load Playlist Now?","Load it now?\n'No' will remember your selection\nwithout replacing the queue.")
+        if loadit == True:
             client.clear()
             client.load(plvar)
         confparse.read(mmc4wIni)
