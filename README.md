@@ -30,7 +30,7 @@ The black background in this pic is my desktop.  The MMC4W interface is only the
 - The title of the song and the artist's name are shown in the text area.
 - The Windows titlebar is gone.
 
-The **Mode** button toggles the titlebar.  While it's active, you can reposition the windows.  Clicking **'Mode'** again saves positions.
+The **Mode** button toggles the titlebar.  While it's active, you can resize and reposition the windows.  Clicking **'Mode'** again saves positions and sizes.
 
 The text area is active, switching every three seconds between song title - artist name and a line about the status of things as seen here:
 
