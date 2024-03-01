@@ -21,7 +21,7 @@ The entire interface is intentionally tiny and simple. In its most basic mode it
 
 ![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
 
-Other than the basic controls, I also want to be able to see the album cover most of the time.  The **Art** button toggles a small window to display embedded art.  The MPD server extracts it from the current song file and provides it.  MMC4W displays it. Dead simple.  That looks like this:
+Other than the basic controls, I also want to be able to see the album cover most of the time.  The **Art** button toggles a small window to display embedded or folder art.  The MPD server extracts it from the current song file or from a cover.jpg, .png, .tiff, or .bmp file located in the album folder and provides it.  MMC4W displays it. Dead simple.  That looks like this:
 
 ![screen_1.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_1.png)
 
