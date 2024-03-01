@@ -24,7 +24,9 @@ import time
 import logging
 import webbrowser
 
-version = "v2.0.0"
+version = "v2.0.1"
+# v2.0.1 - Handling the queue.
+# v2.0.0 - Introduced classes for some windows. Tons more stability tweaks.
 # v1.0.0 - Fixed error in the fiver() function.
 # v0.9.9 - tk.Scrollbars on all windows. Windows are more uniform.
 
@@ -155,7 +157,8 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         self.columnconfigure([0,1,2,3],weight=1)
         self.rowconfigure([0,1,2,3,4,5],weight=1)
         self.rowconfigure(6,weight=0)
-        self.listbx = tk.Listbox(self)
+        self.listvar = tk.StringVar()
+        self.listbx = tk.Listbox(self,listvariable=self.listvar)
         self.listbx.configure(bg='black',fg='white')
         self.listbx.grid(column=0,row=0,columnspan=4,rowspan=6,sticky='NSEW')
         scrollbar = tk.Scrollbar(self, orient='vertical')
@@ -163,7 +166,7 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         scrollbar.config(bg='black',command=self.listbx.yview)
         scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
 
-class TlWin(tk.Toplevel):  ## plain - no scrollbar.
+class TlWin(tk.Toplevel):  ## plain - no scrollbar or listbox.
     def __init__(self, parent, title, inidict):
         tk.Toplevel.__init__(self)
         self.swin_x = inidict['sw_x']
@@ -234,6 +237,8 @@ def plnotrandom():  # Set sequential playback mode.
 
 def halt():
     global endtime,buttonvar
+    if buttonvar == 'pause':
+        pause()
     connext()
     buttonvar = 'stop'
     client.stop()
@@ -615,31 +620,57 @@ def getendtime(cs,stat):
 #
 def getaartpic(**cs):
     global aatgl,aartvar
-    aadict = {}
-    aadict = client.readpicture(cs['file'],0)
-    if len(aadict) > 0:
-        size = int(aadict['size'])
-        done = int(aadict['binary'])
+    eadict = {}
+    fadict = {}
+    eadict = client.readpicture(cs['file'],0)
+    if len(eadict) > 0:
+        size = int(eadict['size'])
+        done = int(eadict['binary'])
         with open(path_to_dat + '/cover.png', 'wb') as cover:
-            cover.write(aadict['data'])
+            cover.write(eadict['data'])
             while size > done:
-                aadict = client.readpicture(cs['file'],done)
-                done += int(aadict['binary'])
-                cover.write(aadict['data'])
-        logger.debug('D6| Wrote {} bytes to cover.png.  len(aadict) is: {}'.format(done,len(aadict)))
+                eadict = client.readpicture(cs['file'],done)
+                done += int(eadict['binary'])
+                cover.write(eadict['data'])
+        logger.debug('D6| Wrote {} bytes to cover.png.  len(eadict) is: {}'.format(done,len(eadict)))
         aartvar = 1
         try:
-            artw.title()
+            # artw.title()
             artw.destroy()
         except (AttributeError,NameError,tk.TclError):
+            pass
+    elif len(eadict) == 0:
+        try:
+            fadict = client.albumart(cs['file'],0)
+            if len(fadict) > 0:
+                received = int(fadict.get('binary'))
+                size = int(fadict.get('size'))
+                with open(path_to_dat + '/cover.png', 'wb') as cover:
+                    cover.write(fadict.get('data'))
+                    while received < size:
+                        fadict = client.albumart(cs['file'], received)
+                        cover.write(fadict.get('data'))
+                        received += int(fadict.get('binary'))
+                logger.debug('D6| Wrote {} bytes to cover.png.  len(fadict) is: {}'.format(received,len(fadict)))
+                aartvar = 1
+                try:
+                    # artw.title()
+                    artw.destroy()
+                except (AttributeError,NameError,tk.TclError):
+                    pass
+                # cli.disconnect()
+            else:
+                aartvar = 0
+        except musicpd.CommandError:
+            aartvar = 0
             pass
     else:
         aartvar = 0
     if aatgl == '1':
-        logger.info('2) Bottom of getaartpic(). Headed to artWindow(). aartvar is {}, len(aadict) is {}.'.format(aartvar,len(aadict)))
+        logger.info('2) Bottom of getaartpic(). Headed to artWindow(). aartvar is {}, len(eadict) is {}, len(fadict) is {}.'.format(aartvar,len(eadict),len(fadict)))
         artWindow(aartvar)
     else:
-        logger.debug('D6| aartvar is: {}, len(aadict): {}.'.format(aartvar,len(aadict)))
+        logger.debug('D6| aartvar is: {}, len(eadict) is {}, len(fadict) is {}.'.format(aartvar,len(eadict),len(fadict)))
 #
 ## songtitlefollower() is the threaded timer.
 #
@@ -772,6 +803,8 @@ def setWinStats():
     awgeo = awgeo.split()
     disp_x = str(window.winfo_screenwidth())
     disp_y = str(window.winfo_screenheight())
+    confparse.set("mainwindow","winwd",str(int(disp_x)-int(mwgeo[0])))
+    confparse.set("mainwindow","winht",str(int(disp_y)-int(mwgeo[1])))
     confparse.set("mainwindow","win_x",str(int(disp_x)-int(mwgeo[2])))
     confparse.set("mainwindow","win_y",str(int(disp_y)-int(mwgeo[3])))
     confparse.set("albumart","aartwin_x",str(int(disp_x)-int(awgeo[2])))
@@ -823,13 +856,17 @@ def resetwins():
     artwinht = confparse.get("default_values","artwinht")
     win_x = confparse.get("default_values","win_x")
     win_y = confparse.get("default_values","win_y")
+    winHt = confparse.get("default_values","winht") # default: winWd = 380
+    winWd = confparse.get("default_values","winwd") # default: winHt = 80
+    confparse.set("mainwindow","winht",winHt)
+    confparse.set("mainwindow","winwd",winWd)
     confparse.set("mainwindow","win_x",win_x)
     confparse.set("mainwindow","win_y",win_y)
     confparse.set("albumart","aartwin_x",aartwin_x)
     confparse.set("albumart","aartwin_y",aartwin_y)
     confparse.set("albumart","artwinwd",artwinwd)
     confparse.set("albumart","artwinht",artwinht)
-    logger.info('Reset window positions to defaults from mmc4w.ini file.')
+    logger.info('Reset window positions & sizes to defaults from mmc4w.ini file.')
     logger.debug('D15| aartwin: {}x{}, main: {}x{}.'.format(aartwin_x,aartwin_y,win_x,win_y))
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
@@ -890,6 +927,7 @@ def deletecurrent():
     else:
         messagebox.showinfo('No Playlist Selected','You have not yet selected a saved playlist.')
     if aatgl == '1':
+        artw.destroy()
         artWindow(aartvar)
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
@@ -921,9 +959,9 @@ class FaultTolerantTk(tk.Tk):
 # window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
 window = tk.Tk()  # Create the root window with errors in console, invisible to Windows.
 window.title("Minimal MPD Client " + version)  # Set window title
-winWd = 380  # Set window size
-winHt = 80
 confparse.read(mmc4wIni)  # get parameters from config .ini file.
+winHt = int(confparse.get("mainwindow","winht")) # default: winWd = 380
+winWd = int(confparse.get("mainwindow","winwd")) # default: winHt = 80
 win_x = int(confparse.get("mainwindow","win_x"))
 win_y = int(confparse.get("mainwindow","win_y"))
 tbarini = confparse.get("mainwindow","titlebarstatus")
@@ -939,6 +977,152 @@ nnFont = Font(family="Segoe UI", size=10, weight='bold')          ## Set the bas
 main_frame = tk.Frame(window, )
 main_frame.grid(column=0,row=0,padx=2)
 main_frame.columnconfigure([0,1,2,3,4], weight=0)
+#
+## DEFINE THE QUEUE WINDOW
+#
+# def queuewin(qwaction):
+#     global itemsraw,dispitems
+#     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
+#     def qwclicked(event):
+#         global itemsraw,dispitems
+#         connext()
+#         t = queuewin.listbx.curselection()[0]
+#         clikd = dispitems[t].split(" | ")
+#         for m in itemsraw:
+#             if clikd[0] == m['artist'] and clikd[1] == m['title'] and clikd[2] == m['album']:
+#                 playit = m['pos']
+#         # client.play(itemsraw[t]['pos'])
+#         client.play(playit)
+#         getcurrsong()
+#         queuewin.destroy()
+#     ##
+#     ## The tk.Entry box runs this upon <Return>
+#     def pushret(event):
+#         global itemsraw,dispitems
+#         connext()
+#         srchterm = editing_item.get().replace('Search: ','')
+#         editing_item.set('Search: ')
+#         if srchterm != 'quit;':
+#             if ":" in srchterm:
+#                 fullsearch = srchterm.split(":")
+#                 try:
+#                     findit = client.playlistsearch(fullsearch[0],fullsearch[1])
+#                 except musicpd.CommandError:
+#                     pass
+#             else:
+#                 findit = client.playlistsearch('title',srchterm)
+#             itemsraw = []
+#             dispitems = []
+#             for f in findit:
+#                 thisfrec = f['artist'] + ' | ' + f['title'] + ' | ' + f['album']
+#                 dispitems.append(thisfrec)
+#                 itemsraw.append(f)
+#             queuewin.listbx.delete(0,tk.END)
+#             dispitems.sort()
+#             queuewin.listvar.set(dispitems)
+#         if srchterm == 'quit;':
+#             queuewin.destroy()
+#             if aatgl == '1':
+#                 artw.destroy()
+#                 artWindow(aartvar)
+#     ##
+#     confparse.read(mmc4wIni)  # get parameters from config .ini file.
+#     inidict = {}
+#     inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+#     inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+#     inidict['swht'] = int(confparse.get("searchwin","swinht"))
+#     inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+#     queuewin = TlSbWin(window, 'Search the Queue',inidict)
+#     connext()
+#     dispitems = []
+#     itemsraw = []
+#     findit = client.playlistinfo()
+#     for f in findit:
+#         thisfrec = f['artist'] + ' | ' + f['title'] + ' | ' + f['album']
+#         dispitems.append(thisfrec)
+#         itemsraw.append(f)
+#         dispitems.sort()
+#     queuewin.listvar.set(dispitems)
+#     ## Feeds into select()
+#     editing_item = tk.StringVar()
+#     entry = tk.Entry(queuewin, textvariable=editing_item, width=inidict['sw_x'])
+#     entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
+#     entry.insert(0,'Search: ')
+#     entry.bind('<Return>', pushret)
+#     entry.focus_set()
+#     queuewin.listbx.bind('<<ListboxSelect>>', qwclicked)
+#     artw.destroy()
+
+def queuewin(qwaction):
+    global findit,dispitems
+    ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
+    def qwclicked(event):
+        global findit,dispitems
+        connext()
+        t = queuewin.listbx.curselection()[0]
+        clikd = dispitems[t].split(" | ")
+        for m in findit:
+            if clikd[0] == m['artist'] and clikd[1] == m['title'] and clikd[2] == m['album']:
+                playit = m['pos']
+        # client.play(itemsraw[t]['pos'])
+        client.play(playit)
+        getcurrsong()
+        queuewin.destroy()
+    ##
+    ## The tk.Entry box runs this upon <Return>
+    def pushret(event):
+        global findit,dispitems
+        connext()
+        srchterm = editing_item.get().replace('Search: ','')
+        editing_item.set('Search: ')
+        if srchterm != 'quit;':
+            if ":" in srchterm:
+                fullsearch = srchterm.split(":")
+                try:
+                    findit = client.playlistsearch(fullsearch[0],fullsearch[1])
+                except musicpd.CommandError:
+                    pass
+            else:
+                findit = client.playlistsearch('title',srchterm)
+            dispitems = []
+            for f in findit:
+                thisfrec = f['artist'] + ' | ' + f['title'] + ' | ' + f['album']
+                dispitems.append(thisfrec)
+            queuewin.listbx.delete(0,tk.END)
+            dispitems.sort()
+            queuewin.listvar.set(dispitems)
+        if srchterm == 'quit;':
+            queuewin.destroy()
+            if aatgl == '1':
+                artw.destroy()
+                artWindow(aartvar)
+    ##
+    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+    inidict = {}
+    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+    inidict['swht'] = int(confparse.get("searchwin","swinht"))
+    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+    queuewin = TlSbWin(window, 'Search the Queue',inidict)
+    connext()
+    dispitems = []
+    findit = client.playlistinfo()
+    for f in findit:
+        thisfrec = f['artist'] + ' | ' + f['title'] + ' | ' + f['album']
+        dispitems.append(thisfrec)
+        dispitems.sort()
+    queuewin.listvar.set(dispitems)
+    ## Feeds into select()
+    editing_item = tk.StringVar()
+    entry = tk.Entry(queuewin, textvariable=editing_item, width=inidict['sw_x'])
+    entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
+    entry.insert(0,'Search: ')
+    entry.bind('<Return>', pushret)
+    entry.focus_set()
+    queuewin.listbx.bind('<<ListboxSelect>>', qwclicked)
+    artw.destroy()
+
+
 #
 ## DEFINE THE LOOKUP WINDOW AND ASSOCIATED FUNCTIONS
 #
@@ -957,7 +1141,7 @@ def lookupwin(lookupT):
     ##
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
     def clickedit(event):
-        global lastpl
+        global lastpl, itemsraw
         connext()
         i = plsngwin.listbx.curselection()[0]
         if lookupT == 'album':
@@ -984,6 +1168,7 @@ def lookupwin(lookupT):
     ##
     ## The tk.Entry box runs this upon <Return>
     def pushret(event):
+        global itemsraw
         connext()
         dispitems = []
         srchterm = editing_item.get().replace('Search: ','')
@@ -992,9 +1177,8 @@ def lookupwin(lookupT):
             stats = client.status()
             for s,v in stats.items():
                 dispitems.append(s + ' : ' + v)
-            for i in dispitems:
-                plsngwin.listbx.insert(tk.END,i)
-            plsngwin.update()
+            plsngwin.listbx.delete(0,tk.END)
+            plsngwin.listvar.set(dispitems)
         if srchterm == 'stats':
             stats = client.stats()
             for s,v in stats.items():
@@ -1005,10 +1189,11 @@ def lookupwin(lookupT):
                     v = int(v)
                     v = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime(v))
                 dispitems.append(s + ' : ' + v)
-            for i in dispitems:
-                plsngwin.listbx.insert(tk.END,i)
-            plsngwin.update()
+            plsngwin.listbx.delete(0,tk.END)
+            plsngwin.listvar.set(dispitems)
         if srchterm != 'status' and srchterm != 'stats':
+            dispitems = []
+            itemsraw = []
             findit = client.search(lookupT,srchterm)
             lastf = ''
             for f in findit:
@@ -1022,12 +1207,10 @@ def lookupwin(lookupT):
                     itemsraw.append(thisfrec)
             for sng in itemsraw:
                 dispitems.append(sng['song'])
-            for i in dispitems:
-                plsngwin.listbx.insert(tk.END,i)
-            plsngwin.update()
+            plsngwin.listbx.delete(0,tk.END)
+            plsngwin.listvar.set(dispitems)
             if srchterm == 'quit;':
                 plsngwin.destroy()
-    #
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
     inidict = {}
     inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
@@ -1037,20 +1220,17 @@ def lookupwin(lookupT):
     plsngwin = TlSbWin(window, 'Search & Play by ' + srchTxt, inidict)
     itemsraw = []
     dispitems = []
-    ## Feeds into update()
-    plsngwin.listbx.bind('<<ListboxSelect>>', clickedit)
-    ## Feeds into select()
     editing_item = tk.StringVar()
     entry = tk.Entry(plsngwin, textvariable=editing_item, width=inidict['sw_x'])
     entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
     entry.insert(0,'Search: ')
     entry.bind('<Return>', pushret)
     entry.focus_set()
-        #
+    plsngwin.listbx.bind('<<ListboxSelect>>', clickedit)
+    artw.destroy()
 ## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
 #
 def addtopl(plaction):
-    ##
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
     plupdate()
     def plclickedit(event):
@@ -1073,11 +1253,11 @@ def addtopl(plaction):
             if doublecheck == True:
                 client.rm(pllist[selectlst])
                 logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
-                # pllist = cp.getlist('serverstats','playlists')
                 plupdate()
         a2plwin.update()
         a2plwin.destroy()
         if aatgl == '1':
+            artw.destroy()
             artWindow(aartvar)
     def songlistclick(event):
         songsel = a2plwin.listbx.curselection()[0]
@@ -1088,8 +1268,8 @@ def addtopl(plaction):
         cs = getcurrsong()
         a2plwin.destroy()
         if aatgl == '1':
+            artw.destroy()
             artWindow(aartvar)
-    ## FUNCTION DEFINITIONS DONE - NOW DO THE GUI STUFF
     inidict = {}
     inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
     inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
@@ -1129,8 +1309,6 @@ def addtopl(plaction):
         for s in songlist:
             a2plwin.listbx.insert(tk.END,s)
     artw.destroy()
-    # if aatgl == '1':
-    #     artWindow(aartvar)
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
@@ -1175,19 +1353,20 @@ def SrvrWindow(swaction):
         logger.info('0) Output [{}] toggled to opposite state.'.format(outputvar))
         srvrw.destroy()
         if aatgl == '1':
+            artw.destroy()
             artWindow(aartvar)
     #
     if swaction == 'server':
         srvrw.listbx.bind('<<ListboxSelect>>', rtnplsel)
         cp.read(mmc4wIni)
         iplist = cp.getlist('basic','serverlist')
-        for i in iplist:
-            srvrw.listbx.insert(tk.END,i)
+        srvrw.listbx.delete(0,tk.END)
+        srvrw.listvar.set(iplist)
     if swaction == 'output':
         srvrw.listbx.bind('<<ListboxSelect>>', outputtggl)
         outputs = getoutputs()[1]
-        for o in outputs:
-            srvrw.listbx.insert(tk.END,o)
+        srvrw.listbx.delete(0,tk.END)
+        srvrw.listvar.set(outputs)
     if artw.winfo_exists():
         artw.destroy()
 #
@@ -1222,13 +1401,14 @@ def PLSelWindow():
         plsw.destroy()
         sleep(1)
         if aatgl == '1':
+            artw.destroy()
             artWindow(aartvar)
     cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
     lastpl = confparse.get("serverstats","lastsetpl")
     plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
-    for pl in pllist:
-        plsw.listbx.insert(tk.END,pl)
+    plsw.listbx.delete(0,tk.END)
+    plsw.listvar.set(pllist)
     if artw.winfo_exists():
         artw.destroy()
     
@@ -1259,8 +1439,7 @@ def aboutWindow():
 def helpWindow():
     global aatgl
     if aatgl == '1':
-        albarttoggle()
-    # pause()
+        artw.destroy()
     hw = tk.Toplevel(window)
     hw.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
     hw.title("MMC4W Help")
@@ -1293,8 +1472,6 @@ def artWindow(aartvar):
     inidict['swht'] = int(confparse.get("albumart","artwinht"))
     inidict['swwd'] = int(confparse.get("albumart","artwinwd"))
     artw = TlWin(window, "AlbumArt",inidict)
-    # art_frame = tk.Frame(artw, height=inidict['swht'], width=inidict['swwd'])
-    # art_frame.grid(row=0,column=0)
     artw.update_idletasks()
     artw.columnconfigure(0, weight=1)
     artw.rowconfigure(0, weight=1)
@@ -1403,6 +1580,10 @@ lookMenu.add_command(label="Toggle PL Build Mode", command=buildpl)
 lookMenu.add_command(label="Launch Browser Player", command=browserplayer)
 menu.add_cascade(label="Look", menu=lookMenu)
 
+queueMenu = tk.Menu(menu, tearoff=False)
+queueMenu.add_command(label='Find and Play',command=lambda: queuewin('title'))
+menu.add_cascade(label="Queue", menu=queueMenu)
+
 helpMenu = tk.Menu(menu, tearoff=False)
 helpMenu.add_command(label="Help", command=helpWindow)
 helpMenu.add_command(label="About", command=aboutWindow)
@@ -1472,7 +1653,8 @@ def threesecdisplaytext():
             displaytext1(msg)
     def eo2():
         global evenodd,buttonvar,dur,endtime,songused,elap
-        songlen = dur[:3]
+        splitdur = dur.split(".")
+        songlen = splitdur[0]
         if buttonvar != 'stop' and buttonvar != 'pause':
             songused = float(dur) - (endtime - time.time())
             if songused >= float(songlen):

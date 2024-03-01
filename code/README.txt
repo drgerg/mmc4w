@@ -1,21 +1,20 @@
-Minimal MPD Client - v2.0.0
+Minimal MPD Client - v2.0.1
 
 Check out the offline help under the Help menu. (updated for v2.0.0)
 
-v1.0.0 was short-lived.  v2.0.0 is here, and it makes me very happy.
+Added a Queue menu to support working with the current song queue.
+  1) Search as many terms as you want until you find what you want. 
+     Then click on an entry to jump to that song.
+  2) You can also search using strings like this: artist:mumford or album:greatest.
+     If you only use one word, it defaults to being a title search.
+  3) The queue is displayed in 'Artist' sorted order, not the actual order of songs.
+     The intent is to make it easier to find things by scrolling.
+  4) Use quit; in the Search: field to close the window. The semicolon is important.
 
-- I replaced several functional window definitions with a couple of classes.  Honestly, it's the first time I've ever actually felt like using a class was helpful.  And it is.
-- I keep learning more details of Tkinter's API.  Some of that knowledge has leaked into MMC4W now.
-- The Server Selection and Playlist Selection menus are gone, replaced with the same sort of window list used in all the other search and select functions.
-- Selecting a playlist does not automatically load it anymore.  You can choose to load it now, or just remember it for later.  This helps when you are joining an existing queue on a multi-clent network.
-- I spent a lot of time working to eliminate orphan windows.
-- You can sync with an existing server queue by simply pressing Play. Or wait until your timer runs down.
-- Changes you make to window placement and sizes are saved when you use the 'Mode' button the second time.
-- You are now prompted to confirm deletion of songs from playlists, and playlists from the server.
-- I added a frame around the buttons, which better centers them in the main window.
+Folder art is now supported along with embedded art.  
+  cover.png, cover.jpg, cover.tiff or cover.bmp are supported filenames.
 
-My list of wants is getting short, which is wonderful.  That list includes:
- - Options to list and manage songs in the current queue.
- - Option to use folder art instead of embedded art.
- - Adding a 'clear' command to the selection windows to start over.
- - Maybe switch to a different ini parser so I can comment the .ini file. (python-ini?)
+Changed to 'listvariable' method of populating selection lists.
+Added saving and restoring of main window sizes to "Mode" functions.
+Corrected a condition in the Search window that caused additional searches to concatenate rather than replace items in the textbox.
+Corrected a condition that caused the song duration to display improperly if it were less or more than three digits.

@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v2.0.0 release.
+This help file was updated for the v2.0.1 release.
 
 ## Putting the Music First
 
@@ -39,7 +39,7 @@ The interface contains the basic required buttons to control a MPD server:
 - Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.
 - Set Non-Standard Port : Tells you how to set up a non-standard port.
 
-### There is a **'Look'** menu that has these functions:
+### The **'Look'** menu has these functions:
 
 - Play a Single : Select a single title by title. (also emulates a little console. See Searching.)
 - Play an Album : Select an album by album title. Turns on sequential playback.
@@ -50,6 +50,10 @@ The interface contains the basic required buttons to control a MPD server:
 - Update "Everything" Playlist : Make sure all songs are in the "Everything" playlist.
 - Toggle PL Build Mode : Sets PL Build Mode. Easily add or delete songs from saved playlists.
 - Launch Browser Player : If a streaming HTTP output is enabled on the server, opens your browser there.
+
+### The **'Queue'** menu has this function:
+
+- Find and Play : Opens a window displaying the songs in the queue. See below for more detail.
 
 ### The 'Help' menu contains:
 
@@ -113,7 +117,21 @@ When the titlebars are on, you can drag the windows around. (You will likely hav
 
 The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.
 
-### Search and Play
+### Search and Play inside the current queue
+
+The **current queue** contains songs that were loaded from a saved playlist, or are the results of searches made from the database as described in the next section.
+
+The **Queue** menu has a 'Search and Play' option.  If you select that option, it opens a window containing a sorted list of all the songs in the current queue.
+
+You can jump to a specific song by entering a word that you expect to find in the title.  A list of songs in the queue containing that word are displayed.  Click the one you want.
+
+You can also search using key:value pairs.  For example, to list songs by The Allman Brothers, type "artist:allman" without quotes.  You'll see a list of their songs.  To search by album name, type "album:greatest". That will return a list of all albums with 'greatest' in their name.
+
+These searches are not case-sensitive.
+
+Type **quit;** to close the window without making a selection.  The semicolon is required. 
+
+### Search and Play directly from the music library
 
 There are three options under the **'Look'** menu related to search.
 
@@ -243,7 +261,7 @@ Under the **'Tools'** menu there is the **'Set Non-Standard Port'** option.  Cho
 
 ## Notes About What Happens Under the Hood
 
-When you press '**Play**', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is being displayed, it attempts to get art embedded in the song.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.
+When you press '**Play**', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is being displayed, it attempts to get art embedded in the song.  If no art is embedded in the song, it asks for folder art.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.
 
 MMC4W uses the Python **threading** module to run a timer in conjunction with a small set of global variables.  In this way we're able to keep the interface satisfactorily snappy and avoid having to poll the server every few seconds to determine if a new song is playing.
 

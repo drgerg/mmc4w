@@ -1,5 +1,5 @@
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<p>This help file was updated for the v2.0.0 release.</p>
+<p>This help file was updated for the v2.0.1 release.</p>
 <h2>Putting the Music First</h2>
 <p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.</p>
 <p><strong>MMC4W</strong> is a MPD Client.  To be clear, you must have access to a running <a href="https://www.drgerg.com/mpd-is-just-awesome.html">MPD</a> server for this app to be of any value to you.</p>
@@ -35,7 +35,7 @@
 <li>Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.</li>
 <li>Set Non-Standard Port : Tells you how to set up a non-standard port.</li>
 </ul>
-<h3>There is a <strong>'Look'</strong> menu that has these functions:</h3>
+<h3>The <strong>'Look'</strong> menu has these functions:</h3>
 <ul>
 <li>Play a Single : Select a single title by title. (also emulates a little console. See Searching.)</li>
 <li>Play an Album : Select an album by album title. Turns on sequential playback.</li>
@@ -46,6 +46,10 @@
 <li>Update "Everything" Playlist : Make sure all songs are in the "Everything" playlist.</li>
 <li>Toggle PL Build Mode : Sets PL Build Mode. Easily add or delete songs from saved playlists.</li>
 <li>Launch Browser Player : If a streaming HTTP output is enabled on the server, opens your browser there.</li>
+</ul>
+<h3>The <strong>'Queue'</strong> menu has this function:</h3>
+<ul>
+<li>Find and Play : Opens a window displaying the songs in the queue. See below for more detail.</li>
 </ul>
 <h3>The 'Help' menu contains:</h3>
 <ul>
@@ -84,7 +88,14 @@
 <p><img alt="Titlebar on." src="./_internal/titlebar.png" /></p>
 <p>When the titlebars are on, you can drag the windows around. (You will likely have to expand the art window a bit).  Where you leave the upper-left corners gets saved when you press <strong>'Mode'</strong> again.  Your windows will stay there until you press <strong>'Mode'</strong> again.</p>
 <p>The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.</p>
-<h3>Search and Play</h3>
+<h3>Search and Play inside the current queue</h3>
+<p>The <strong>current queue</strong> contains songs that were loaded from a saved playlist, or are the results of searches made from the database as described in the next section.</p>
+<p>The <strong>Queue</strong> menu has a 'Search and Play' option.  If you select that option, it opens a window containing a sorted list of all the songs in the current queue.</p>
+<p>You can jump to a specific song by entering a word that you expect to find in the title.  A list of songs in the queue containing that word are displayed.  Click the one you want.</p>
+<p>You can also search using key:value pairs.  For example, to list songs by The Allman Brothers, type "artist:allman" without quotes.  You'll see a list of their songs.  To search by album name, type "album:greatest". That will return a list of all albums with 'greatest' in their name.</p>
+<p>These searches are not case-sensitive.</p>
+<p>Type <strong>quit;</strong> to close the window without making a selection.  The semicolon is required. </p>
+<h3>Search and Play directly from the music library</h3>
 <p>There are three options under the <strong>'Look'</strong> menu related to search.</p>
 <ul>
 <li>Play a Single</li>
@@ -168,7 +179,7 @@ Hit the <strong>Delete</strong> button to get rid of it. (or <strong>Add</strong
 <h3>Other Random Options</h3>
 <p>Under the <strong>'Tools'</strong> menu there is the <strong>'Set Non-Standard Port'</strong> option.  Choosing that opens a pop-up which provides details about how to set any port other than 6600 (the default MPD port).  Most people will never use this.</p>
 <h2>Notes About What Happens Under the Hood</h2>
-<p>When you press '<strong>Play</strong>', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is being displayed, it attempts to get art embedded in the song.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.</p>
+<p>When you press '<strong>Play</strong>', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is being displayed, it attempts to get art embedded in the song.  If no art is embedded in the song, it asks for folder art.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.</p>
 <p>MMC4W uses the Python <strong>threading</strong> module to run a timer in conjunction with a small set of global variables.  In this way we're able to keep the interface satisfactorily snappy and avoid having to poll the server every few seconds to determine if a new song is playing.</p>
 <p>The Tkinter interface runs continuously waiting for button presses.  Blocking code (like sleep(10)) is avoided at all cost.  As a result, things work.  From my chair, it's perfect.  We'll see how long that perspective lasts, shan't we?</p>
 <p>The design of this utility is intentionally simple.  I'm sure there are several 'better' ways it can be done, I just don't know what they are. </p>
