@@ -3,7 +3,7 @@ Minimal MPD Client - v2.0.4
 Check out the offline help under the Help menu. (updated for v2.0.4)
 
 The album name is displayed now in True Blue Album Mode instead of a playlist name.
-Playlist Build Mode now shows a list of playlists that do NOT contain the current song.
+Playlist Build Mode now shows lists of playlists that do and do not contain the current song.
 The method of writing the art to the art window is much improved. As I learn, I apply knowledge.
 The art window is created typically once per session, rather than create/destroy multiple times.
 I finally added a Tool menu option to ask MPD to update the database.
