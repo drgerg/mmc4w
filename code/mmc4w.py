@@ -197,7 +197,7 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         scrollbar.config(bg='black',command=self.listbx.yview)
         scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
 
-class TlWin(tk.Toplevel):  ## plain - no scrollbar or listbox.
+class TlWin(tk.Toplevel):  ## plain - no scrollbar, single listbox.
     def __init__(self, parent, title, inidict):
         tk.Toplevel.__init__(self)
         self.swin_x = inidict['sw_x']
@@ -217,6 +217,32 @@ class TlWin(tk.Toplevel):  ## plain - no scrollbar or listbox.
         self.listbx = tk.Listbox(self,listvariable=self.listvar)
         self.listbx.configure(bg='black',fg='white')
         self.listbx.grid(column=0,row=0,sticky='NSEW')
+        # self.iconphoto(False, iconpng)
+
+class TbplWin(tk.Toplevel):  ##Build Playlist Window.
+    def __init__(self, parent, title, inidict):
+        tk.Toplevel.__init__(self)
+        self.swin_x = inidict['sw_x']
+        self.swin_y = inidict['sw_y']
+        self.swinht = inidict['swht']
+        self.swinwd = inidict['swwd']
+        self.title(title)
+        self.configure(bg='black')
+        srchwin_xpos = str(int(self.winfo_screenwidth() - self.swin_x))
+        srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
+        geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
+        self.geometry(geometrystring)
+        self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        self.columnconfigure([0,1], weight=1)
+        self.rowconfigure(0,weight=1)
+        self.listvar = tk.StringVar()
+        self.listbx = tk.Listbox(self,listvariable=self.listvar)
+        self.listbx.configure(bg='black',fg='white')
+        self.listbx.grid(column=0,row=0,sticky='NSEW')
+        self.listvar2 = tk.StringVar()
+        self.listbx2 = tk.Listbox(self,listvariable=self.listvar2)
+        self.listbx2.configure(bg='black',fg='white')
+        self.listbx2.grid(column=1,row=0,sticky='NSEW')
         # self.iconphoto(False, iconpng)
 
 class TartWin(tk.Toplevel):  ## for album art.
@@ -247,12 +273,15 @@ def loadplsongs(song):
     connext()
     pls_on_srvr = []
     pl_without_sng = []
+    pl_with_sng = []
     pls_on_srvr = client.listplaylists()
     for i in pls_on_srvr:
         plsongs = client.listplaylistinfo(i['playlist'])
         if song not in str(plsongs):
             pl_without_sng.append(i['playlist'])
-    return pl_without_sng
+        if song in str(plsongs):
+            pl_with_sng.append(i['playlist'])
+    return pl_without_sng,pl_with_sng
 
 def getoutputs():
     connext()
@@ -679,9 +708,11 @@ def getcurrsong():
             globsongtitle = "Not Connected."
         bpltgl = confparse.get('program','buildmode')
         if bpltgl == '1':
-            pls_without_song = loadplsongs(cs['title'])
+            pls_without_song,pls_with_song = loadplsongs(cs['title'])
             bplwin.listbx.delete(0,tk.END)
-            bplwin.listvar.set(pls_without_song)
+            bplwin.listvar.set(pls_with_song)
+            bplwin.listbx2.delete(0,tk.END)
+            bplwin.listvar2.set(pls_without_song)
     return cs
 #
 #
@@ -1254,9 +1285,11 @@ def addtopl(plaction):
                 client.playlistadd(pllist[selectlst],cs['file'])
                 bpltgl = confparse.get('program','buildmode')
                 if bpltgl == '1':
-                    pls_without_song = loadplsongs(cs['title'])
+                    pls_without_song,pls_with_song = loadplsongs(cs['title'])
                     bplwin.listbx.delete(0,tk.END)
-                    bplwin.listvar.set(pls_without_song)
+                    bplwin.listvar.set(pls_with_song)
+                    bplwin.listbx2.delete(0,tk.END)
+                    bplwin.listvar2.set(pls_without_song)
                 logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
         if plaction == 'remove':
             pllist = cp.getlist('serverstats','playlists')
@@ -1476,7 +1509,7 @@ def buildpl():
         confparse.set('program','buildmode','1')
         button_load.configure(text='Add', bg='green', fg='white', command=lambda: addtopl('add'))
         button_tbtog.configure(text='Delete', bg='red', fg='white',command=deletecurrent)
-        bplwin = TlWin(window, "Playlists Without Current Song",bplwinidict)
+        bplwin = TbplWin(window, "Playlists With and Without Current Song",bplwinidict)
         logger.debug('BPM) PL Build Mode turned ON.') 
         getcurrsong()
     else:
@@ -1672,7 +1705,7 @@ threesecdisplaytext()
 confparse.read(mmc4wIni)
 bpltgl = confparse.get('program','buildmode')
 if bpltgl == '1': # Just on the odd chance it crashed and left this at '1'.
-    bplwin = TlWin(window, "Playlists Without Current Song",bplwinidict)
+    bplwin = TbplWin(window, "Playlists Without Current Song",bplwinidict)
     buildpl()
 aart = artWindow(1)
 artw = TartWin(window, "AlbumArt",artwinidict,aart)

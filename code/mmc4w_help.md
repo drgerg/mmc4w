@@ -192,7 +192,8 @@ You load playlists into the queue and then MPD plays that queue using the settin
 
 ![Toggle PL Build Mode](./_internal/plbuildmode1.png)
 
-A window opens titled **"Playlists Without Current Song"**.  This window updates each time a new song starts.
+A window opens titled **"Playlists With and Without Current Song"**.  Playlists containing the current song are on the left, ones without the current song are on the right.  This window updates each time a new song starts.  
+
 You can move and resize that window to suit your tastes.  When you exit PLBuild Mode, your settings are saved to the mmc4w.ini file.
 
 ![PL Build Mode](./_internal/plbuildmode2.png)
