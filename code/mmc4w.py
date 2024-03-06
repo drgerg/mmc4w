@@ -6,7 +6,6 @@
 # mmc4w.py uses the python-musicpd library.
 ##
 
-# from tkinter import *
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
@@ -24,7 +23,11 @@ import time
 import logging
 import webbrowser
 
-version = "v2.0.1"
+if sys.platform != "win32":
+    import subprocess
+
+version = "v2.0.4"
+# v2.0.4 - Doing things a better way.
 # v2.0.1 - Handling the queue.
 # v2.0.0 - Introduced classes for some windows. Tons more stability tweaks.
 # v1.0.0 - Fixed error in the fiver() function.
@@ -110,7 +113,10 @@ if firstrun == '1':
 if serverlist == "":
     proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
     if proceed == True:
-        os.startfile(mmc4wIni)
+        if sys.platform == "win32":
+            os.startfile(mmc4wIni)
+        else:
+            subprocess.run(["xdg-open", mmc4wIni])
         sys.exit()
 
 if serverip == '':
@@ -137,6 +143,31 @@ if version != confparse.get('program','version'):
         confparse.write(SLcnf)
 
 lastpl = confparse.get('serverstats','lastsetpl')
+
+tsbinidict = {} # for search windows
+tsbinidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
+tsbinidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
+tsbinidict['swht'] = int(confparse.get("searchwin","swinht"))
+tsbinidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+
+artwinidict = {} # for the album art window
+artwinidict['sw_x'] = int(confparse.get("albumart","aartwin_x"))
+artwinidict['sw_y'] = int(confparse.get("albumart","aartwin_y"))
+artwinidict['swht'] = int(confparse.get("albumart","artwinht"))
+artwinidict['swwd'] = int(confparse.get("albumart","artwinwd"))
+
+def makebplwindict():
+    bplwinidict = {} # for the 'Build Playlist' window
+    bplwinidict['sw_x'] = int(confparse.get("buildplwin","bplwin_x"))
+    bplwinidict['sw_y'] = int(confparse.get("buildplwin","bplwin_y"))
+    bplwinidict['swht'] = int(confparse.get("buildplwin","bplwinht"))
+    bplwinidict['swwd'] = int(confparse.get("buildplwin","bplwinwd"))
+    return bplwinidict
+
+bplwinidict = makebplwindict()
+
+cp.read(mmc4wIni)
+pllist = cp.getlist('serverstats','playlists')
 #
 ## ================= TOPLEVEL WINDOW CLASS DEFINITION ==========================
 class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
@@ -152,8 +183,8 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
         geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
         self.geometry(geometrystring)
-        # window.update_idletasks()
         self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        # self.iconphoto(False, iconpng)
         self.columnconfigure([0,1,2,3],weight=1)
         self.rowconfigure([0,1,2,3,4,5],weight=1)
         self.rowconfigure(6,weight=0)
@@ -179,11 +210,49 @@ class TlWin(tk.Toplevel):  ## plain - no scrollbar or listbox.
         srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
         geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
         self.geometry(geometrystring)
-        # window.update_idletasks()
         self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        self.columnconfigure(0,weight=1)
+        self.rowconfigure(0,weight=1)
+        self.listvar = tk.StringVar()
+        self.listbx = tk.Listbox(self,listvariable=self.listvar)
+        self.listbx.configure(bg='black',fg='white')
+        self.listbx.grid(column=0,row=0,sticky='NSEW')
+        # self.iconphoto(False, iconpng)
+
+class TartWin(tk.Toplevel):  ## for album art.
+    def __init__(self, parent, title, artwinidict,aart):
+        tk.Toplevel.__init__(self)
+        self.swin_x = artwinidict['sw_x']
+        self.swin_y = artwinidict['sw_y']
+        self.swinht = artwinidict['swht']
+        self.swinwd = artwinidict['swwd']
+        self.title(title)
+        self.configure(bg='black')
+        srchwin_xpos = str(int(self.winfo_screenwidth() - self.swin_x))
+        srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
+        geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
+        self.geometry(geometrystring)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.config(bg="white")  # Set window background color
+        self.aartLabel = tk.Label(self,image=aart)
+        self.aartLabel.grid(column=0, row=0, padx=5, pady=5)
+        self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico') # - Windows
+        # self.iconphoto(False, iconpng) # Linux
 
 ## ================  END OF CLASS DEFINITIONS ===================================
 
+def loadplsongs(song):
+    connext()
+    pls_on_srvr = []
+    pl_without_sng = []
+    pls_on_srvr = client.listplaylists()
+    for i in pls_on_srvr:
+        plsongs = client.listplaylistinfo(i['playlist'])
+        if song not in str(plsongs):
+            pl_without_sng.append(i['playlist'])
+    return pl_without_sng
 
 def getoutputs():
     connext()
@@ -287,7 +356,7 @@ def pause2play():
     oldendtime = endtime
     endtime = time.time() + int(float(dur) - float(elap))
     logger.info('2) New endtime generated in pause(). Old: {}, New {}'.format(oldendtime,endtime))
-    button_pause.configure(text='Pause',bg='SystemButtonFace') ## 'systemButtonFace' is the magic word.
+    button_pause.configure(text='Pause',bg='gray90') ## 'systemButtonFace' is the magic word.
     pstate = 'play'
     buttonvar = 'play'
     pstart = 0 
@@ -367,10 +436,10 @@ def btnupdater(newstate):
         t2.daemon = True
         t2.start()
     if newstate == 'stop' and buttonvar == 'pause':
-        button_pause.configure(bg='SystemButtonFace')
+        button_pause.configure(bg='gray90')
         endtime = time.time()
     if newstate == 'play' and buttonvar == 'pause':
-        # button_pause.configure(bg='SystemButtonFace')
+        # button_pause.configure(bg='gray90')
         pause2play()
 
 def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
@@ -381,8 +450,8 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     lastvol = str(vol_int)
     logger.debug('Set volume to {}.'.format(vol_int))
     thisvol = vol_int
-    upconf = ['Vol +','SystemButtonFace','black']
-    dnconf = ['Vol -','SystemButtonFace','black']
+    upconf = ['Vol +','gray90','black']
+    dnconf = ['Vol -','gray90','black']
     if thisvol == 100:
         upconf = ['100','gray13','white']
     if thisvol == 95:
@@ -404,8 +473,8 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     if thisvol == 55:
         upconf = ['55','AntiqueWhite1','black']
     if thisvol == 50:
-        upconf = ['Vol +','SystemButtonFace','black']
-        dnconf = ['Vol -','SystemButtonFace','black']
+        upconf = ['Vol +','gray90','black']
+        dnconf = ['Vol -','gray90','black']
     if thisvol == 45:
         dnconf = ['45','CadetBlue1','black']
     if thisvol == 40:
@@ -511,11 +580,16 @@ def toglsingle():
         sin = 's'
         msg = 'Single is set to OFF.'
     displaytext1(msg)
+
+def dbupdate():
+    connext()
+    cludrtn = client.update()
+    logger.info("99) Ran client.update(). Returned {}".format(cludrtn))
 #
 ##  DEFINE getcurrsong() - THE MOST POPULAR FUNCTION HERE.
 #
 def getcurrsong():
-    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,cxstat,buttonvar,ran,rpt,sin,con
+    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,cxstat,buttonvar,ran,rpt,sin,con,artw
     connext()
     if threading.active_count() < 2:
         logger.debug("D9| The threading.active_count() dropped below 2. Quitting.")
@@ -557,13 +631,15 @@ def getcurrsong():
     if cs == {}:
         client.stop()
         buttonvar = 'stop'
-        artWindow(0)
+        aart = artWindow(0)
+        artw.aartLabel.configure(image=aart)
         globsongtitle = "No song in the queue. Go find one."
     else:
         msg,gendtime = getendtime(cs,stat)
         logger.debug('D2| Headed to getaartpic(**cs).')
         getaartpic(**cs)
-        window.update()
+        aart = artWindow(1)
+        artw.aartLabel.configure(image=aart)
         if 'volume' in stat:
             lastvol = stat['volume']
             vol_fives = fiver(lastvol)
@@ -601,6 +677,11 @@ def getcurrsong():
             logger.info("6) pstate: {}.".format(pstate))
         if cxstat == 0:
             globsongtitle = "Not Connected."
+        bpltgl = confparse.get('program','buildmode')
+        if bpltgl == '1':
+            pls_without_song = loadplsongs(cs['title'])
+            bplwin.listbx.delete(0,tk.END)
+            bplwin.listvar.set(pls_without_song)
     return cs
 #
 #
@@ -634,11 +715,6 @@ def getaartpic(**cs):
                 cover.write(eadict['data'])
         logger.debug('D6| Wrote {} bytes to cover.png.  len(eadict) is: {}'.format(done,len(eadict)))
         aartvar = 1
-        try:
-            # artw.title()
-            artw.destroy()
-        except (AttributeError,NameError,tk.TclError):
-            pass
     elif len(eadict) == 0:
         try:
             fadict = client.albumart(cs['file'],0)
@@ -653,12 +729,6 @@ def getaartpic(**cs):
                         received += int(fadict.get('binary'))
                 logger.debug('D6| Wrote {} bytes to cover.png.  len(fadict) is: {}'.format(received,len(fadict)))
                 aartvar = 1
-                try:
-                    # artw.title()
-                    artw.destroy()
-                except (AttributeError,NameError,tk.TclError):
-                    pass
-                # cli.disconnect()
             else:
                 aartvar = 0
         except musicpd.CommandError:
@@ -702,7 +772,10 @@ def songtitlefollower():
 def configurator():
     proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
     if proceed == True:
-        os.startfile(mmc4wIni)
+        if sys.platform == "win32":
+            os.startfile(mmc4wIni)
+        else:
+            subprocess.run(["xdg-open", mmc4wIni])
         sleep(1)
         exit()
 
@@ -783,12 +856,29 @@ def albarttoggle():
                 aartvar = 1
             else:
                 aartvar = 0
-            artWindow(aartvar)
+            aart = artWindow(1)  ## artWindow now returns aart ready for use.
+            artw = TartWin(window, "AlbumArt",artwinidict,aart) # new window instance.
+            if tbarini == '0':
+                artw.overrideredirect(True)
         except (ValueError,KeyError):
             aartvar = 0
             artWindow(aartvar)
             pass
     confparse.set("albumart","albarttoggle",aatgl)
+    with open(mmc4wIni, 'w') as SLcnf:
+        confparse.write(SLcnf)
+
+def setbplwinstats():
+    disp_x = str(window.winfo_screenwidth())
+    disp_y = str(window.winfo_screenheight())
+    bplwingeo = bplwin.geometry()
+    bwgeo = bplwingeo.replace('x',' ')
+    bwgeo = bwgeo.replace('+',' ')
+    bwgeo = bwgeo.split()
+    confparse.set("buildplwin","bplwin_x",str(int(disp_x)-int(bwgeo[2])))
+    confparse.set("buildplwin","bplwin_y",str(int(disp_y)-int(bwgeo[3])))
+    confparse.set("buildplwin","bplwinht",bwgeo[1])
+    confparse.set("buildplwin","bplwinwd",bwgeo[0])
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
 
@@ -803,8 +893,8 @@ def setWinStats():
     awgeo = awgeo.split()
     disp_x = str(window.winfo_screenwidth())
     disp_y = str(window.winfo_screenheight())
-    confparse.set("mainwindow","winwd",str(int(disp_x)-int(mwgeo[0])))
-    confparse.set("mainwindow","winht",str(int(disp_y)-int(mwgeo[1])))
+    confparse.set("mainwindow","winwd",mwgeo[0])
+    confparse.set("mainwindow","winht",mwgeo[1])
     confparse.set("mainwindow","win_x",str(int(disp_x)-int(mwgeo[2])))
     confparse.set("mainwindow","win_y",str(int(disp_y)-int(mwgeo[3])))
     confparse.set("albumart","aartwin_x",str(int(disp_x)-int(awgeo[2])))
@@ -813,9 +903,6 @@ def setWinStats():
     confparse.set("albumart","artwinht",awgeo[0])
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
-    print("mwgeo: " + str(mwgeo))
-    print("awgeo: " + str(awgeo))
-    print("display: " + disp_x + " x " + disp_y)
 
 
 def tbtoggle():
@@ -909,7 +996,7 @@ def deletecurrent():
     connext()
     cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
-    artw.destroy()
+    # artw.destroy()
     if lastpl in pllist:
         try:
             ret = client.listplaylistinfo(lastpl)
@@ -927,8 +1014,8 @@ def deletecurrent():
     else:
         messagebox.showinfo('No Playlist Selected','You have not yet selected a saved playlist.')
     if aatgl == '1':
-        artw.destroy()
-        artWindow(aartvar)
+        aart = artWindow(aartvar)  ## artWindow prepares the image, 'configs' the Label and returns image as well.
+        artw.aartLabel.configure(image=aart)
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
 ## https://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
@@ -958,6 +1045,7 @@ class FaultTolerantTk(tk.Tk):
 ##  THIS IS THE 'ROOT' WINDOW.  IT IS NAMED 'window' rather than 'root'.  ##
 # window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
 window = tk.Tk()  # Create the root window with errors in console, invisible to Windows.
+# window.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
 window.title("Minimal MPD Client " + version)  # Set window title
 confparse.read(mmc4wIni)  # get parameters from config .ini file.
 winHt = int(confparse.get("mainwindow","winht")) # default: winWd = 380
@@ -980,81 +1068,8 @@ main_frame.columnconfigure([0,1,2,3,4], weight=0)
 #
 ## DEFINE THE QUEUE WINDOW
 #
-# def queuewin(qwaction):
-#     global itemsraw,dispitems
-#     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
-#     def qwclicked(event):
-#         global itemsraw,dispitems
-#         connext()
-#         t = queuewin.listbx.curselection()[0]
-#         clikd = dispitems[t].split(" | ")
-#         for m in itemsraw:
-#             if clikd[0] == m['artist'] and clikd[1] == m['title'] and clikd[2] == m['album']:
-#                 playit = m['pos']
-#         # client.play(itemsraw[t]['pos'])
-#         client.play(playit)
-#         getcurrsong()
-#         queuewin.destroy()
-#     ##
-#     ## The tk.Entry box runs this upon <Return>
-#     def pushret(event):
-#         global itemsraw,dispitems
-#         connext()
-#         srchterm = editing_item.get().replace('Search: ','')
-#         editing_item.set('Search: ')
-#         if srchterm != 'quit;':
-#             if ":" in srchterm:
-#                 fullsearch = srchterm.split(":")
-#                 try:
-#                     findit = client.playlistsearch(fullsearch[0],fullsearch[1])
-#                 except musicpd.CommandError:
-#                     pass
-#             else:
-#                 findit = client.playlistsearch('title',srchterm)
-#             itemsraw = []
-#             dispitems = []
-#             for f in findit:
-#                 thisfrec = f['artist'] + ' | ' + f['title'] + ' | ' + f['album']
-#                 dispitems.append(thisfrec)
-#                 itemsraw.append(f)
-#             queuewin.listbx.delete(0,tk.END)
-#             dispitems.sort()
-#             queuewin.listvar.set(dispitems)
-#         if srchterm == 'quit;':
-#             queuewin.destroy()
-#             if aatgl == '1':
-#                 artw.destroy()
-#                 artWindow(aartvar)
-#     ##
-#     confparse.read(mmc4wIni)  # get parameters from config .ini file.
-#     inidict = {}
-#     inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
-#     inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
-#     inidict['swht'] = int(confparse.get("searchwin","swinht"))
-#     inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
-#     queuewin = TlSbWin(window, 'Search the Queue',inidict)
-#     connext()
-#     dispitems = []
-#     itemsraw = []
-#     findit = client.playlistinfo()
-#     for f in findit:
-#         thisfrec = f['artist'] + ' | ' + f['title'] + ' | ' + f['album']
-#         dispitems.append(thisfrec)
-#         itemsraw.append(f)
-#         dispitems.sort()
-#     queuewin.listvar.set(dispitems)
-#     ## Feeds into select()
-#     editing_item = tk.StringVar()
-#     entry = tk.Entry(queuewin, textvariable=editing_item, width=inidict['sw_x'])
-#     entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
-#     entry.insert(0,'Search: ')
-#     entry.bind('<Return>', pushret)
-#     entry.focus_set()
-#     queuewin.listbx.bind('<<ListboxSelect>>', qwclicked)
-#     artw.destroy()
-
 def queuewin(qwaction):
-    global findit,dispitems
+    global findit,dispitems,tsbinidict
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
     def qwclicked(event):
         global findit,dispitems
@@ -1094,16 +1109,11 @@ def queuewin(qwaction):
         if srchterm == 'quit;':
             queuewin.destroy()
             if aatgl == '1':
-                artw.destroy()
-                artWindow(aartvar)
+                aart = artWindow(aartvar)
+                artw.aartLabel.configure(image=aart)
     ##
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    inidict = {}
-    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
-    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
-    inidict['swht'] = int(confparse.get("searchwin","swinht"))
-    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
-    queuewin = TlSbWin(window, 'Search the Queue',inidict)
+
+    queuewin = TlSbWin(window, 'Search the Queue',tsbinidict)
     connext()
     dispitems = []
     findit = client.playlistinfo()
@@ -1114,13 +1124,13 @@ def queuewin(qwaction):
     queuewin.listvar.set(dispitems)
     ## Feeds into select()
     editing_item = tk.StringVar()
-    entry = tk.Entry(queuewin, textvariable=editing_item, width=inidict['sw_x'])
+    entry = tk.Entry(queuewin, textvariable=editing_item, width=tsbinidict['sw_x'])
     entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
     entry.insert(0,'Search: ')
     entry.bind('<Return>', pushret)
     entry.focus_set()
     queuewin.listbx.bind('<<ListboxSelect>>', qwclicked)
-    artw.destroy()
+    # artw.destroy()
 
 
 #
@@ -1156,6 +1166,7 @@ def lookupwin(lookupT):
             client.clear()
             for s in albsngs:
                 client.add(s['file'])
+            lastpl = str(itemsraw[i]['album'])
             play()
         else:
             client.repeat(0)
@@ -1212,22 +1223,17 @@ def lookupwin(lookupT):
             if srchterm == 'quit;':
                 plsngwin.destroy()
     confparse.read(mmc4wIni)  # get parameters from config .ini file.
-    inidict = {}
-    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
-    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
-    inidict['swht'] = int(confparse.get("searchwin","swinht"))
-    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
-    plsngwin = TlSbWin(window, 'Search & Play by ' + srchTxt, inidict)
+    plsngwin = TlSbWin(window, 'Search & Play by ' + srchTxt, tsbinidict)
     itemsraw = []
     dispitems = []
     editing_item = tk.StringVar()
-    entry = tk.Entry(plsngwin, textvariable=editing_item, width=inidict['sw_x'])
+    entry = tk.Entry(plsngwin, textvariable=editing_item, width=tsbinidict['sw_x'])
     entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
     entry.insert(0,'Search: ')
     entry.bind('<Return>', pushret)
     entry.focus_set()
     plsngwin.listbx.bind('<<ListboxSelect>>', clickedit)
-    artw.destroy()
+    # artw.destroy()
 ## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
 #
 def addtopl(plaction):
@@ -1246,6 +1252,11 @@ def addtopl(plaction):
                 messagebox.showinfo('Song Already There','{} is already in {}.'.format(addfile.split('/')[2],pllist[selectlst]))
             else:
                 client.playlistadd(pllist[selectlst],cs['file'])
+                bpltgl = confparse.get('program','buildmode')
+                if bpltgl == '1':
+                    pls_without_song = loadplsongs(cs['title'])
+                    bplwin.listbx.delete(0,tk.END)
+                    bplwin.listvar.set(pls_without_song)
                 logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
         if plaction == 'remove':
             pllist = cp.getlist('serverstats','playlists')
@@ -1257,8 +1268,8 @@ def addtopl(plaction):
         a2plwin.update()
         a2plwin.destroy()
         if aatgl == '1':
-            artw.destroy()
-            artWindow(aartvar)
+            aart = artWindow(aartvar)
+            artw.aartLabel.configure(image=aart)
     def songlistclick(event):
         songsel = a2plwin.listbx.curselection()[0]
         logger.debug('ATPL) Playlist "{}" was listed in addtopl().'.format(lastpl))
@@ -1268,20 +1279,15 @@ def addtopl(plaction):
         cs = getcurrsong()
         a2plwin.destroy()
         if aatgl == '1':
-            artw.destroy()
-            artWindow(aartvar)
-    inidict = {}
-    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
-    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
-    inidict['swht'] = int(confparse.get("searchwin","swinht"))
-    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
+            aart = artWindow(aartvar)
+            artw.aartLabel.configure(image=aart)
     if plaction == 'list':
         a2title = "List {} - Play Selected".format(lastpl)
     if plaction == 'add':
         a2title = "Add Current Song to Playlist"
     if plaction == 'remove':
         a2title = "Delete the Selected Playlist"
-    a2plwin = TlSbWin(window, a2title, inidict)
+    a2plwin = TlSbWin(window, a2title, tsbinidict)
     a2plwin.configure(bg='black')
     if plaction != 'list':
         a2plwin.listbx.bind('<<ListboxSelect>>', plclickedit)
@@ -1308,7 +1314,6 @@ def addtopl(plaction):
             logger.info('ATPL) Listed songs from {}.'.format(thislist))
         for s in songlist:
             a2plwin.listbx.insert(tk.END,s)
-    artw.destroy()
 #
 ## DEFINE THE SERVER SELECTION WINDOW
 #
@@ -1319,12 +1324,7 @@ def SrvrWindow(swaction):
         srvrwtitle = "Servers"
     if swaction == 'output':
         srvrwtitle = "MPD Server Outputs"
-    inidict = {}
-    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
-    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
-    inidict['swht'] = int(confparse.get("searchwin","swinht"))
-    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
-    srvrw = TlSbWin(window, srvrwtitle, inidict)
+    srvrw = TlSbWin(window, srvrwtitle, tsbinidict)
     def rtnplsel(ipvar):
         global serverip,firstrun,lastpl
         client.close()
@@ -1353,8 +1353,8 @@ def SrvrWindow(swaction):
         logger.info('0) Output [{}] toggled to opposite state.'.format(outputvar))
         srvrw.destroy()
         if aatgl == '1':
-            artw.destroy()
-            artWindow(aartvar)
+            aart = artWindow(aartvar)
+            artw.aartLabel.configure(image=aart)
     #
     if swaction == 'server':
         srvrw.listbx.bind('<<ListboxSelect>>', rtnplsel)
@@ -1367,22 +1367,17 @@ def SrvrWindow(swaction):
         outputs = getoutputs()[1]
         srvrw.listbx.delete(0,tk.END)
         srvrw.listvar.set(outputs)
-    if artw.winfo_exists():
-        artw.destroy()
+    # if artw.winfo_exists():
+    #     artw.destroy()
 #
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
 def PLSelWindow():
-    global serverip,lastpl, aartvar,aatgl
+    global serverip,lastpl, aartvar,aatgl,tsbinidict
     plupdate()
     cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     plswtitle = "PlayLists"
-    inidict = {}
-    inidict['sw_x'] = int(confparse.get("searchwin","swin_x"))
-    inidict['sw_y'] = int(confparse.get("searchwin","swin_y"))
-    inidict['swht'] = int(confparse.get("searchwin","swinht"))
-    inidict['swwd'] = int(confparse.get("searchwin","swinwd"))
-    plsw = TlSbWin(window, plswtitle, inidict)
+    plsw = TlSbWin(window, plswtitle, tsbinidict)
     def rtnplsel(plvar):
         global serverip,lastpl
         selection = plsw.listbx.curselection()[0]
@@ -1401,16 +1396,16 @@ def PLSelWindow():
         plsw.destroy()
         sleep(1)
         if aatgl == '1':
-            artw.destroy()
-            artWindow(aartvar)
+            aart = artWindow(aartvar)
+            artw.aartLabel.configure(image=aart)
     cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
     lastpl = confparse.get("serverstats","lastsetpl")
     plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
     plsw.listbx.delete(0,tk.END)
     plsw.listvar.set(pllist)
-    if artw.winfo_exists():
-        artw.destroy()
+    # if artw.winfo_exists():
+    #     artw.destroy()
     
 #
 ## DEFINE THE ABOUT WINDOW
@@ -1425,6 +1420,7 @@ def aboutWindow():
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
     aw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+    # aw.iconphoto(False, iconpng)
     awlabel = tk.Label(aw, font=18, text ="About MMC4W " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
@@ -1438,10 +1434,7 @@ def aboutWindow():
 #
 def helpWindow():
     global aatgl
-    if aatgl == '1':
-        artw.destroy()
     hw = tk.Toplevel(window)
-    hw.tk.call('tk', 'scaling', 1.0)    # This prevents the text being huge on hiDPI displays.
     hw.title("MMC4W Help")
     hwinWd = 1000  # Set window size and placement
     hwinHt = int(window.winfo_screenheight() * 0.66)
@@ -1450,6 +1443,7 @@ def helpWindow():
     hw.config(background="white")  # Set window background color
     hw.geometry(str(hwinWd) + "x" + str(hwinHt) + "+{}+{}".format(x_Left, y_Top))
     hw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+    # hw.iconphoto(False, iconpng) # Linux
     hwlabel = HTMLLabel(hw, height=3, html='<h2 style="text-align: center">MMC4W Help</h2>')
     hw.columnconfigure(0, weight=1)
     hw.rowconfigure(1, weight=1)
@@ -1460,47 +1454,39 @@ def helpWindow():
 ## DEFINE THE ART WINDOW
 #
 def artWindow(aartvar):
-    global artw,tbarini
+    global tbarini,artwinidict  ## removed artw from this list.
     tbarini = confparse.get("mainwindow","titlebarstatus")
     if aartvar == 1:
         thisimage = (path_to_dat + '/cover.png')
     if aartvar == 0:
         thisimage = path_to_dat + '/ico/mmc4w.png'
-    inidict = {}
-    inidict['sw_x'] = int(confparse.get("albumart","aartwin_x"))
-    inidict['sw_y'] = int(confparse.get("albumart","aartwin_y"))
-    inidict['swht'] = int(confparse.get("albumart","artwinht"))
-    inidict['swwd'] = int(confparse.get("albumart","artwinwd"))
-    artw = TlWin(window, "AlbumArt",inidict)
-    artw.update_idletasks()
-    artw.columnconfigure(0, weight=1)
-    artw.rowconfigure(0, weight=1)
-    artw.rowconfigure(1, weight=1)
-    artw.config(bg="white")  # Set window background color
     aart = Image.open(thisimage)
-    aart = aart.resize((inidict['swht']-10,inidict['swwd']-10))
+    aart = aart.resize((artwinidict['swht']-10,artwinidict['swwd']-10))
     aart = ImageTk.PhotoImage(aart)
     aart.image = aart  # required for some reason
-    aartLabel = tk.Label(artw,image=aart)
-    aartLabel.grid(column=0, row=0, padx=5, pady=5)
-    if tbarini == '0':
-        artw.overrideredirect(1)
-    artw.update()
+    return aart
 #
 ## DEFINE BUILD PLAYLIST MODE
 #
 def buildpl():
+    global bplwinidict,bplwin
     confparse.read(mmc4wIni)
     bpltgl = confparse.get('program','buildmode')
     if bpltgl == '0':  ## If zero (OFF), set to ON and set up for ON.
         confparse.set('program','buildmode','1')
         button_load.configure(text='Add', bg='green', fg='white', command=lambda: addtopl('add'))
         button_tbtog.configure(text='Delete', bg='red', fg='white',command=deletecurrent)
+        bplwin = TlWin(window, "Playlists Without Current Song",bplwinidict)
         logger.debug('BPM) PL Build Mode turned ON.') 
+        getcurrsong()
     else:
         confparse.set('program','buildmode','0')
-        button_load.configure(text='Art', bg='SystemButtonFace', fg='black', command=albarttoggle)
-        button_tbtog.configure(text="Mode", bg='SystemButtonFace', fg='black', command=tbtoggle)
+        button_load.configure(text='Art', bg='gray90', fg='black', command=albarttoggle)
+        button_tbtog.configure(text="Mode", bg='gray90', fg='black', command=tbtoggle)
+        setbplwinstats()
+        if bplwin.winfo_exists():
+            bplwin.destroy()
+        bplwinidict = makebplwindict()
         logger.debug('BPM) PL Build Mode turned OFF.') 
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
@@ -1511,7 +1497,7 @@ def buildpl():
 def createnewpl():
     global aartvar,aatgl
     connext()
-    artw.destroy()
+    # artw.destroy()
     newpl = simpledialog.askstring('Playlist Name','Name the New Playlist',parent=window)
     if newpl > "":
         client.clear()
@@ -1565,6 +1551,7 @@ toolMenu.add_command(label="Toggle Repeat", command=toglrepeat)
 toolMenu.add_command(label="Toggle Consume", command=toglconsume)
 toolMenu.add_command(label="Toggle Single", command=toglsingle)
 toolMenu.add_command(label="Toggle Titlebar", command=tbtoggle)
+toolMenu.add_command(label="Update Database", command=dbupdate)
 toolMenu.add_command(label="Set Non-Standard Port", command=nonstdport)
 menu.add_cascade(label="Tools", menu=toolMenu)
 
@@ -1596,34 +1583,34 @@ text1 = tk.Text(main_frame, height=1, width=52, wrap= tk.WORD, font=nnFont)
 text1.grid(column=0, columnspan=5, row=0, padx=5)
 #
 # Define buttons
-button_volup = tk.Button(main_frame, width=9, text="Vol +", font=nnFont, command=volup)                  # 
+button_volup = tk.Button(main_frame, bg='gray90', width=9, text="Vol +", font=nnFont, command=volup)
 button_volup.grid(column=0, sticky='E', row=1, padx=1)                     # Place button in grid
 
-button_voldn = tk.Button(main_frame, width=9, text="Vol -", font=nnFont, command=voldn)                  # 
+button_voldn = tk.Button(main_frame, bg='gray90', width=9, text="Vol -", font=nnFont, command=voldn)
 button_voldn.grid(column=1, sticky='W', row=1, padx=1)                     # Place button in grid
 
-button_play = tk.Button(main_frame, width=9, text="Play", font=nnFont, command=play)                  # 
+button_play = tk.Button(main_frame, width=9, bg='gray90', text="Play", font=nnFont, command=play)
 button_play.grid(column=0, sticky='E', row=2, padx=1)                     # Place button in grid
 
-button_stop = tk.Button(main_frame, width=9, text="Stop", font=nnFont, command=halt)                  # 
+button_stop = tk.Button(main_frame, width=9, bg='gray90', text="Stop", font=nnFont, command=halt)
 button_stop.grid(column=1, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_prev = tk.Button(main_frame, width=9, text="Prev", font=nnFont, command=previous)                  # 
+button_prev = tk.Button(main_frame, width=9, bg='gray90', text="Prev", font=nnFont, command=previous)
 button_prev.grid(column=2, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_pause = tk.Button(main_frame, width=9, text="Pause", font=nnFont, command=pause)                  # 
+button_pause = tk.Button(main_frame, width=9, bg='gray90', text="Pause", font=nnFont, command=pause)
 button_pause.grid(column=3, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_next = tk.Button(main_frame, width=9, text="Next", font=nnFont, command=next)                  # 
+button_next = tk.Button(main_frame, width=9, bg='gray90', text="Next", font=nnFont, command=next)
 button_next.grid(column=4, sticky='W', row=2, padx=1)                     # Place button in grid
 
-button_tbtog = tk.Button(main_frame, width=9, text="Mode", font=nnFont, command=tbtoggle)                  # 
+button_tbtog = tk.Button(main_frame, width=9, bg='gray90', text="Mode", font=nnFont, command=tbtoggle)
 button_tbtog.grid(column=2, sticky='W', row=1, padx=1)                     # Place button in grid
 
-button_load = tk.Button(main_frame, width=9, text="Art", font=nnFont, command=albarttoggle)                  #
+button_load = tk.Button(main_frame, width=9, bg='gray90', text="Art", font=nnFont, command=albarttoggle)
 button_load.grid(column=3, sticky='W', row=1, padx=1)                     # Place button in grid
 
-button_exit = tk.Button(main_frame, width=9, text="Quit", font=nnFont, command=exit)                  #
+button_exit = tk.Button(main_frame, width=9, bg='gray90', text="Quit", font=nnFont, command=exit)
 button_exit.grid(column=4, sticky='W', row=1, padx=1)                     # Place button in grid
 
 ## THREADING NOTES =========================================
@@ -1677,18 +1664,25 @@ def threesecdisplaytext():
     window.after(2500,eo2)
     window.after(3000,threesecdisplaytext)
 #
-## Start 
+## Do these things right before starting window.mainloop().
 prevbtnstate = 'stop'
 if firstrun == '1':
     plupdate()
-    threesecdisplaytext()
-else:
-    threesecdisplaytext()
-    getcurrsong()
-    getoutputs()
-    if abp == '1':
-        if buttonvar == 'play':
-            browserplayer()
+threesecdisplaytext()
+confparse.read(mmc4wIni)
+bpltgl = confparse.get('program','buildmode')
+if bpltgl == '1': # Just on the odd chance it crashed and left this at '1'.
+    bplwin = TlWin(window, "Playlists Without Current Song",bplwinidict)
+    buildpl()
+aart = artWindow(1)
+artw = TartWin(window, "AlbumArt",artwinidict,aart)
+if tbarini == '0':
+    artw.overrideredirect(True)
+getcurrsong()
+getoutputs()
+if abp == '1':
+    if buttonvar == 'play':
+        browserplayer()
 logger.info("Down at the bottom. Firstrun: {}".format(firstrun))
 window.mainloop()  # Run the (not defined with 'def') main window loop.
 

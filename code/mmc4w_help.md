@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v2.0.1 release.
+This help file was updated for the v2.0.4 release.
 
 ## Putting the Music First
 
@@ -37,6 +37,7 @@ The interface contains the basic required buttons to control a MPD server:
 - Toggle Consume : If consume is 1, each song is removed from the queue after playing.
 - Toggle Single : If single is 1, each song is only played once, but left in the queue.
 - Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.
+- Update Database : Asks MPD to update the database. If nothing is changed, nothing happens.
 - Set Non-Standard Port : Tells you how to set up a non-standard port.
 
 ### The **'Look'** menu has these functions:
@@ -187,13 +188,20 @@ You load playlists into the queue and then MPD plays that queue using the settin
 
 **MMC4W** lets you add songs to playlists as you go.  No need to stop playback.
 
+1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  
+
 ![Toggle PL Build Mode](./_internal/plbuildmode1.png)
+
+A window opens titled **"Playlists Without Current Song"**.  This window updates each time a new song starts.
+You can move and resize that window to suit your tastes.  When you exit PLBuild Mode, your settings are saved to the mmc4w.ini file.
+
 ![PL Build Mode](./_internal/plbuildmode2.png)
 
-1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  
-2) If you're not already, play your music.  
-3) When you are listening to a song and you want to add it to a playlist, hit the green **Add** button.  
-4) Click on the playlist you want from the list. If the song isn't already in the playlist, it will be added.  
+ 2) If you're not already, play your music.  Playlists that do not contain this song are listed.  
+ 3) If you want to add the current song to a playlist, hit the green **Add** button.  A list of ALL playlists pops up.  
+ 4) Click on the playlist you want from the list. The current song will be added.  
+
+**NOTE:** If you press **Quit** while in PLBuild Mode, **MMC4W** first turns PLBuild Mode off, then exits.
 
 **That's it.**
 

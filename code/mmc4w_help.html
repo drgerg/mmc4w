@@ -1,5 +1,5 @@
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<p>This help file was updated for the v2.0.1 release.</p>
+<p>This help file was updated for the v2.0.4 release.</p>
 <h2>Putting the Music First</h2>
 <p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.</p>
 <p><strong>MMC4W</strong> is a MPD Client.  To be clear, you must have access to a running <a href="https://www.drgerg.com/mpd-is-just-awesome.html">MPD</a> server for this app to be of any value to you.</p>
@@ -33,6 +33,7 @@
 <li>Toggle Consume : If consume is 1, each song is removed from the queue after playing.</li>
 <li>Toggle Single : If single is 1, each song is only played once, but left in the queue.</li>
 <li>Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.</li>
+<li>Update Database : Asks MPD to update the database. If nothing is changed, nothing happens.</li>
 <li>Set Non-Standard Port : Tells you how to set up a non-standard port.</li>
 </ul>
 <h3>The <strong>'Look'</strong> menu has these functions:</h3>
@@ -134,12 +135,15 @@
 </ul>
 <h2>Adding and Removing Songs in a Saved Playlist:</h2>
 <p><strong>MMC4W</strong> lets you add songs to playlists as you go.  No need to stop playback.</p>
-<p><img alt="Toggle PL Build Mode" src="./_internal/plbuildmode1.png" />
-<img alt="PL Build Mode" src="./_internal/plbuildmode2.png" /></p>
-<p>1) Use the <strong>Toggle PL Build Mode</strong> option in the <strong>Look Menu</strong> to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.<br />
-2) If you're not already, play your music.<br />
-3) When you are listening to a song and you want to add it to a playlist, hit the green <strong>Add</strong> button.<br />
-4) Click on the playlist you want from the list. If the song isn't already in the playlist, it will be added.  </p>
+<p>1) Use the <strong>Toggle PL Build Mode</strong> option in the <strong>Look Menu</strong> to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  </p>
+<p><img alt="Toggle PL Build Mode" src="./_internal/plbuildmode1.png" /></p>
+<p>A window opens titled <strong>"Playlists Without Current Song"</strong>.  This window updates each time a new song starts.
+You can move and resize that window to suit your tastes.  When you exit PLBuild Mode, your settings are saved to the mmc4w.ini file.</p>
+<p><img alt="PL Build Mode" src="./_internal/plbuildmode2.png" /></p>
+<p>2) If you're not already, play your music.  Playlists that do not contain this song are listed.<br />
+ 3) If you want to add the current song to a playlist, hit the green <strong>Add</strong> button.  A list of ALL playlists pops up.<br />
+ 4) Click on the playlist you want from the list. The current song will be added.  </p>
+<p><strong>NOTE:</strong> If you press <strong>Quit</strong> while in PLBuild Mode, <strong>MMC4W</strong> first turns PLBuild Mode off, then exits.</p>
 <p><strong>That's it.</strong></p>
 <h4>Deleting a song from the current saved playlist is just as easy:</h4>
 <p>1) In <strong>PL Build Mode</strong>, when you hear a song you want to remove, click the red <strong>'Delete'</strong> button.<br />
