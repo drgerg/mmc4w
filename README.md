@@ -2,7 +2,7 @@
 
 You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md)
 
-## I'm excited about the new PlayList Builder Mode
+## I'm excited about the new PlayList Builder Mode in v2.0.5
 
 ![PlayList Builder Mode](https://github.com/drgerg/mmc4w/blob/main/pics/mmc4w_plb.png)
 
