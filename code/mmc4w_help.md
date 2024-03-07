@@ -24,7 +24,7 @@ The interface contains the basic required buttons to control a MPD server:
 - Toggle an Output : Allows you to enable and disable configured outputs on the MPD server.
 - Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.
 - Reset Win Positions: Puts the two primary windows back where they were originally.
-- Create New Saved Playlist : Creates a new empty playlist with your specified name
+- Create New Saved Playlist : Creates a new empty playlist with your specified name. Requires PL reload.
 - Remove Saved Playlist : Permanently deletes a saved playlist. Permanently.
 - Exit : Same as the 'Quit' button: exits the app.
 
@@ -188,7 +188,7 @@ You load playlists into the queue and then MPD plays that queue using the settin
 
 **MMC4W** lets you add songs to playlists as you go.  No need to stop playback.
 
-1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode. </br>&nbsp;&nbsp;&nbsp;&nbsp;Buttons turn red and green.  
+1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode.  
 
 ![Toggle PL Build Mode](./_internal/plbuildmode1.png)
 
@@ -199,8 +199,7 @@ You can move and resize that window to suit your tastes.  When you exit PLBuild 
 ![PL Build Mode](./_internal/plbuildmode2.png)
 
  2) If you're not already, play your music.  Playlists that do not contain this song are listed.  
- 3) If you want to add the current song to a playlist, hit the green **Add** button.  A list of ALL playlists pops up.  
- 4) Click on the playlist you want from the list. The current song will be added.  
+ 3) If you want to add the current song to a playlist, click on the playlist name in the right list box.  The playlist name will move to the left and the current song will be added.  
 
 **NOTE:** If you press **Quit** while in PLBuild Mode, **MMC4W** first turns PLBuild Mode off, then exits.
 
@@ -208,15 +207,13 @@ You can move and resize that window to suit your tastes.  When you exit PLBuild 
 
 #### Deleting a song from the current saved playlist is just as easy:
 
-1) In **PL Build Mode**, when you hear a song you want to remove, click the red **'Delete'** button.  
-2) Respond to the prompt, and if you selected OK, the song will be gone from the saved playlist.
+1) In **PL Build Mode**, when you hear a song you want to remove, click the playlist name in the left window.  
+2) The playlist name will move to the right and song will be gone from the saved playlist.
 
 **You can be intentional:**  
 Use the **Play a Single**, **Play an Album**, or **Find By Artist** options under the **Look** menu to play a specific song or album.  
-When it's playing, hit the green **Add** button and select the playlist.  
+When it's playing, select the playlist to add or delete the current song from that playlist.  
 
-Use **Look** "Show Songs in Last Playlist".  Select the odious song you want to remove.  
-Hit the **Delete** button to get rid of it. (or **Add** if you wish. I mean, you never know.)
 ## The 'mini console'
 
 - Select the 'Play a Single' option.

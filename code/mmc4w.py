@@ -26,7 +26,8 @@ import webbrowser
 if sys.platform != "win32":
     import subprocess
 
-version = "v2.0.4"
+version = "v2.0.5"
+# v2.0.5 - Way better Playlist Build Mode.
 # v2.0.4 - Doing things a better way.
 # v2.0.1 - Handling the queue.
 # v2.0.0 - Introduced classes for some windows. Tons more stability tweaks.
@@ -132,13 +133,11 @@ if confparse.get('serverstats','lastport') != "":
     serverport = confparse.get('serverstats','lastport')
 else:
     confparse.set('serverstats','lastport',serverport)
-    # logger.info("Writing port to .ini file.")
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
 
 if version != confparse.get('program','version'):
     confparse.set('program','version',version)
-    # logger.info("Writing version to .ini file.")
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
 
@@ -184,7 +183,7 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
         self.geometry(geometrystring)
         self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
-        # self.iconphoto(False, iconpng)
+        # self.iconphoto(False, iconpng) # Linux
         self.columnconfigure([0,1,2,3],weight=1)
         self.rowconfigure([0,1,2,3,4,5],weight=1)
         self.rowconfigure(6,weight=0)
@@ -236,11 +235,11 @@ class TbplWin(tk.Toplevel):  ##Build Playlist Window.
         self.columnconfigure([0,1], weight=1)
         self.rowconfigure(0,weight=1)
         self.listvar = tk.StringVar()
-        self.listbx = tk.Listbox(self,listvariable=self.listvar)
+        self.listbx = tk.Listbox(self,listvariable=self.listvar,exportselection=0)
         self.listbx.configure(bg='black',fg='white')
         self.listbx.grid(column=0,row=0,sticky='NSEW')
         self.listvar2 = tk.StringVar()
-        self.listbx2 = tk.Listbox(self,listvariable=self.listvar2)
+        self.listbx2 = tk.Listbox(self,listvariable=self.listvar2,exportselection=0)
         self.listbx2.configure(bg='black',fg='white')
         self.listbx2.grid(column=1,row=0,sticky='NSEW')
         # self.iconphoto(False, iconpng)
@@ -468,7 +467,6 @@ def btnupdater(newstate):
         button_pause.configure(bg='gray90')
         endtime = time.time()
     if newstate == 'play' and buttonvar == 'pause':
-        # button_pause.configure(bg='gray90')
         pause2play()
 
 def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
@@ -825,7 +823,6 @@ def logtoggler():
     displaytext1(msg)
 
 def getcurrstat():
-    # global buttonvar,lastpl
     connext()
     try:
         cstat = client.status()
@@ -834,8 +831,6 @@ def getcurrstat():
         cstat = {}
         connext()
         cstat = client.status()
-    # buttonvar = cstat["state"]
-    # logger.debug("getcurrstat() buttonvar: {}".format(buttonvar))
     return cstat
 
 def plupdate():
@@ -871,14 +866,11 @@ def albarttoggle():
     aatgl = confparse.get("albumart","albarttoggle")
     if aatgl == '1':
         try:
-            # logger.info("Destroy AArt window.")
-            # artw.title()
             artw.destroy()
             aatgl = '0'
         except (AttributeError,NameError,tk.TclError):
             pass
     else:
-        # logger.info("Set aatgl to '1'.")
         aatgl = '1'
         try:
             cs = client.currentsong()
@@ -976,6 +968,10 @@ def resetwins():
     win_y = confparse.get("default_values","win_y")
     winHt = confparse.get("default_values","winht") # default: winWd = 380
     winWd = confparse.get("default_values","winwd") # default: winHt = 80
+    bwinx = confparse.get("default_values","bplwin_x")
+    bwiny = confparse.get("default_values","bplwin_y")
+    bwinHt = confparse.get("default_values","bplwinht")
+    bwinWd = confparse.get("default_values","bplwinwd")
     confparse.set("mainwindow","winht",winHt)
     confparse.set("mainwindow","winwd",winWd)
     confparse.set("mainwindow","win_x",win_x)
@@ -984,6 +980,10 @@ def resetwins():
     confparse.set("albumart","aartwin_y",aartwin_y)
     confparse.set("albumart","artwinwd",artwinwd)
     confparse.set("albumart","artwinht",artwinht)
+    confparse.set("buildplwin","bplwin_x",bwinx)
+    confparse.set("buildplwin","bplwin_y",bwiny)
+    confparse.set("buildplwin","bplwinht",bwinHt)
+    confparse.set("buildplwin","bplwinwd",bwinWd)
     logger.info('Reset window positions & sizes to defaults from mmc4w.ini file.')
     logger.debug('D15| aartwin: {}x{}, main: {}x{}.'.format(aartwin_x,aartwin_y,win_x,win_y))
     with open(mmc4wIni, 'w') as SLcnf:
@@ -1020,33 +1020,6 @@ def makeeverything():
     client.save('Everything')
     logger.info('The playlist named "Everything" was just updated.')
     PLSelWindow()
-#
-##
-#
-def deletecurrent():
-    connext()
-    cp.read(mmc4wIni)
-    pllist = cp.getlist('serverstats','playlists')
-    # artw.destroy()
-    if lastpl in pllist:
-        try:
-            ret = client.listplaylistinfo(lastpl)
-            cs = client.currentsong()
-            for x in enumerate(ret):
-                if x[1]['title'] == cs['title']:
-                    yeah = x[0]
-                    doublecheck = messagebox.askyesno(message='Are you sure you want to delete \n"{}" from \n{}?'.format(cs['title'],lastpl))
-                    if doublecheck == True:
-                        logger.info('DELCUR) Deleting {}, song number {} from {}.'.format(cs['title'],yeah,lastpl))
-                        client.playlistdelete(lastpl,yeah)
-        except KeyError:
-            messagebox.showinfo('No Song is Playing','"Delete" removes the currently playing song\nfrom the last selected playlist.')
-            pass
-    else:
-        messagebox.showinfo('No Playlist Selected','You have not yet selected a saved playlist.')
-    if aatgl == '1':
-        aart = artWindow(aartvar)  ## artWindow prepares the image, 'configs' the Label and returns image as well.
-        artw.aartLabel.configure(image=aart)
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
 ## https://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
@@ -1110,11 +1083,9 @@ def queuewin(qwaction):
         for m in findit:
             if clikd[0] == m['artist'] and clikd[1] == m['title'] and clikd[2] == m['album']:
                 playit = m['pos']
-        # client.play(itemsraw[t]['pos'])
         client.play(playit)
         getcurrsong()
         queuewin.destroy()
-    ##
     ## The tk.Entry box runs this upon <Return>
     def pushret(event):
         global findit,dispitems
@@ -1142,8 +1113,6 @@ def queuewin(qwaction):
             if aatgl == '1':
                 aart = artWindow(aartvar)
                 artw.aartLabel.configure(image=aart)
-    ##
-
     queuewin = TlSbWin(window, 'Search the Queue',tsbinidict)
     connext()
     dispitems = []
@@ -1161,9 +1130,6 @@ def queuewin(qwaction):
     entry.bind('<Return>', pushret)
     entry.focus_set()
     queuewin.listbx.bind('<<ListboxSelect>>', qwclicked)
-    # artw.destroy()
-
-
 #
 ## DEFINE THE LOOKUP WINDOW AND ASSOCIATED FUNCTIONS
 #
@@ -1179,7 +1145,6 @@ def lookupwin(lookupT):
         srchTxt = 'Artist: '
         secfind = 'title'
     logger.info('Opened {} search window.'.format(lookupT))
-    ##
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
     def clickedit(event):
         global lastpl, itemsraw
@@ -1207,7 +1172,6 @@ def lookupwin(lookupT):
             play()
         plsngwin.update()
         plsngwin.destroy()
-    ##
     ## The tk.Entry box runs this upon <Return>
     def pushret(event):
         global itemsraw
@@ -1264,8 +1228,50 @@ def lookupwin(lookupT):
     entry.bind('<Return>', pushret)
     entry.focus_set()
     plsngwin.listbx.bind('<<ListboxSelect>>', clickedit)
-    # artw.destroy()
+#
 ## DEFINE THE ADD-SONG-TO-PLAYLIST WINDOW
+#
+def addtoplclicked(event):
+    connext()
+    cs = client.currentsong()
+    pls_without_song,pls_with_song = loadplsongs(cs['title'])
+    selectedlst2 = bplwin.listbx2.curselection()[0]
+    logger.info('A2PL) Added "{}" to "{}".'.format(cs['title'],pls_without_song[selectedlst2]))
+    client.playlistadd(pls_without_song[selectedlst2],cs['file'])
+    window.focus_force()
+    pls_without_song,pls_with_song = loadplsongs(cs['title'])
+    bplwin.listbx.delete(0,tk.END)
+    bplwin.listvar.set(pls_with_song)
+    bplwin.listbx2.delete(0,tk.END)
+    bplwin.listvar2.set(pls_without_song)
+    if aatgl == '1':
+        aart = artWindow(aartvar)  ## artWindow prepares the image, 'configs' the Label and returns image as well.
+        artw.aartLabel.configure(image=aart)
+#
+##
+#
+def delfromplclicked(event):
+    connext()
+    cs = client.currentsong()
+    pls_without_song,pls_with_song = loadplsongs(cs['title'])
+    selectedlst = bplwin.listbx.curselection()[0]
+    pldata = client.listplaylistinfo(pls_with_song[selectedlst])
+    for x in enumerate(pldata):
+        if x[1]['title'] == cs['title']:
+            thesong = x[0]
+    logger.info('DELCUR) Deleting "{}", song number {} from "{}".'.format(cs['title'],thesong,pls_with_song[selectedlst]))
+    client.playlistdelete(pls_with_song[selectedlst],thesong)
+    window.focus_force()
+    pls_without_song,pls_with_song = loadplsongs(cs['title'])
+    bplwin.listbx.delete(0,tk.END)
+    bplwin.listvar.set(pls_with_song)
+    bplwin.listbx2.delete(0,tk.END)
+    bplwin.listvar2.set(pls_without_song)
+    if aatgl == '1':
+        aart = artWindow(aartvar)  ## artWindow prepares the image, 'configs' the Label and returns image as well.
+        artw.aartLabel.configure(image=aart)
+#
+##
 #
 def addtopl(plaction):
     ## The tk.Listbox runs this upon click (<<ListboxSelect>>)
@@ -1275,28 +1281,12 @@ def addtopl(plaction):
         selectlst = a2plwin.listbx.curselection()[0]
         pllist = cp.getlist('serverstats','playlists')
         connext()
-        if plaction == 'add':
-            cs = client.currentsong()
-            addfile = cs['file']
-            addpllist = client.listplaylist(pllist[selectlst])
-            if addfile in addpllist:
-                messagebox.showinfo('Song Already There','{} is already in {}.'.format(addfile.split('/')[2],pllist[selectlst]))
-            else:
-                client.playlistadd(pllist[selectlst],cs['file'])
-                bpltgl = confparse.get('program','buildmode')
-                if bpltgl == '1':
-                    pls_without_song,pls_with_song = loadplsongs(cs['title'])
-                    bplwin.listbx.delete(0,tk.END)
-                    bplwin.listvar.set(pls_with_song)
-                    bplwin.listbx2.delete(0,tk.END)
-                    bplwin.listvar2.set(pls_without_song)
-                logger.info('A2PL) Added {} to {}.'.format(cs['title'],pllist[selectlst]))
         if plaction == 'remove':
             pllist = cp.getlist('serverstats','playlists')
             doublecheck = messagebox.askyesno(message='Are you sure you want to PERMANENTLY delete \n"{}"?'.format(pllist[selectlst]))
             if doublecheck == True:
                 client.rm(pllist[selectlst])
-                logger.info('RMPL) Playlist "{}" removed.'.format(pllist[selectlst]))
+                logger.info("RMPL) Playlist '{}' removed.".format(pllist[selectlst]))
                 plupdate()
         a2plwin.update()
         a2plwin.destroy()
@@ -1305,8 +1295,8 @@ def addtopl(plaction):
             artw.aartLabel.configure(image=aart)
     def songlistclick(event):
         songsel = a2plwin.listbx.curselection()[0]
-        logger.debug('ATPL) Playlist "{}" was listed in addtopl().'.format(lastpl))
-        logger.debug('ATPL) "{}" was selected to play.'.format(songlist[songsel].split('/')[2]))
+        logger.debug("ATPL) Playlist '{}' was listed in addtopl().".format(lastpl))
+        logger.debug("ATPL) '{}' was selected to play.".format(songlist[songsel].split('/')[2]))
         connext()
         client.play(songsel)
         cs = getcurrsong()
@@ -1316,17 +1306,11 @@ def addtopl(plaction):
             artw.aartLabel.configure(image=aart)
     if plaction == 'list':
         a2title = "List {} - Play Selected".format(lastpl)
-    if plaction == 'add':
-        a2title = "Add Current Song to Playlist"
     if plaction == 'remove':
         a2title = "Delete the Selected Playlist"
     a2plwin = TlSbWin(window, a2title, tsbinidict)
     a2plwin.configure(bg='black')
-    if plaction != 'list':
-        a2plwin.listbx.bind('<<ListboxSelect>>', plclickedit)
-    if plaction == 'list':
-        a2plwin.listbx.bind('<<ListboxSelect>>', songlistclick)
-    if plaction == 'add' or plaction == 'remove':
+    if plaction == 'remove':
         a2plwin.listbx.bind('<<ListboxSelect>>', plclickedit)
         cp.read(mmc4wIni)
         pllist = cp.getlist('serverstats','playlists')
@@ -1400,8 +1384,6 @@ def SrvrWindow(swaction):
         outputs = getoutputs()[1]
         srvrw.listbx.delete(0,tk.END)
         srvrw.listvar.set(outputs)
-    # if artw.winfo_exists():
-    #     artw.destroy()
 #
 ## DEFINE THE PLAYLIST SELECTION WINDOW
 #
@@ -1437,8 +1419,6 @@ def PLSelWindow():
     plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
     plsw.listbx.delete(0,tk.END)
     plsw.listvar.set(pllist)
-    # if artw.winfo_exists():
-    #     artw.destroy()
     
 #
 ## DEFINE THE ABOUT WINDOW
@@ -1453,7 +1433,7 @@ def aboutWindow():
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
     aw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
-    # aw.iconphoto(False, iconpng)
+    # aw.iconphoto(False, iconpng) # Linux
     awlabel = tk.Label(aw, font=18, text ="About MMC4W " + version)
     awlabel.grid(column=0, columnspan=3, row=0, sticky="n")  # Place label in grid
     aw.columnconfigure(0, weight=1)
@@ -1507,15 +1487,13 @@ def buildpl():
     bpltgl = confparse.get('program','buildmode')
     if bpltgl == '0':  ## If zero (OFF), set to ON and set up for ON.
         confparse.set('program','buildmode','1')
-        button_load.configure(text='Add', bg='green', fg='white', command=lambda: addtopl('add'))
-        button_tbtog.configure(text='Delete', bg='red', fg='white',command=deletecurrent)
         bplwin = TbplWin(window, "Playlists With and Without Current Song",bplwinidict)
+        bplwin.listbx.bind('<<ListboxSelect>>', delfromplclicked)
+        bplwin.listbx2.bind('<<ListboxSelect>>', addtoplclicked)
         logger.debug('BPM) PL Build Mode turned ON.') 
         getcurrsong()
     else:
         confparse.set('program','buildmode','0')
-        button_load.configure(text='Art', bg='gray90', fg='black', command=albarttoggle)
-        button_tbtog.configure(text="Mode", bg='gray90', fg='black', command=tbtoggle)
         setbplwinstats()
         if bplwin.winfo_exists():
             bplwin.destroy()
@@ -1530,13 +1508,12 @@ def buildpl():
 def createnewpl():
     global aartvar,aatgl
     connext()
-    # artw.destroy()
-    newpl = simpledialog.askstring('Playlist Name','Name the New Playlist',parent=window)
+    newpl = simpledialog.askstring('Playlist Name','Name the New Playlist\nRequires reloading current playlist.',parent=window)
     if newpl > "":
         client.clear()
         client.save(newpl)
         PLSelWindow()
-        logger.info('NPL) A new saved Playlist named {} was created.'.format(newpl))
+        logger.info("NPL) A new saved Playlist named '{}' was created.".format(newpl))
 #
 def browserplayer():
     global buttonvar
