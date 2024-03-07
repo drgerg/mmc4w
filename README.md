@@ -2,6 +2,12 @@
 
 You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md)
 
+## I'm excited about the new PlayList Builder Mode
+
+![PlayList Builder Mode](https://github.com/drgerg/mmc4w/blob/main/pics/mmc4w_plb.png)
+
+This is **such** a much better way to manage my playlists! While I'm listening, if I want to add or removed the current song, just click the playlist name.  Sweet!
+
 ![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
 
 ### Intentionally tiny. Unexpectedly mighty. Basic and yet very capable.
