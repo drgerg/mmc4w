@@ -2,7 +2,9 @@
 
 You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md)
 
-## I'm excited about the new PlayList Builder Mode in v2.0.5
+## MMC4W now runs in Ubuntu with no tweaking starting with v2.0.6.  I think that's pretty cool.
+
+Playlist Builder Mode is also pretty cool.  I've been looking forward to this for a long time.
 
 ![PlayList Builder Mode](https://github.com/drgerg/mmc4w/blob/main/pics/mmc4w_plb.png)
 
