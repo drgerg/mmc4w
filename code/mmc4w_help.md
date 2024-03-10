@@ -1,12 +1,14 @@
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v2.0.4 release.
+This help file was updated for the v2.0.6 release.  As of this release, the same Python code runs in Linux without needing any tweaks.
 
-## Putting the Music First
+I recommend reading the **First Run Process** section below before installing.
+
+# Putting the Music First
 
 **MMC4W** is first and foremost **Minimal**.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.
 
-**MMC4W** is a MPD Client.  To be clear, you must have access to a running [MPD](https://www.drgerg.com/mpd-is-just-awesome.html) server for this app to be of any value to you.
+**MMC4W** is a MPD **Client**.  To be clear, you must have access to a running [MPD](https://www.drgerg.com/mpd-is-just-awesome.html) server for this app to be of any value to you.
 
 **MMC4W** is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)
 
@@ -84,9 +86,17 @@ If you have more than one server, just string those IP addresses together as see
 
 After typing your server IP address(es) in the [basic] section, save and close the file.
 
-Restart **MMC4W**.  When it starts, it will attempt to connect to the first server you provided.  You can change the server by using the option under the **'File'** menu.
+Restart **MMC4W**.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  Open the text editor you were using to input that IP address.  You should be able to find mmc4w.ini in the recent files list.
 
-In the text bar of the app you will see a prompt to select one of that server's playlists.
+Once you have a valid server IP under the serverlist key of the basic section, run MMC4W again.
+
+### Position and size windows to your liking.
+
+The first time you run MMC4W, it runs with titlebars on.  You can move and size the windows to your liking.  When you have things to your liking, hit the **mode** button.  If you are running in Linux, exit and restart the app. 
+
+### Select a saved playlist.
+
+When you hit **Play**, whatever is loaded in the server's queue will start to play.  In the text bar of the app you will see a prompt to select one of that server's playlists.  Go ahead and select one now.  You can choose to load it, or just remember it for later.
 
 ![Select a playlist prompt](./_internal/select_playlist_prompt.png)
 
@@ -142,7 +152,9 @@ There are three options under the **'Look'** menu related to search.
 
  All three options use the same window, just differently. There's a 'mode' hint in the titlebar to help you out.
 
-**Note:** The Search window is resizeable.  
+Anywhere you see a Search: bar, you can use colon-separated key:value pairs for searching.  For example: album:hits, or artist:david.  These are not case-sensitive.  It may seem like the three menu options are not needed, but they do still have value.  A single-word search will produce results of the default type in each of them.
+
+**Note:** The Search window is resizeable.  If you want, type 'savewin;' in the Search: bar to save size and placement.
 
  **Play a Single** opens the Search window and allows you to type some search term.  This is a **Title** search.  If any song title in the entire library contains the search term, it will be displayed when you press **[enter]**
 
@@ -198,7 +210,7 @@ You can move and resize that window to suit your tastes.  When you exit PLBuild 
 
 ![PL Build Mode](./_internal/plbuildmode2.png)
 
- 2) If you're not already, play your music.  Playlists that do not contain this song are listed.  
+ 2) If the music isn't already playing, hit **Play**.  Two sets of playlists are displayed, those with this song on the left, and those without it on the right.
  3) If you want to add the current song to a playlist, click on the playlist name in the right list box.  The playlist name will move to the left and the current song will be added.  
 
 **NOTE:** If you press **Quit** while in PLBuild Mode, **MMC4W** first turns PLBuild Mode off, then exits.
@@ -220,6 +232,7 @@ When it's playing, select the playlist to add or delete the current song from th
 - In the Search: field, type 'status' (no quotes).  You'll see the current status info.
 - Type 'stats' and you'll get server stats appended to the bottom.  Scroll down.
 - Type 'quit;' (with the semicolon) and the window closes.
+- Type 'savewin;' (with the semicolon) to save the size and placement of search windows.
 
 This was something I just didn't want to do without.
 
@@ -241,7 +254,7 @@ If an HTTP output is enabled, and music is playing, you can hear it through your
 
 ### NOTE - 
 
-If you press **Stop**, the http stream stops. Browsers then close the connection, so if you restart playback, you'll need to refresh the browser window to regain the connection.  So will everyone else listening to that stream.  It's probably a good idea to avoid using the **Stop** button if there is more than one person listening to the http stream.
+If you press **Stop**, the http stream stops. This may cause browsers to close the connection.  If so, when you restart playback you'll need to refresh the browser window to regain the connection.  So will everyone else listening to that stream.  It's probably a good idea to avoid using the **Stop** button if there is more than one person listening to the http stream. Better safe than sorry.
 
 ## Logging 
 
@@ -277,65 +290,64 @@ The design of this utility is intentionally simple.  I'm sure there are several 
 
 ### The mmc4w.ini File
 
-Here is some explanation of the entries in the .ini file.  This config .ini file is pretty standard.  It is made up of key/value pairs.  "win_x = 412" is a key/value pair.  "win_x" is the key, "412" is the value.  We look up the values in this file by asking for the value associated with the key.  So, for example, I tell Python **myWinX = confparse.get('mainwindow','win_x')** and it tells me **myWinX** is now assigned the value of 412.
+Below is the contents of a typical mmc4w.ini file. It is made up of key/value pairs.  "lastport = 6600" is a key/value pair.  "lastport" is the key, "6600" is the value.  We look up the values in this file by asking for the value associated with the key.  So, for example, I tell Python **mpdport = confparse.get('serverstats','lastport')** and it tells me **mpdport** is now assigned the value of 6600.
 
-Items in <span style="color:red;">red</span> are filled in by the program.  You don't need to worry about those.  Other items that are not in red are things you can provide values for.  <span style="color:green;">Green text</span> following the key/value pair is intended to provide insights.
-
-**NOTE:** The values in the 'position X or Y' items below are values that get added into calculations based on the display MMC4W is running on.  If you want to play with those, you should.  Just be aware the change you make might not have the result you expected.  **Not to worry:** just use the values in the **[default_values]** section to get back to where you started.
+With the exception of the serverlist, all of these entries are filled in by the program.  You can provide values for nearly any of them if you choose. I recommend you not change anything in the "default_values" section.
 
 <span style='font-family:courier;'>
-  [basic] <span style="color:green;">You provide the list of servers on first run.</span>  
-  <span style="color:red;">installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W</span>  
+  [basic]  
+  installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W  
   serverlist = 192.168.1.22,192.168.1.16,192.168.1.28,  
-  <span style="color:red;">serverport = 6600</span> <span style="color:green;">You can change this if your server is not using the standard port.</span>  
-  <span style="color:red;">firstrun = 0</span>  
-  
-  [program] <span style="color:green;">The options in this section are covered in this help file above.</span>  
-  <span style="color:red;">version = v0.9.7</span>  
+  serverport = 6600  
+  firstrun = 0  
+  sysplatform = win32  
+
+  [program]  
+  version = v2.0.6  
   logging = on  
-  loglevel = info  
-  <span style="color:red;">buildmode = 0</span>  
+  loglevel = debug  
+  buildmode = 0  
   autobrowserplayer = 0  
-  
+
   [serverstats]  
-  <span style="color:red;">playlists = Heavy Listening,Easy,Everything_Edited,Everything,RRR,Short Songs,All-Time Favorites,Christmas Music,</span>  
-  <span style="color:red;">lastvol = 50</span>  
-  <span style="color:red;">lastsetpl = All-Time Favorites</span>  
-  <span style="color:red;">lastsrvr = 192.168.1.22</span>  
-  <span style="color:red;">lastport = 6600</span>  
-  <span style="color:red;">lastsongtitle = 08-When The Levee Breaks - Led Zeppelin</span>  
-  httpport = 8000 <span style="color:green;">This is the port number your MPD server is serving http stream on.  You provide it if the default isn't accurate.</span>  
-  
-  [mainwindow]  <span style="color:green;">Things that affect the window with the buttons.</span>  
-  win_x = 412  
-  win_y = 452  
+  playlists = Heavy Listening,B List,Joe Carr Compilations,Easy,Everything,Just Dave Matthews Band,Short Songs,All-Time Favorites,Christmas Music,  
+  lastvol = 15  
+  lastsetpl = Everything  
+  lastsrvr = 192.168.1.22  
+  lastport = 6600  
+  lastsongtitle = 16-Wild Horses - The Rolling Stones  
+  httpport = 8000  
+
+  [display]  
+  displaysize = 3840,2160  
+  scalefactors = 1.0,1.0,  
+
+  [mainwindow]  
+  comment = maingeo is "win width","win height","x locator","y locator"  
+  maingeo = 380,80,412,452  
   titlebarstatus = 0  
-  
+
   [albumart]  
-  aartwin_x = 412  <span style="color:green;">The position of the top left corner of art on the X axis (horizontal).</span>  
-  aartwin_y = 350  <span style="color:green;">The position of the top left corner of art on the Y axis (vertical).</span>  
-  <span style="color:red;">albarttoggle = 1</span>  
-  artwinwd = 110  <span style="color:green;">Width of the art window. You can change this and hit 'Next' to see it.</span>  
-  artwinht = 110  <span style="color:green;">Height of the art window. You can change this and hit 'Next' to see it.</span>  
-  
+  aartgeo = 120,120,412,350  
+  albarttoggle = 1  
+
   [searchwin]  
-  swin_x = 220  <span style="color:green;">The position of the top left corner of search windows on the X axis (horizonta).</span>  
-  swin_y = 600  <span style="color:green;">The position of the top left corner of search windows on the Y axis (vertical).</span>  
-  swinht = 400  <span style="color:green;">Height of search windows.</span>  
-  swinwd = 600  <span style="color:green;">Width of search windows.</span>  
-  
-  <span style="color:red;">[default_values]</span>  
-  <span style="color:red;">win_x = 412</span>  
-  <span style="color:red;">win_y = 452</span>  
-  <span style="color:red;">aartwin_x = 412</span>  
-  <span style="color:red;">aartwin_y = 350</span>  
-  <span style="color:red;">artwinwd = 110</span>  
-  <span style="color:red;">artwinht = 110</span>  
+  swingeo = 388,328,425,832  
+
+  [buildplwin]  
+  bplwingeo = 380,180,420,680  
+  swingeo = 388,328,425,832  
+
+  [default_values]  
+  maingeo = 380,80,412,452  
+  aartgeo = 120,120,412,350  
+  swingeo = 388,328,425,832  
+  bplwingeo = 380,120,420,620 
 </span>
 
 ### Minutia
 
-MMC4W was developed and tested in Windows 10.  **MPD** is running on three different computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file for each album and embed the art in the songs using **[MP3TAG](https://www.mp3tag.de/en/)** or **Music Bee** depending on the circumstances.
+MMC4W was developed and tested in Windows 10.  As of v2.0.6, the same Python code will run on Linux. So far it's only tested on Ubuntu.  **MPD** is running on three different computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file for each album and embed the art in the songs using **[MP3TAG](https://www.mp3tag.de/en/)** or **Music Bee** depending on the circumstances.
 
 I hope you enjoy using this as much as I do.<br><br>
 
