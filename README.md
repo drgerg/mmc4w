@@ -2,7 +2,7 @@
 
 You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md)
 
-## MMC4W now runs in Ubuntu with no tweaking starting with v2.0.6.  I think that's pretty cool.
+## MMC4W.py now runs in Ubuntu with no tweaking starting with v2.0.6.  I think that's pretty cool.
 
 Playlist Builder Mode is also pretty cool.  I've been looking forward to this for a long time.
 
