@@ -14,14 +14,15 @@ I recommend reading the **First Run Process** section below before installing.
 
 The interface contains the basic required buttons to control a MPD server:
 
-- Vol +, Vol -, Play, Stop, Prev, Pause, Next and Quit.
+- Buttons for Volume, Play, Stop, Prev, Pause, Next and Quit.
 - A 'Mode' button eliminates the Windows title bar if desired.
-- An 'Art' button toggles a very small window that displays embedded album art.  
-    - If no embedded art is found, MMC4W's logo is displayed.
+- An 'Art' button toggles a very small window that displays album art.  
+    - The art is served by MPD. It is either embedded in the song, or is a cover.png file.
+    - If no folder or embedded art is found, MMC4W's logo is displayed.
 
 ### The **'File'** menu contains these functions:
 
-- Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)
+- Configure : Opens mmc4w.ini for editing. Uses your system's configured text editor. (Notepad or similar)
 - Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
 - Toggle an Output : Allows you to enable and disable configured outputs on the MPD server.
 - Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.

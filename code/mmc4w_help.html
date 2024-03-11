@@ -7,16 +7,17 @@
 <p><strong>MMC4W</strong> is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)</p>
 <p>The interface contains the basic required buttons to control a MPD server:</p>
 <ul>
-<li>Vol +, Vol -, Play, Stop, Prev, Pause, Next and Quit.</li>
+<li>Buttons for Volume, Play, Stop, Prev, Pause, Next and Quit.</li>
 <li>A 'Mode' button eliminates the Windows title bar if desired.</li>
-<li>An 'Art' button toggles a very small window that displays embedded album art.  <ul>
-<li>If no embedded art is found, MMC4W's logo is displayed.</li>
+<li>An 'Art' button toggles a very small window that displays album art.  <ul>
+<li>The art is served by MPD. It is either embedded in the song, or is a cover.png file.</li>
+<li>If no folder or embedded art is found, MMC4W's logo is displayed.</li>
 </ul>
 </li>
 </ul>
 <h3>The <strong>'File'</strong> menu contains these functions:</h3>
 <ul>
-<li>Configure : Opens mmc4w.ini for editing. Uses Windows configured .ini editor. (Notepad or similar)</li>
+<li>Configure : Opens mmc4w.ini for editing. Uses your system's configured text editor. (Notepad or similar)</li>
 <li>Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.</li>
 <li>Toggle an Output : Allows you to enable and disable configured outputs on the MPD server.</li>
 <li>Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.</li>
