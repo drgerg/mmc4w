@@ -13,7 +13,6 @@ from tkinter.font import Font
 from time import sleep
 import sys
 from configparser import ConfigParser
-from os import path
 import os
 from tkhtmlview import HTMLScrolledText, RenderHTML, HTMLLabel
 import musicpd
@@ -23,6 +22,7 @@ import time
 import logging
 import webbrowser
 from collections import OrderedDict
+from pathlib import Path
 
 if sys.platform != "win32":
     import subprocess
@@ -32,7 +32,8 @@ else:
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
     ctypes.windll.user32.SetProcessDPIAware()
 
-version = "v2.0.6"
+version = "v2.0.7"
+# v2.0.7 - Trade pathlib for os.path. Deal with 'already connected' error.
 # v2.0.6 - Fine tuning lookups and search windows. Completely revamp win size methods.
 # v2.0.5 - Way better Playlist Build Mode.
 # v2.0.4 - Doing things a better way.
@@ -51,14 +52,15 @@ confparse = ConfigParser()
 # cp is for use where lists are involved.
 cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
 
-path_to_dat = path.abspath(path.dirname(__file__))
-mmc4wIni = path_to_dat + "/mmc4w.ini"
+# path_to_dat = path.abspath(path.dirname(__file__))
+path_to_dat = Path(__file__).parent
+mmc4wIni = path_to_dat / "mmc4w.ini"
 workDir = os.path.expanduser("~")
 confparse.read(mmc4wIni)
 
 lastpl = confparse.get("serverstats","lastsetpl") ## 'lastpl' is the most currently loaded playlist.
 if confparse.get('basic','installation') == "":
-    confparse.set('basic','installation',path_to_dat)
+    confparse.set('basic','installation',str(path_to_dat))
 if confparse.get('basic','sysplatform') == "":
     confparse.set('basic','sysplatform',sys.platform)
     with open(mmc4wIni, 'w') as SLcnf:
@@ -70,12 +72,12 @@ if logtoggle == 'OFF':
     logLevel = 'WARNING'
 
 if logLevel == "INFO":
-    if os.path.isfile(path_to_dat + "/mmc4w.log"):
-        os.remove(path_to_dat + '/mmc4w.log')
+    if os.path.isfile(path_to_dat / "mmc4w.log"):
+        os.remove(path_to_dat / "mmc4w.log")
 
 if logLevel == 'DEBUG':
     logging.basicConfig(
-        filename=path_to_dat + "/mmc4w_DEBUG.log",
+        filename=path_to_dat / "mmc4w_DEBUG.log",
         format="%(asctime)s - %(message)s",
         datefmt="%a, %d %b %Y %H:%M:%S",
         level=logging.DEBUG,
@@ -83,7 +85,7 @@ if logLevel == 'DEBUG':
 
 if logLevel == 'INFO':
     logging.basicConfig(
-        filename=path_to_dat + "/mmc4w.log",
+        filename=path_to_dat / "mmc4w.log",
         format="%(asctime)s - %(message)s",
         datefmt="%a, %d %b %Y %H:%M:%S",
         level=logging.INFO,
@@ -91,7 +93,7 @@ if logLevel == 'INFO':
 
 if logLevel == 'WARNING':
     logging.basicConfig(
-        filename=path_to_dat + "/mmc4w.log",
+        filename=path_to_dat / "mmc4w.log",
         format="%(asctime)s - %(message)s",
         datefmt="%a, %d %b %Y %H:%M:%S",
         level=logging.WARNING,
@@ -206,7 +208,7 @@ class MessageWindow(tk.Toplevel):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         if sys.platform == "win32":
-            self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+            self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
         else:
             self.iconphoto(False, iconpng)
         tk.Label(self, text=message).grid(row=0, column=0, columnspan=3, pady=(7, 7), padx=(7, 7), sticky="ew")
@@ -262,7 +264,7 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
         self.geometry(geometrystring)
         if sys.platform == "win32":
-            self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+            self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
         else:
             self.iconphoto(False, iconpng) # Linux
         self.columnconfigure([0,1,2,3],weight=1)
@@ -291,7 +293,7 @@ class TlWin(tk.Toplevel):  ## plain - no scrollbar, single listbox.
         geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
         self.geometry(geometrystring)
         if sys.platform == "win32":
-            self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+            self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
         else:
             self.iconphoto(False, iconpng)
         self.columnconfigure(0,weight=1)
@@ -315,7 +317,7 @@ class TbplWin(tk.Toplevel):  ##Build Playlist Window.
         geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
         self.geometry(geometrystring)
         if sys.platform == "win32":
-            self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+            self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
         else:
             self.iconphoto(False, iconpng)
         self.columnconfigure([0,1], weight=1)
@@ -349,7 +351,7 @@ class TartWin(tk.Toplevel):  ## for album art.
         self.aartLabel = tk.Label(self,image=aart)
         self.aartLabel.grid(column=0, row=0, padx=5, pady=5)
         if sys.platform == "win32":
-            self.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico') # - Windows
+            self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico") # - Windows
         else:
             self.iconphoto(False, iconpng) # Linux
 #
@@ -442,9 +444,13 @@ def connext():  ## Checks connection, then connects if necessary.
                 cxstat = 1
                 logger.debug('D1| 2nd try. cxstat is : ' + str(cxstat))
             except  (ValueError, musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as errvar:
-                logger.debug("D1| Second level errvar: {}".format(errvar))
-                cxstat = 0
-                endWithError('Second level connection error:\n' + str(errvar) + '\nQuitting now.')
+                if errvar == 'Already connected':
+                    cxstat = 1
+                    pass
+                else:
+                    logger.debug("D1| Second level errvar: {}".format(errvar))
+                    cxstat = 0
+                    endWithError('Second level connection error:\n' + str(errvar) + '\nQuitting now.')
     return cxstat
 
 
@@ -872,7 +878,7 @@ def getaartpic(**cs):
     if len(eadict) > 0:
         size = int(eadict['size'])
         done = int(eadict['binary'])
-        with open(path_to_dat + '/cover.png', 'wb') as cover:
+        with open(path_to_dat / "cover.png", 'wb') as cover:
             cover.write(eadict['data'])
             while size > done:
                 eadict = client.readpicture(cs['file'],done)
@@ -886,7 +892,7 @@ def getaartpic(**cs):
             if len(fadict) > 0:
                 received = int(fadict.get('binary'))
                 size = int(fadict.get('size'))
-                with open(path_to_dat + '/cover.png', 'wb') as cover:
+                with open(path_to_dat / "cover.png", 'wb') as cover:
                     cover.write(fadict.get('data'))
                     while received < size:
                         fadict = client.albumart(cs['file'], received)
@@ -1191,9 +1197,9 @@ main_frame = tk.Frame(window, )
 main_frame.grid(column=0,row=0,padx=2)
 main_frame.columnconfigure([0,1,2,3,4], weight=1)
 if sys.platform == "win32":
-    window.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico') # Windows
+    window.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico") # Windows
 else:
-    iconpng = tk.PhotoImage(file = path_to_dat + '/ico/mmc4w-ico.png') # Linux
+    iconpng = tk.PhotoImage(file = path_to_dat / "ico/mmc4w-ico.png") # Linux
     window.iconphoto(False, iconpng) # Linux
 confparse.set('display','displaysize',str(window.winfo_screenwidth()) + ',' + str(window.winfo_screenheight()))
 with open(mmc4wIni, 'w') as SLcnf:
@@ -1572,7 +1578,7 @@ def aboutWindow():
     aw.config(background="white")  # Set window background color
     aw.geometry(str(awinWd) + "x" + str(awinHt) + "+{}+{}".format(x_Left, y_Top))
     if sys.platform == "win32":
-        aw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        aw.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
     else:
         aw.iconphoto(False, iconpng) # Linux
     awlabel = tk.Label(aw, font=18, text ="About MMC4W " + version)
@@ -1581,7 +1587,7 @@ def aboutWindow():
     aw.rowconfigure(0, weight=1)
     aboutText = tk.Text(aw, height=20, width=170, bd=3, padx=10, pady=10, wrap=tk.WORD, font=nnFont)
     aboutText.grid(column=0, row=1)
-    aboutText.insert( tk.INSERT, "MMC4W is installed at\n" + path_to_dat + "\n\nPutting the Music First.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
+    aboutText.insert( tk.INSERT, "MMC4W is installed at\n" + str(path_to_dat) + "\n\nPutting the Music First.\n\nMMC4W is a Windows client for MPD.  It does nothing by itself, but if you have one or more MPD servers on your network, you might like this.\n\n"
                      "This little app holds forth the smallest possible GUI hiding a full set of MPD control functions. Just play the music.\n\nCopyright 2023-2024 Gregory A. Sanders\nhttps://www.drgerg.com")
 #
 ## DEFINE THE HELP WINDOW
@@ -1597,13 +1603,13 @@ def helpWindow():
     hw.config(background="white")  # Set window background color
     hw.geometry(str(hwinWd) + "x" + str(hwinHt) + "+{}+{}".format(x_Left, y_Top))
     if sys.platform == "win32":
-        hw.iconbitmap(path_to_dat + '/ico/mmc4w-ico.ico')
+        hw.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
     else:
         hw.iconphoto(False, iconpng) # Linux
     hwlabel = HTMLLabel(hw, height=3, html='<h2 style="text-align: center">MMC4W Help</h2>')
     hw.columnconfigure(0, weight=1)
     hw.rowconfigure(1, weight=1)
-    helpText = HTMLScrolledText(hw, padx=10, pady=10, html=RenderHTML(path_to_dat + "\\mmc4w_help.html"))
+    helpText = HTMLScrolledText(hw, padx=10, pady=10, html=RenderHTML(path_to_dat / "mmc4w_help.html"))
     hwlabel.grid(column=0, row=0, sticky="NSEW")  # Place label in grid
     helpText.grid(column=0, row=1, ipadx=10, ipady=10, sticky="NSEW")
 #
@@ -1613,9 +1619,9 @@ def artWindow(aartvar):
     global tbarini,artwinilist  ## removed artw from this list.
     tbarini = confparse.get("mainwindow","titlebarstatus")
     if aartvar == 1:
-        thisimage = (path_to_dat + '/cover.png')
+        thisimage = (path_to_dat / "cover.png")
     if aartvar == 0:
-        thisimage = path_to_dat + '/ico/mmc4w.png'
+        thisimage = path_to_dat / "ico/mmc4w.png"
     aart = Image.open(thisimage)
     aart = aart.resize((artwinilist[1]-10,artwinilist[0]-10))
     aart = ImageTk.PhotoImage(aart)
