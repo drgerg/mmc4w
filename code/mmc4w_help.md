@@ -16,7 +16,7 @@ The interface contains the basic required buttons to control a MPD server:
 
 - Buttons for Volume, Play, Stop, Prev, Pause, Next and Quit.
 - A 'Mode' button eliminates the Windows title bar if desired.
-- An 'Art' button toggles a very small window that displays album art.  
+- An 'Art' button toggles a configurable window that displays album art.  
     - The art is served by MPD. It is either embedded in the song, or is a cover.png file.
     - If no folder or embedded art is found, MMC4W's logo is displayed.
 
