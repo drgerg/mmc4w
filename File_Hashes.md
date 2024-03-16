@@ -24,3 +24,9 @@ Generating the hash value to compare is really simple.  Just make sure you provi
   - shasum -a 256 filename
 
 [Read more at security.stackexchange.com](https://security.stackexchange.com/questions/189000/how-to-verify-the-checksum-of-a-downloaded-file-pgp-sha-etc)
+
+[Digital Signatures vs. Hashes](https://security.stackexchange.com/questions/31836/why-we-use-gpg-signatures-for-file-verification-instead-of-hash-values)
+
+[Makeuseof: 7 Free Hash Checkers](https://www.makeuseof.com/tag/free-hash-checkers-file-integrity/)
+
+[Cisco Talos File Reputation Checker](https://talosintelligence.com/talos_file_reputation)
