@@ -5,7 +5,7 @@ They help by providing you a mechanism by which you can gain a reasonable amount
 There is a **TON** of stuff you can know about hashes.  I'm going to line out here the gist of what I have read on the subject.
 
   - Modern hash algorithms like SHA256 are still very secure.  The older MD5 algorithm **can** be manipulated to trick you.
-  - You need to acquire the hash you are comparing from a different source than where you got the file.
+  - You need to acquire the hash you are comparing from a source **other** than where you got the file.
     - I'm posting hashes for my stuff at my blog site, [drgerg.com](https://www.drgerg.com/pages/hashes.html).
 
 Generating the hash value to compare is really simple.  Just make sure you provide the correct path to the downloaded file where you see 'filename' here below.
