@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md) Also check this: [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
+You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  Also check this: [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
 
 ## MMC4W.py now runs in Ubuntu with no tweaking starting with v2.0.6.  I think that's pretty cool.
 
