@@ -2,7 +2,7 @@
 <html markdown="1">
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v2.0.6 release.  As of this release, the same Python code runs in Linux without needing any tweaks.
+This help file was updated for the v2.0.8 release.  As of this release, the same Python code runs in Linux without needing any tweaks.
 
 I recommend reading the **First Run Process** section below before installing.
 

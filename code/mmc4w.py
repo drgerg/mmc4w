@@ -32,7 +32,8 @@ else:
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
     ctypes.windll.user32.SetProcessDPIAware()
 
-version = "v2.0.7"
+version = "v2.0.8"
+# v2.0.8 - Use buttons in search windows for added flexibility.
 # v2.0.7 - Trade pathlib for os.path. Deal with 'already connected' error.
 # v2.0.6 - Fine tuning lookups and search windows. Completely revamp win size methods.
 # v2.0.5 - Way better Playlist Build Mode.
@@ -178,78 +179,43 @@ artwinilist = makeartwinilist()
 cp.read(mmc4wIni)
 pllist = cp.getlist('serverstats','playlists')
 
-#=========================================== message window test area  ================================================
-
-class MessageWindow(tk.Toplevel):
-    """An independent window that can be positioned.
-    Based on https://stackoverflow.com/a/53839951/4541104 but configurable.
-    """
-    def __init__(self, title, message, answers=None, **options):
-        parent = options.get('parent')
-        if parent:
-            super().__init__(parent)
-        else:
-            super().__init__()
-        # self.answer = None  # a result of None would indicate *closed*
-        # (doesn't change default behavior much--you could still do "if"
-        # on self.answer like with messagebox.askokcancel's return)
-        self.answer = False  # imitate messagebox.askokcancel behavior
-        # (return False if dialog closed without pressing a button).
-        if not answers:
-            answers = OrderedDict(OK=True)
-        self.details_expanded = False
+#
+## ================= TOPLEVEL WINDOW CLASS DEFINITION ==========================
+class TlSbBWin(tk.Toplevel):  ## with Listbox and Scrollbar and Button.
+    def __init__(self, parent, title, inilist):
+        tk.Toplevel.__init__(self)
+        self.swin_x = inilist[2]
+        self.swin_y = inilist[3]
+        self.swinht = inilist[1]
+        self.swinwd = inilist[0]
         self.title(title)
-        geometry = options.get('geometry')
-        if geometry:
-            self.geometry(geometry)
-        self.resizable(False, False)
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
+        self.configure(bg='black')
+        srchwin_xpos = str(int(self.winfo_screenwidth() - self.swin_x))
+        srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
+        geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
+        self.geometry(geometrystring)
         if sys.platform == "win32":
             self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
         else:
-            self.iconphoto(False, iconpng)
-        tk.Label(self, text=message).grid(row=0, column=0, columnspan=3, pady=(7, 7), padx=(7, 7), sticky="ew")
-        column = 0
-        for text, value in answers.items():
-            column += 1
-            tk.Button(
-                self,
-                text=text,
-                command=lambda v=value: self.set_value(v),).grid(row=1, column=column, sticky="e")
+            self.iconphoto(False, iconpng) # Linux
+        self.columnconfigure([0,1,2,3],weight=1)
+        self.rowconfigure([0,1,2,3,4,5],weight=1)
+        self.rowconfigure([6,7],weight=0)
+        self.listvar = tk.StringVar()
+        self.listbx = tk.Listbox(self,listvariable=self.listvar)
+        self.listbx.configure(bg='black',fg='white')
+        self.listbx.grid(column=0,row=0,columnspan=4,rowspan=6,sticky='NSEW')
+        scrollbar = tk.Scrollbar(self, orient='vertical')
+        self.listbx.config(yscrollcommand = scrollbar.set)
+        scrollbar.config(bg='black',command=self.listbx.yview)
+        scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
+        self.frame = tk.Frame(self,bg='black')
+        self.frame.rowconfigure(0,weight=1)
+        self.frame.columnconfigure(0,weight=1)
+        self.frame.grid(row=7,sticky='NSEW')
+        self.closebtn = tk.Button(self.frame, bg='gray90', width=8, font=nnFont, text='Close', command=lambda:self.destroy())
+        self.closebtn.grid(column=0,row=0,sticky='W')
 
-    def set_value(self, value):
-        self.answer = value
-        self.destroy()
-
-
-def messagewindow_askokcancel(title, message, **options):
-    """A drop-in replacement for askokcancel but you can set x and y.
-    For options not listed below, see messagebox.askokcancel documentation.
-
-    Keyword arguments:
-        parent (tk.Widget): The window to block.
-        geometry (Optional[string]): The window size and/or position
-            (not available in messagebox, so a TopLevel is used).
-    """
-    answer = None
-    messagewindow = MessageWindow(
-        title,
-        message,
-        answers=OrderedDict(OK=True, Cancel=False),
-        **options,
-    )
-    # See https://stackoverflow.com/a/31439014/4541104
-    messagewindow.master.wait_window(messagewindow)
-    # ^ Using master allows us to know what Tk to stop without global(s)
-    return messagewindow.answer
-
-#=========================================== message window test area  ================================================
-
-#
-## ================= TOPLEVEL WINDOW CLASS DEFINITION ==========================
 class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
     def __init__(self, parent, title, inilist):
         tk.Toplevel.__init__(self)
@@ -269,7 +235,7 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
             self.iconphoto(False, iconpng) # Linux
         self.columnconfigure([0,1,2,3],weight=1)
         self.rowconfigure([0,1,2,3,4,5],weight=1)
-        self.rowconfigure(6,weight=0)
+        self.rowconfigure([6],weight=0)
         self.listvar = tk.StringVar()
         self.listbx = tk.Listbox(self,listvariable=self.listvar)
         self.listbx.configure(bg='black',fg='white')
@@ -278,30 +244,6 @@ class TlSbWin(tk.Toplevel):  ## with Listbox and Scrollbar.
         self.listbx.config(yscrollcommand = scrollbar.set)
         scrollbar.config(bg='black',command=self.listbx.yview)
         scrollbar.grid(column=5,row=0,rowspan=6,sticky='NS')
-
-class TlWin(tk.Toplevel):  ## plain - no scrollbar, single listbox.
-    def __init__(self, parent, title, inilist):
-        tk.Toplevel.__init__(self)
-        self.swin_x = inilist[2]
-        self.swin_y = inilist[3]
-        self.swinht = inilist[1]
-        self.swinwd = inilist[0]
-        self.title(title)
-        self.configure(bg='black')
-        srchwin_xpos = str(int(self.winfo_screenwidth() - self.swin_x))
-        srchwin_ypos = str(int(self.winfo_screenheight() - self.swin_y))
-        geometrystring = str(self.swinwd) + 'x'+ str(self.swinht) + '+' + srchwin_xpos + '+' +  srchwin_ypos
-        self.geometry(geometrystring)
-        if sys.platform == "win32":
-            self.iconbitmap(path_to_dat / "ico/mmc4w-ico.ico")
-        else:
-            self.iconphoto(False, iconpng)
-        self.columnconfigure(0,weight=1)
-        self.rowconfigure(0,weight=1)
-        self.listvar = tk.StringVar()
-        self.listbx = tk.Listbox(self,listvariable=self.listvar)
-        self.listbx.configure(bg='black',fg='white')
-        self.listbx.grid(column=0,row=0,sticky='NSEW')
 
 class TbplWin(tk.Toplevel):  ##Build Playlist Window.
     def __init__(self, parent, title, inilist):
@@ -1486,7 +1428,7 @@ def SrvrWindow(swaction):
         srvrwtitle = "Servers"
     if swaction == 'output':
         srvrwtitle = "MPD Server Outputs"
-    srvrw = TlSbWin(window, srvrwtitle, tsbinilist)
+    srvrw = TlSbBWin(window, srvrwtitle, tsbinilist)
     def rtnplsel(ipvar):
         global serverip,firstrun,lastpl
         client.close()
@@ -1499,7 +1441,7 @@ def SrvrWindow(swaction):
         confparse.set("serverstats","lastsrvr",serverip)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
-        srvrw.destroy()
+        # srvrw.destroy()
         logger.debug("serverip: {}".format(serverip))
         lastpl = 'Joined Server Queue'
         confparse.set('serverstats','lastsetpl',lastpl)
@@ -1510,10 +1452,14 @@ def SrvrWindow(swaction):
     #
     def outputtggl(outputvar):
         selection = srvrw.listbx.curselection()[0]
+        outputs = getoutputs()[1]
         oid = outputs[selection][4:5]
         client.toggleoutput(oid)
         logger.info('0) Output [{}] toggled to opposite state.'.format(outputvar))
-        srvrw.destroy()
+        outputs = getoutputs()[1]
+        srvrw.listbx.delete(0,tk.END)
+        srvrw.listvar.set(outputs)
+        # srvrw.destroy()
         if aatgl == '1':
             aart = artWindow(aartvar)
             artw.aartLabel.configure(image=aart)
@@ -1527,6 +1473,7 @@ def SrvrWindow(swaction):
     if swaction == 'output':
         srvrw.listbx.bind('<<ListboxSelect>>', outputtggl)
         outputs = getoutputs()[1]
+        print("initial outputs: {}".format(outputs))
         srvrw.listbx.delete(0,tk.END)
         srvrw.listvar.set(outputs)
 #
