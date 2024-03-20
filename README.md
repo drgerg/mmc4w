@@ -1,8 +1,14 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  Also check this: [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
+You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
 
-## MMC4W.py now runs in Ubuntu with no tweaking starting with v2.0.6.  I think that's pretty cool.
+The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
+
+![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
+
+## MMC4W.py now runs in Ubuntu with no tweaking starting with v2.0.6.  
+
+I recently added SHA256 hashes for the installer and mmc4w.py:  [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
 
 Playlist Builder Mode is also pretty cool.  I've been looking forward to this for a long time.
 
@@ -24,10 +30,6 @@ Tkinter may not be sexy, but it gets the job done.  MMC4W does exactly what I ne
 MMC4W is natively a saved-playlist player.  There is also what I call "True Blue Album Mode" that plays all songs on an album sequentially, first to last.  Play single titles using 'Search by Title'.
 
 There is one fairly simple config step after running the Windows installer.  [Find those details in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
-
-The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
-
-![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
 
 Other than the basic controls, I also want to be able to see the album cover most of the time.  The **Art** button toggles a small window to display embedded or folder art.  The MPD server extracts it from the current song file or from a cover.jpg, .png, .tiff, or .bmp file located in the album folder and provides it.  MMC4W displays it. Dead simple.  That looks like this:
 
