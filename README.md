@@ -2,6 +2,8 @@
 
 You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
 
+## It Really is All About the Music.
+
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
 ![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
