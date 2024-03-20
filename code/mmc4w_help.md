@@ -1,5 +1,3 @@
-<!doctype html>
-<html markdown="1">
 # MMC4W - Minimal MPD Client for Windows
 
 This help file was updated for the v2.0.8 release.  As of this release, the same Python code runs in Linux without needing any tweaks.
@@ -360,4 +358,3 @@ I hope you enjoy using this as much as I do.<br><br>
 **Also thanks** to [kaliko](https://gitlab.com/kaliko) for the [python-musicpd](https://gitlab.com/kaliko/python-musicpd) library!  
 And of course none of this would be possible without the excellent contribution of [MPD](https://github.com/MusicPlayerDaemon) by Max Kellermann.  **Thanks!!**  
 &copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)
-</html>
