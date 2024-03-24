@@ -13,6 +13,7 @@ v2.0.9
   - Massive redo of the help document.  New pics required.
   - Resolved Help and About window sizing on scaled displays.
   - Resolved a couple of bugs uncovered by LuSP19 related to brand new MPD installs.
+  - Resolved a path issue when Pyinstaller is not used. (just copying mmc4w.py)
 
 v2.0.8 
   - Added a 'Close' button to Outputs and Server windows.

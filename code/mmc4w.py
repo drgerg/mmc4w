@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
 from tkinter.font import Font
+import datetime
 from time import sleep
 import sys
 from configparser import ConfigParser
@@ -942,7 +943,7 @@ def plupdate():
         confparse.set("serverstats","playlists",str(pl))
         if lastpl == '':
             confparse.set('serverstats','lastsetpl',cpl[0]['playlist'])
-            lastpl = 'Select a saved playlist. "Look" menu.'
+            lastpl = 'Select a saved playlist. "Look" menu.' # a backup strategy. 'Joined Server Queue' is primary.
         if firstrun == '1':
             confparse.set('basic','firstrun','0')
             firstrun = '0'
@@ -1341,6 +1342,7 @@ def lookupwin(lookupT):
         connext()
         dispitems = []
         srchterm = editing_item.get().replace('Search: ','')
+        print(srchterm.upper())
         valid_list = ['file','title','artist','album','genre','date']
         editing_item.set('Search: ')
         if srchterm.upper() == "HELP;":
@@ -1364,19 +1366,22 @@ def lookupwin(lookupT):
         if srchterm.upper() == "Q;":
             plsngwin.destroy()
             window.mainloop()
-        if srchterm.upper() == 'STATUS':
+        if srchterm.upper() == 'STATUS;':
             stats = client.status()
             for s,v in stats.items():
                 dispitems.append(s + ' : ' + v)
             plsngwin.listbx.delete(0,tk.END)
             plsngwin.listbx.update()
             plsngwin.listvar.set(dispitems)
-        if srchterm.upper() == 'STATS':
+        if srchterm.upper() == 'STATS;':
             stats = client.stats()
             for s,v in stats.items():
-                if s == 'uptime' or s == 'playtime' or s == 'db_playtime':
+                if s == 'db_playtime':
                     v = int(v)
-                    v = time.strftime("%H:%M:%S", time.gmtime(v))
+                    v = str(datetime.timedelta(seconds=v))
+                if s == 'uptime' or s == 'playtime':
+                    v = int(v)
+                    v = str(datetime.timedelta(seconds=v))
                 if s == 'db_update':
                     v = int(v)
                     v = time.strftime("%m/%d/%Y, %H:%M:%S", time.localtime(v))
@@ -1654,6 +1659,9 @@ def aboutWindow():
 ## DEFINE THE HELP WINDOW
 #
 def helpbrowser():
+    path_to_dat = Path(__file__).parent
+    if "_internal" not in str(path_to_dat): # Compensate for varying installations.
+        path_to_dat = Path.joinpath(path_to_dat, "_internal")
     theurl = str("file://" / path_to_dat / "mmc4w_help.html")
     webbrowser.open_new(theurl)
 #

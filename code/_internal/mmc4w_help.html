@@ -1,363 +1,291 @@
 <!doctype html>
-<html markdown="1">
-# MMC4W - Minimal MPD Client for Windows
-
-This help file was updated for the v2.0.8 release.  As of this release, the same Python code runs in Linux without needing any tweaks.
-
-I recommend reading the **First Run Process** section below before installing.
-
-# Putting the Music First
-
-**MMC4W** is first and foremost **Minimal**.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.
-
-**MMC4W** is a MPD **Client**.  To be clear, you must have access to a running [MPD](https://www.drgerg.com/mpd-is-just-awesome.html) server for this app to be of any value to you.
-
-**MMC4W** is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)
-
-The interface contains the basic required buttons to control a MPD server:
-
-- Buttons for Volume, Play, Stop, Prev, Pause, Next and Quit.
-- A 'Mode' button eliminates the Windows title bar if desired.
-- An 'Art' button toggles a configurable window that displays album art.  
-    - The art is served by MPD. It is either embedded in the song, or is a cover.png file.
-    - If no folder or embedded art is found, MMC4W's logo is displayed.
-
-### The **'File'** menu contains these functions:
-
-- Configure : Opens mmc4w.ini for editing. Uses your system's configured text editor. (Notepad or similar)
-- Select Server : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
-- Toggle an Output : Allows you to enable and disable configured outputs on the MPD server.
-- Toggle Logging : Toggles logging On or Off.  Restart the app after toggling.
-- Reset Win Positions: Puts the two primary windows back where they were originally.
-- Create New Saved Playlist : Creates a new empty playlist with your specified name. Requires PL reload.
-- Remove Saved Playlist : Permanently deletes a saved playlist. Permanently.
-- Exit : Same as the 'Quit' button: exits the app.
-
-### The **'Tools'** menu has these functions:
-
-- Reload Current Title : Reloads data about the current playing song, including art.
-- Turn Random On : Turns on random playback. Text area background is white.
-- Turn Random Off : Turns on sequential playback. Text area background is navy blue.
-- Toggle Repeat : If repeat is 0, play stops when MPD gets to the end of the queue.
-- Toggle Consume : If consume is 1, each song is removed from the queue after playing.
-- Toggle Single : If single is 1, each song is only played once, but left in the queue.
-- Toggle Titlebar : Exposes the Windows titlebar. This allows repositioning of windows.
-- Update Database : Asks MPD to update the database. If nothing is changed, nothing happens.
-- Set Non-Standard Port : Tells you how to set up a non-standard port.
-
-### The **'Look'** menu has these functions:
-
-- Play a Single : Select a single title by title. (also emulates a little console. See Searching.)
-- Play an Album : Select an album by album title. Turns on sequential playback.
-- Find by Artist : Select a single title by artist. Also get info at the same time.
-- Load Last Selected Playlist : Restore your settings to the last configured playlist.
-- Show Songs in Last Playlist : View the list of songs in the last selected PL. Click to play.
-- Select a Playlist : Select any playlist available on the connected server.
-- Update "Everything" Playlist : Make sure all songs are in the "Everything" playlist.
-- Toggle PL Build Mode : Sets PL Build Mode. Easily add or delete songs from saved playlists.
-- Launch Browser Player : If a streaming HTTP output is enabled on the server, opens your browser there.
-
-### The **'Queue'** menu has this function:
-
-- Find and Play : Opens a window displaying the songs in the queue. See below for more detail.
-
-### The 'Help' menu contains:
-
-- Help : This document.
-- About : Look here to find your installation path and version number.
-
-## Some Things MMC4W Does NOT Do:
-
-- Does not constantly poll the server. - **MMC4W** checks back with the server when the song is ending.
-- Does not discover servers.  You need to know the IP address of any servers you wish to control.
-- Does not edit tags, display lyrics, get art from the web, display artist info, wash dishes or vacuum floors.
-- Does not tell you what saved playlist was loaded into the queue on a server you just joined. Nobody can do that.
-
-## First Run Process
-
-MMC4W ships with a blank .ini file.  The first time you run it, it will pop up a box like this:
-
-![The Configure dialog.](./_internal/edit_config_dialog.png)
-
-When you press the 'OK' button, **mmc4w** opens mmc4w.ini using the default Windows text editor.  On my system it's Notepad++.  Word processors like **Microsoft Word** should be avoided.  Only use a text editor that edits and saves plain ASCII text.  **Notepad** is perfectly fine for this job.
-
-You need to type in your preferred MPD servers' IP address(es) in the [basic] section as shown.  Be sure to put that trailing comma on there whether you have one or several.
-
-![inside the mmc4w.ini file](./_internal/config_ini_basics.png)
-
-If you have more than one server, just string those IP addresses together as seen there.
-
-After typing your server IP address(es) in the [basic] section, save and close the file.
-
-Restart **MMC4W**.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  Open the text editor you were using to input that IP address.  You should be able to find mmc4w.ini in the recent files list.
-
-Once you have a valid server IP under the serverlist key of the basic section, run MMC4W again.
-
-### Position and size windows to your liking.
-
-The first time you run MMC4W, it runs with titlebars on.  You can move and size the windows to your liking.  When you have things to your liking, hit the **mode** button.  If you are running in Linux, exit and restart the app. 
-
-### Select a saved playlist.
-
-When you hit **Play**, whatever is loaded in the server's queue will start to play.  In the text bar of the app you will see a prompt to select one of that server's playlists.  Go ahead and select one now.  You can choose to load it, or just remember it for later.
-
-![Select a playlist prompt](./_internal/select_playlist_prompt.png)
-
-Click on the Look menu and select "Select a Playlist". Once you've clicked on a playlist, you can hit the **'Play'** button.  You may notice an entry following "Current Playlist - ".  You will still want to click on a list in the dropdown even if you choose the same one.
-
-![Select a playlist](./_internal/select_playlist.png)
-
-### Normal Operation
-
-After you press **'Play'**, just kick back and enjoy the music.
-
-MMC4W will show you these basic statistics, alternating between the two lines of text shown in these two images:
-
-![Track name and Artist](./_internal/screen_1.png)</br><span style="color:green; font-size:smaller;">Track number, Track name and Artist.</span>
-
-![Server IP, status, playlist.](./_internal/screen_2.png)</br><span style="color:green; font-size:smaller;">Server, Play Status, PlayList and Elapsed-vs-Duration in seconds.</span>
-
-Random, rePeat, Single and Consume status is shown here.  A capital letter means 'ON', lower case means 'OFF'. 'P' is for rePeat because you can't have two 'R's.
-
-![Random, rePeat, Single and Consume](./_internal/screen_2b.png)
-
-The **'Art'** button toggles the small album art window.
-
-The **'Mode'** button toggles the titlebar like this:
-
-![Titlebar on.](./_internal/titlebar.png)
-
-When the titlebars are on, you can drag the windows around. (You will likely have to expand the art window a bit).  Where you leave the upper-left corners gets saved when you press **'Mode'** again.  Your windows will stay there until you press **'Mode'** again.
-
-The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.
-
-### Search and Play inside the current queue
-
-The **current queue** contains songs that were loaded from a saved playlist, or are the results of searches made from the database as described in the next section.
-
-The **Queue** menu has a 'Search and Play' option.  If you select that option, it opens a window containing a sorted list of all the songs in the current queue.
-
-You can jump to a specific song by entering a word that you expect to find in the title.  A list of songs in the queue containing that word are displayed.  Click the one you want.
-
-You can also search using key:value pairs.  For example, to list songs by The Allman Brothers, type "artist:allman" without quotes.  You'll see a list of their songs.  To search by album name, type "album:greatest". That will return a list of all albums with 'greatest' in their name.
-
-These searches are not case-sensitive.
-
-Type **quit;** to close the window without making a selection.  The semicolon is required. 
-
-### Search and Play directly from the music library
-
-There are three options under the **'Look'** menu related to search.
-
-- Play a Single
-- Play an Album
-- Find by Artist
-
- All three options use the same window, just differently. There's a 'mode' hint in the titlebar to help you out.
-
-Anywhere you see a Search: bar, you can use colon-separated key:value pairs for searching.  For example: album:hits, or artist:david.  These are not case-sensitive.  It may seem like the three menu options are not needed, but they do still have value.  A single-word search will produce results of the default type in each of them.
-
-**Note:** The Search window is resizeable.  If you want, type 'savewin;' in the Search: bar to save size and placement.
-
- **Play a Single** opens the Search window and allows you to type some search term.  This is a **Title** search.  If any song title in the entire library contains the search term, it will be displayed when you press **[enter]**
-
-![Title Search.](./_internal/search_title.png)</br><span style="color:green; font-size:smaller;">Song title search.</span>
-
- When you click on one of them, it plays that one title then stops.  Use another **'Look'** menu option to do something else.
-
- **Play an Album** opens the same Search window.  This time you are searching for text contained in **Album** names.
-
- Clicking on a list entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that **Random Mode** has been turned off.  
-
-![Album Search.](./_internal/album_mode.png)</br><span style="color:green; font-size:smaller;">Album title search.</span>
-
- I call this "**True Blue Album Mode**".  Use the **'Tools'** menu to turn Random playback on when you want it. No assumptions are made about whether you want random or sequential playback outside of Album Mode.
-
-**Find by Artist** opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  
-
-![Artist Search.](./_internal/search_artist.png)</br><span style="color:green; font-size:smaller;">Artist search. Hit Enter for all songs.</span>
-
-This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.
-
-## Working with Saved Playlists
-
-Saved playlists are the heart of **MMC4W**. To differentiate between **saved playlists** and the list of songs currently being played, the latter is called **"the queue"**.  **Playlists** are lists of songs saved to a file on disk with some meaningful name.
-
-You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  
-
-**MMC4W** will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Look'** Menu.
-
-### You can manipulate playlists in these ways:
-
- - Load a playlist into the queue.  **Look Menu** - Select a Playlist.
- - Reload the last playlist into the queue.  **Look Menu** - Reload Last Playlist.
- - List the songs in the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
-    - (moveable, resizable window)
- - Jump to and play a selected song from the last loaded playlist. **Look Menu** Show Songs in Last Playlist.
- - Create a new empty playlist. **File Menu** - Create New Saved Playlist.
- - Delete a playlist. **File Menu** - Remove Saved Playlist.
- - Add the currently playing song to any saved playlist.
- - Delete the currently playing song from the last loaded saved playlist.
-
-## Adding and Removing Songs in a Saved Playlist:
-
-**MMC4W** lets you add songs to playlists as you go.  No need to stop playback.
-
-1) Use the **Toggle PL Build Mode** option in the **Look Menu** to turn on PL Build Mode.  
-
-![Toggle PL Build Mode](./_internal/plbuildmode1.png)
-
-A window opens titled **"Playlists With and Without Current Song"**.  Playlists containing the current song are on the left, ones without the current song are on the right.  This window updates each time a new song starts.  
-
-You can move and resize that window to suit your tastes.  When you exit PLBuild Mode, your settings are saved to the mmc4w.ini file.
-
-![PL Build Mode](./_internal/plbuildmode2.png)
-
- 2) If the music isn't already playing, hit **Play**.  Two sets of playlists are displayed, those with this song on the left, and those without it on the right.
- 3) If you want to add the current song to a playlist, click on the playlist name in the right list box.  The playlist name will move to the left and the current song will be added.  
-
-**NOTE:** If you press **Quit** while in PLBuild Mode, **MMC4W** first turns PLBuild Mode off, then exits.
-
-**That's it.**
-
-#### Deleting a song from the current saved playlist is just as easy:
-
-1) In **PL Build Mode**, when you hear a song you want to remove, click the playlist name in the left window.  
-2) The playlist name will move to the right and song will be gone from the saved playlist.
-
-**You can be intentional:**  
-Use the **Play a Single**, **Play an Album**, or **Find By Artist** options under the **Look** menu to play a specific song or album.  
-When it's playing, select the playlist to add or delete the current song from that playlist.  
-
-## The 'mini console'
-
-- Select the 'Play a Single' option.
-- In the Search: field, type 'status' (no quotes).  You'll see the current status info.
-- Type 'stats' and you'll get server stats appended to the bottom.  Scroll down.
-- Type 'quit;' (with the semicolon) and the window closes.
-- Type 'savewin;' (with the semicolon) to save the size and placement of search windows.
-
-This was something I just didn't want to do without.
-
-## Playing with HTTP Outputs
-
-**MPD** has the option of serving an audio stream over HTTP.  If the server is configured this way, you'll see the output listed by using the "File / Toggle an Output" option.
-
-MMC4W offers basic support for MPD streams using HTTP. Note that is not HTTPS. That may make a difference.
-
-In order to get the stream, you will have to know what **port** the server is using.  MMC4W comes with port 8000 set in the **mmc4w.ini** configuration file.  That is the default in the MPD server config file, but people often change it.  You'll have to put the correct httpd port in the **[serverstats]** section of the mmc4w.ini file.
-
-![HTTP port settings.](./_internal/http-port-stuff.png)
-
-If an HTTP output is enabled, and music is playing, you can hear it through your default browser in Windows.  The **"Launch Browser Player"** option under the **'Look'** menu will start the playback if everything is on and running.  Simply close the browser or tab to stop it.  The server's playback is not affected. Other people listening to that stream will continue to hear it.
-
-**Be aware**: this method of listening has its drawbacks.  You have to deal with buffering, network latency, lack of real controls, etc.  But under some circumstances, this may be an acceptable way to listen to your music.
-
-**The "AutoBrowserPlayer"** setting might interest you if you regularly use the BrowserPlayer.  If you set this to 1 ('1' is ON), when you start MMC4W, *if there is an active stream* on the configured server, the browser will be called to play it.  Set the 'autobrowserplayer' to 0 to disable that behavior.
-
-### NOTE - 
-
-If you press **Stop**, the http stream stops. This may cause browsers to close the connection.  If so, when you restart playback you'll need to refresh the browser window to regain the connection.  So will everyone else listening to that stream.  It's probably a good idea to avoid using the **Stop** button if there is more than one person listening to the http stream. Better safe than sorry.
-
-## Logging 
-
-Logging can be enabled by using the '**Toggle Logging**' option under the **File** menu.
-
-![Toggle Logging](./_internal/toggle_logging.png)
-
-After using the '**Toggle Logging**' option, restart MMC4W.
-
-MMC4W currently supports two levels of logging: **INFO** and **DEBUG**.  INFO lists basic actions that should be occurring as they occur.  DEBUG adds another layer of potentially useful data to the stream.
-
-![Setting the Log Level](./_internal/logging.png)
-
-To set the logging level, use the '**Configure**' option and edit the **mmc4w.ini** file.  Type either 'info' or 'debug' where indicated (without quotes).
-
-The resulting log file (**mmc4w.log**) can be found in the **_internal** folder in the installation folder.  The log file is deleted and started fresh each time you start **MMC4W**.  If you toggle Off logging, the last log file will remain until you delete it or create a new one by toggling logging On again.
-
-The DEBUG file (**mmc4w_DEBUG.log**) does not start fresh with each run, and is not deleted. If you make the mistake of leaving MMC4W with debug logging turned on, that log file will continue to grow until you run out of disk space.  Don't be that guy. Turn debug logging off when you don't need it.
-
-### Other Random Options
-
-Under the **'Tools'** menu there is the **'Set Non-Standard Port'** option.  Choosing that opens a pop-up which provides details about how to set any port other than 6600 (the default MPD port).  Most people will never use this.
-
-## Notes About What Happens Under the Hood
-
-When you press '**Play**', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is being displayed, it attempts to get art embedded in the song.  If no art is embedded in the song, it asks for folder art.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.
-
-MMC4W uses the Python **threading** module to run a timer in conjunction with a small set of global variables.  In this way we're able to keep the interface satisfactorily snappy and avoid having to poll the server every few seconds to determine if a new song is playing.
-
-The Tkinter interface runs continuously waiting for button presses.  Blocking code (like sleep(10)) is avoided at all cost.  As a result, things work.  From my chair, it's perfect.  We'll see how long that perspective lasts, shan't we?
-
-The design of this utility is intentionally simple.  I'm sure there are several 'better' ways it can be done, I just don't know what they are. 
-
-### The mmc4w.ini File
-
-Below is the contents of a typical mmc4w.ini file. It is made up of key/value pairs.  "lastport = 6600" is a key/value pair.  "lastport" is the key, "6600" is the value.  We look up the values in this file by asking for the value associated with the key.  So, for example, I tell Python **mpdport = confparse.get('serverstats','lastport')** and it tells me **mpdport** is now assigned the value of 6600.
-
-With the exception of the serverlist, all of these entries are filled in by the program.  You can provide values for nearly any of them if you choose. I recommend you not change anything in the "default_values" section.
-
+<html>
+<body>
+<h1>MMC4W - Minimal MPD Client for Windows</h1>
+<p>This help file was updated for the v2.0.9 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.</p>
+<p>I recommend reading the <strong>First Run Process</strong> section below before installing.</p>
+<h1>Putting the Music First</h1>
+<p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.</p>
+<p><strong>MMC4W</strong> is a MPD <strong>Client</strong>.  To be clear, you must have access to a running <a href="https://www.drgerg.com/mpd-is-just-awesome.html">MPD</a> server for this app to be of any value to you.</p>
+<p><strong>MMC4W</strong> is open source, and does not send any data out to anyone anywhere.  It connects only to the MPD server you specify in the configuration file. (mmc4w.ini)</p>
+<p>The interface contains the basic required buttons to control a MPD server:</p>
+<ul>
+<li>Buttons for Volume, Play, Stop, Prev, Pause, Next and Quit.</li>
+<li>A 'Mode' button eliminates the Windows title bar if desired.</li>
+<li>An 'Art' button toggles a configurable window that displays album art.  <ul>
+<li>The art is served by MPD. It is either embedded in the song, or is a cover.png file.</li>
+<li>If no folder or embedded art is found, MMC4W's logo is displayed.</li>
+</ul>
+</li>
+</ul>
+<h3>The <strong>'Config'</strong> menu contains these functions:</h3>
+<ul>
+<li><strong>Edit mmc4w.ini</strong> : Opens mmc4w.ini for editing. Uses your system's configured text editor. (Notepad or similar)</li>
+<li><strong>Select a Server</strong> : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.</li>
+<li><strong>Toggle an Output</strong> : Allows you to enable and disable configured outputs on the MPD server.</li>
+<li><strong>Toggle Logging</strong> : Toggles logging On or Off.  Restart the app after toggling.</li>
+<li><strong>Reset Win Positions</strong> : Puts the two primary windows back where they were originally.</li>
+<li><strong>Get Scaling Factors</strong> : Calculates and saves two values based on display scaling.</li>
+<li><strong>Apply Scaling Factors</strong> : Updates window geometry numbers based on saved Scaling Factors.</li>
+<li><strong>Set Non-Standard Port</strong> : Tells you how to set up a non-standard port.</li>
+<li><strong>Exit</strong> : Same as the 'Quit' button: exits the app.</li>
+</ul>
+<h3>The <strong>'Switches'</strong> menu has these functions:</h3>
+<ul>
+<li><strong>Reload Current Title</strong> : Reloads data about the current playing song, including art.<br />
+  (pressing 'Play' again also refreshes everything)</li>
+<li><strong>Toggle Random</strong> : Turns on/off random playback. Text area background is white or blue.</li>
+<li><strong>Toggle Repeat</strong> : If repeat is 0, play stops when MPD gets to the end of the queue.</li>
+<li><strong>Toggle Consume</strong> : If consume is 1, each song is removed from the queue after playing.</li>
+<li><strong>Toggle Single</strong> : If single is 1, each song is only played once, but left in the queue.</li>
+<li><strong>Toggle Titlebar</strong> : Exposes the Windows titlebar. This allows repositioning of windows.</li>
+<li><strong>Update Database</strong> : Asks MPD to update the database. If nothing is changed, nothing happens.</li>
+</ul>
+<h3>The <strong>'Lists'</strong> menu has these functions:</h3>
+<ul>
+<li><strong>Play a Single</strong> : Select a single title by title. (also emulates a little console. See Searching.)</li>
+<li><strong>Play an Album</strong> : Select an album by album title. Turns on sequential playback.</li>
+<li><strong>Find by Artist</strong> : Select a single title by artist. Also get info at the same time.</li>
+<li><strong>Select a Playlist</strong> : Select any playlist available on the connected server.</li>
+<li><strong>Create New Saved Playlist</strong> : Creates a new empty playlist with your specified name. Requires PL reload.</li>
+<li><strong>Remove Saved Playlist</strong> : Permanently deletes a saved playlist. Permanently.</li>
+<li><strong>Update "Everything" Playlist</strong> : Make sure all songs are in the "Everything" playlist.</li>
+</ul>
+<h3>The <strong>'Queue'</strong> menu has this function:</h3>
+<ul>
+<li><strong>Ingest Last Playlist</strong> : Reload your queue with songs from the last configured playlist.</li>
+<li><strong>Find and Play</strong> : Opens a window displaying the songs in the queue. See below for more detail.</li>
+<li><strong>Toggle PL Build Mode</strong> : Sets PL Build Mode. Easily add or delete songs from saved playlists.</li>
+<li><strong>Launch Browser Player</strong> : If a streaming HTTP output is enabled on the server, opens your browser there.</li>
+</ul>
+<h3>The 'Help' menu contains:</h3>
+<ul>
+<li><strong>Help</strong> : Launch your default browser to display this document.</li>
+<li><strong>About</strong> : Look here to find your installation path and version number.</li>
+</ul>
+<h2>Some Things MMC4W Does <strong>NOT</strong> Do:</h2>
+<ul>
+<li>Does not constantly poll the server. - <strong>MMC4W</strong> checks back with the server when the song is ending.</li>
+<li>Does not discover servers.  You need to know the IP address of any servers you wish to control.</li>
+<li>Does not edit tags, display lyrics, get art from the web, display the artist's bio, wash dishes or vacuum floors.</li>
+<li>Does not tell you what saved playlist was loaded into the queue on a server you just joined. Nobody can do that.</li>
+</ul>
+<h2>First Run Process</h2>
+<p>MMC4W ships with a blank .ini file.  The first time you run it, it will pop up a box like this:</p>
+<p><img alt="The Configure dialog." src="./edit_config_dialog.png" /></p>
+<p>When you press the 'OK' button, <strong>mmc4w</strong> opens mmc4w.ini using the default system text editor.  On my system it's Notepad++ on Windows and Xed on Linux.  Word processors like <strong>Microsoft Word</strong> should be avoided.  Only use a text editor that edits and saves plain ASCII text.  Notepad or Nano are perfectly fine for this job.</p>
+<p>You need to type in your preferred MPD servers' IP address(es) in the [basic] section as shown.</p>
+<p><img alt="inside the mmc4w.ini file" src="./config_ini_basics.png" /></p>
+<p>If you have more than one server, just string those IP addresses together as seen there.</p>
+<p>After typing your server IP address(es) in the [basic] section, save and close the file.</p>
+<p>Restart <strong>MMC4W</strong>.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  Open the text editor you were using to input that IP address.  You should be able to find mmc4w.ini in the recent files list.</p>
+<p>Once you have a valid server IP under the serverlist key of the basic section, run MMC4W again.</p>
+<h3>Position and size windows to your liking.</h3>
+<p>The first time you run MMC4W, it runs with titlebars on.  You can move and size the windows to your liking.  When you have things to your liking, hit the <strong>mode</strong> button.  If you are running in Linux, mmc4w.py will exit. Restart the app. </p>
+<h3>Notes about Linux</h3>
+<p>There are small differences in the way window managers go about their business.  In the Windows world, there is one window manager (WM).  In the Linux world there are more.  The end result is you can't be exactly sure how a particular distribution of Linux will behave with mmc4w.py until you try it.</p>
+<p>I'm using mmc4w.py on Linux Mint using Cinnamon desktop.  'wmctrl -m' returns "Mutter (Muffin)" which I assume is the name of the WM.</p>
+<p>Here are some things I noticed running it thus:</p>
+<ul>
+<li>Toggling the titlebar (Mode button) does not take effect immediately.  For that reason, I made it so mmc4w.py shuts down.  When you restart, the change takes effect.</li>
+<li>When the titlebar is off, MMC4W becomes 'always on top'.  New app windows appear behind it.</li>
+</ul>
+<p>For these reasons, in Linux I leave the titlebars on most of the time.  These are aesthetic problems, not functional.  I really am not too concerned about them.</p>
+<h3>Notes about Display Scaling</h3>
+<p>My Linux machine is a Dell Inspiron 13-7378.  It has a 13-inch display at 1080p.  In order to be able to read text on this screen, the recommended scaling factor is 125% or 150%.  I have it set at 125%.</p>
+<p>When MMC4W first opens the first time, the windows are way too small.  I wanted a way to quickly fix that problem, so I worked out a system that works here.  More tests would be appreciated.</p>
+<p>At first start, I resize the main window by grabbing the upper left corner and dragging it out until all of the buttons are JUST exposed.</p>
+<ul>
+<li>Next select <strong>Config</strong> - Get Scaling Factors.  </li>
+<li>Next select <strong>Config</strong> - Apply Scaling Factors.</li>
+<li>Now hit the <strong>Mode</strong> button to save stuff.</li>
+<li>Reopen the app.  You'll probably want to hit <strong>Mode</strong> again and reopen again to get the titlebars back.</li>
+</ul>
+<p>Now the other windows you open should have some sane dimensions.  Tweak as you wish.</p>
+<p><strong>My wish for you</strong>: May you be free of display scaling.</p>
+<h3>Select a saved playlist.</h3>
+<p>When you hit <strong>Play</strong>, whatever is loaded in the server's queue will start to play.  In the text bar of the app you will see "Joined Server Queue".  This is because there is no way to know the name of the playlist that was last loaded into the queue on the server.  MMC4W tracks the last playlist <strong>you</strong> loaded, but MPD does not keep track of it.  You can choose to let things slide, or you can select one now.  If you choose one, you can choose to load it into the queue, or just remember it for later.</p>
+<p><img alt="Select a playlist prompt" src="./select_playlist_prompt.png" /></p>
+<p>Click on the Lists menu and select "Select a Playlist". Once you've clicked on a playlist, you can hit the <strong>'Play'</strong> button.  </p>
+<p><img alt="Select a playlist" src="./select_playlist.png" /></p>
+<h3>Normal Operation</h3>
+<p>After you press <strong>'Play'</strong>, just kick back and enjoy the music.</p>
+<p>MMC4W will show you these basic statistics, alternating between the two lines of text shown in these two images:</p>
+<p><img alt="Track name and Artist" src="./screen_1.png" /></br><span style="color:green; font-size:smaller;">Track number, Track name and Artist.</span></p>
+<p><img alt="Server IP, status, playlist." src="./screen_2.png" /></br><span style="color:green; font-size:smaller;">Server, Play Status, PlayList and Elapsed-vs-Duration in seconds.</span></p>
+<p>Random, rePeat, Single and Consume status is shown here.  A capital letter means 'ON', lower case means 'OFF'. 'P' is for rePeat because you can't have two 'R's.</p>
+<p><img alt="Random, rePeat, Single and Consume" src="./screen_2b.png" /></p>
+<p>The <strong>'Art'</strong> button toggles the small album art window.</p>
+<p>The <strong>'Mode'</strong> button toggles the titlebar like this:</p>
+<p><img alt="Titlebar on." src="./titlebar.png" /></p>
+<p>When the titlebars are on, you can drag the windows around. (You will likely have to expand the art window a bit).  Where you leave the upper-left corners gets saved when you press <strong>'Mode'</strong> again.  Your windows will stay there until you press <strong>'Mode'</strong> again.</p>
+<p>The default out-of-the-box values are saved in the mmc4w.ini file at the bottom.  Use those in case things get out of hand.</p>
+<h3>Search and Play inside the current queue</h3>
+<p>The <strong>current queue</strong> contains songs that were loaded from a saved playlist, or are the results of searches made from the database as described in the next section.</p>
+<p>The <strong>Queue</strong> menu has a 'Search and Play' option.  If you select that option, it opens a window containing a sorted list of all the songs in the current queue.</p>
+<p>You can jump to a specific song by entering a word that you expect to find in the title.  A list of songs in the queue containing that word are displayed.  Click the one you want.</p>
+<p>You can also search using key:value pairs.  For example, to list songs by The Allman Brothers, type "artist:allman" without quotes.  You'll see a list of their songs.  To search by album name, type "album:greatest". That will return a list of all albums with 'greatest' in their name.</p>
+<p>These searches are not case-sensitive.</p>
+<p>Type <strong>q;</strong> to close the window without making a selection.  The semicolon is required. </p>
+<h3>Search and Play directly from the music library</h3>
+<p>There are three options under the <strong>'Lists'</strong> menu related to search.</p>
+<ul>
+<li>Play a Single</li>
+<li>Play an Album</li>
+<li>Find by Artist</li>
+</ul>
+<p>All three options use the same window, just differently. There's a 'mode' hint in the titlebar to help you out.</p>
+<p>The search windows support a limited set of commands.  The command 'help;' (with the semicolon, but not the quotes) gets you this screen:</p>
+<p><img alt="Search Help screen" src="./search_help.png" /></br><span style="color:green; font-size:smaller;">The Search help screen.</span></p>
+<p>Anywhere you see a Search: bar, you can use colon-separated key:value pairs for searching.  For example: album:hits, or artist:david.  These are not case-sensitive.  It may seem like the three menu options are not needed, but they do still have value.  A single-word search will produce results of the default type in each of them.</p>
+<p><strong>Note:</strong> The Search window is resizeable.  If you want, type 'savewin;' in the Search: bar to save size and placement.</p>
+<p><strong>Play a Single</strong> opens the Search window and allows you to type some search term.  This is a <strong>Title</strong> search.  If any song title in the entire library contains the search term, it will be displayed when you press <strong>[enter]</strong>.</p>
+<p><img alt="Title Search." src="./search_title.png" /></br><span style="color:green; font-size:smaller;">Song title search.</span></p>
+<p>When you click on one of them, it plays that one title then stops.  Use another <strong>'Look'</strong> menu option to do something else.</p>
+<p><strong>Play an Album</strong> opens the same Search window.  This time you are searching for text contained in <strong>Album</strong> names.</p>
+<p>Clicking on a list entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that <strong>Random Mode</strong> has been turned off.  </p>
+<p><img alt="Album Search." src="./album_mode.png" /></br><span style="color:green; font-size:smaller;">True Blue Album Mode.</span></p>
+<p>I call this "<strong>True Blue Album Mode</strong>".  The album title takes the place of a playlist name while this is playing.</p>
+<p><strong>NOTE:</strong> Random mode will remain off after the album finishes.  Use the <strong>'Switches'</strong> menu to turn Random playback on when you want it. No assumptions are made about whether you want random or sequential playback outside of Album Mode.</p>
+<p><strong>Find by Artist</strong> opens the Search window, but this time you are searching by Artist name.  Keep in mind this is the name as it appears in your music library. </p>
+<p><img alt="Artist Search." src="./search_artist.png" /></br><span style="color:green; font-size:smaller;">Artist search. Hit Enter for all songs.</span></p>
+<p>If you click in the Search: field and just press [enter], you'll get a list of all your songs ordered by Artist.  This can be useful when you don't know what you're looking for.  Otherwise, type in some text to filter your list.</p>
+<h2>Working with Saved Playlists</h2>
+<p>Saved playlists are the heart of <strong>MMC4W</strong>. To differentiate between <strong>saved playlists</strong> and the list of songs currently being played, the latter is called <strong>"the queue"</strong>.  <strong>Playlists</strong> are lists of songs saved to a file on disk with some meaningful name.</p>
+<p>You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  </p>
+<p><strong>MMC4W</strong> will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the <strong>'Look'</strong> Menu.</p>
+<h3>You can manipulate playlists in these ways:</h3>
+<ul>
+<li>Load a playlist into the queue.  <strong>Lists Menu</strong> - Select a Playlist.</li>
+<li>Reload the last playlist into the queue.  <strong>Queue Menu</strong> - Ingest Last Playlist.</li>
+<li>Jump to and play a selected song in the current queue. <strong>Queue Menu</strong> - Find and Play in Queue.</li>
+<li>Create a new empty playlist. <strong>Lists Menu</strong> - Create New Saved Playlist.</li>
+<li>Delete a playlist. <strong>Lists Menu</strong> - Remove Saved Playlist.</li>
+<li>Add or remove the currently playing song to any saved playlist. <strong>Queue Menu</strong> - Toggle PL Build Mode.</li>
+</ul>
+<h2>Adding and Removing Songs in a Saved Playlist:</h2>
+<p><strong>MMC4W</strong> lets you add songs to playlists as you go.  No need to stop playback.</p>
+<p>1) Use the <strong>Toggle PL Build Mode</strong> option in the <strong>Queue Menu</strong> to turn on PL Build Mode.  </p>
+<p><img alt="Toggle PL Build Mode" src="./plbuildmode1.png" /></p>
+<p>A window opens titled <strong>"Playlists With and Without Current Song"</strong>.  Playlists containing the current song are on the left, ones without the current song are on the right.  This window updates each time a new song starts.  </p>
+<p>You can move and resize that window to suit your tastes.  When you exit PLBuild Mode, your size and position settings are saved to the mmc4w.ini file.</p>
+<p><img alt="PL Build Mode" src="./plbuildmode2.png" /></p>
+<p>2) If the music isn't already playing, hit <strong>Play</strong>.  Two sets of playlists are displayed, those with this song on the left, and those without it on the right.<br />
+ 3) If you want to add the current song to a playlist, click on the playlist name in the right list box.  The playlist name will move to the left and the current song will be added.  </p>
+<p><strong>NOTE:</strong> If you press <strong>Quit</strong> while in PLBuild Mode, <strong>MMC4W</strong> first turns PLBuild Mode off, then exits.</p>
+<p><strong>That's it.</strong></p>
+<h4>Deleting a song from the current saved playlist is just as easy:</h4>
+<p>1) In <strong>PL Build Mode</strong>, when you hear a song you want to remove, click the playlist name in the left window.<br />
+2) The playlist name will move to the right and song will be gone from the saved playlist.</p>
+<p><strong>You can be intentional:</strong><br />
+Use the <strong>Play a Single</strong>, <strong>Play an Album</strong>, or <strong>Find By Artist</strong> options under the <strong>Look</strong> menu to play a specific song or album.<br />
+When it's playing, select the playlist to add or delete the current song from that playlist.  </p>
+<h2>The 'mini console' semicolon command set</h2>
+<ul>
+<li>Select one of the search options in the <strong>Lists</strong> menu.</li>
+<li>In the <strong>Search:</strong> field</li>
+<li>Type 'help;' (no quotes) gets a little bit of help.</li>
+<li>Type 'status;' and you'll see the current status info.</li>
+<li>Type 'stats;' and you'll get server stats.</li>
+<li>Type 'q;' and the window closes.</li>
+<li>Type 'savewin;' to save the size and placement of search windows.</li>
+</ul>
+<p><img alt="The **stats;** screen" src="./stats_command.png" title="This is the output of the 'stats;' command." /></p>
+<p>This was something I just didn't want to do without.</p>
+<h2>Playing with HTTP Outputs</h2>
+<p><strong>MPD</strong> has the option of serving an audio stream over HTTP.  If the server is configured this way, you'll see the output listed by using the "File / Toggle an Output" option.</p>
+<p>MMC4W offers basic support for MPD streams using HTTP. Note that is not HTTPS. That may make a difference.</p>
+<p>In order to get the stream, you will have to know what <strong>port</strong> the server is using.  MMC4W comes with port 8000 set in the <strong>mmc4w.ini</strong> configuration file.  That is the default in the MPD server config file, but people often change it.  You'll have to put the correct httpd port in the <strong>[serverstats]</strong> section of the mmc4w.ini file.</p>
+<p><img alt="HTTP port settings." src="./http-port-stuff.png" /></p>
+<p>If an HTTP output is enabled, and music is playing, you can hear it through your system's default browser.  The <strong>"Launch Browser Player"</strong> option under the <strong>'Queue'</strong> menu will start the playback if everything is on and running.  Simply close the browser or tab to stop it.  The server's playback is not affected. Other people listening to that stream will continue to hear it.</p>
+<p><strong>Be aware</strong>: this method of listening has its drawbacks.  You have to deal with buffering, network latency, lack of real controls, etc.  But under some circumstances, this may be an acceptable way to listen to your music.  I find myself using this method more frequently these days.</p>
+<p><strong>The "AutoBrowserPlayer"</strong> setting might interest you if you regularly use the BrowserPlayer.  If you set this to 1 ('1' is ON), when you start MMC4W, <em>if there is an active stream</em> on the configured server, the browser will be called to play it.  Set the 'autobrowserplayer' to 0 to disable that behavior.</p>
+<h3>NOTE -</h3>
+<p>If you press <strong>Stop</strong>, the http stream stops. This may cause browsers to close the connection.  If so, when you restart playback you'll need to refresh the browser window to regain the connection.  So will everyone else listening to that stream.  It's probably a good idea to avoid using the <strong>Stop</strong> button if there is more than one person listening to the http stream. Better safe than sorry.</p>
+<h2>Logging</h2>
+<p>Logging can be enabled by using the '<strong>Toggle Logging</strong>' option under the <strong>Config</strong> menu.</p>
+<p><img alt="Toggle Logging" src="./toggle_logging.png" /></p>
+<p>After using the '<strong>Toggle Logging</strong>' option, restart MMC4W.</p>
+<p>MMC4W currently supports two levels of logging: <strong>INFO</strong> and <strong>DEBUG</strong>.  INFO lists basic actions that should be occurring as they occur.  DEBUG adds another layer of potentially useful data to the stream.</p>
+<p><img alt="Setting the Log Level" src="./logging.png" /></p>
+<p>To set the logging level, use the '<strong>Configure</strong>' option and edit the <strong>mmc4w.ini</strong> file.  Type either 'info' or 'debug' where indicated (without quotes).</p>
+<p>The resulting log file (<strong>mmc4w.log</strong>) can be found in the <strong>_internal</strong> folder in the installation folder.  The log file is deleted and started fresh each time you start <strong>MMC4W</strong>.  If you toggle Off logging, the last log file will remain until you delete it or create a new one by toggling logging On again.</p>
+<p>The DEBUG file (<strong>mmc4w_DEBUG.log</strong>) does not start fresh with each run, and is not deleted. If you make the mistake of leaving MMC4W with debug logging turned on, that log file will continue to grow until you run out of disk space.  Don't be that guy. Turn debug logging off when you don't need it.</p>
+<h3>Other Random Options</h3>
+<p>Under the <strong>'Config'</strong> menu there is the <strong>'Set Non-Standard Port'</strong> option.  Choosing that opens a pop-up which provides details about how to set any port other than 6600 (the default MPD port).  Most people will never use this.</p>
+<h2>Notes About What Happens Under the Hood</h2>
+<p>When you press '<strong>Play</strong>', MMC4W reaches out to the configured server and asks for data on the current song.  Then it asks for a status report.  From the returned data, MMC4W calculates how much longer the current song should be playing.  If album art is to be displayed, it attempts to get art embedded in the song.  If no art is embedded in the song, it asks for folder art.  If that is successful, it displays the art.  If not, it displays the MMC4W logo.</p>
+<p>MMC4W uses the Python <strong>threading</strong> module to run a timer in conjunction with a small set of global variables.  In this way we're able to keep the interface satisfactorily snappy and avoid having to poll the server every few seconds to determine if a new song is playing.</p>
+<p>While working on MMC4W I became aware of more civilized ways of interfacing with MPD.  I'm sure most other professionally produced apps probably use those methods.  I could have abandoned MMC4W, but the twisted side of me wanted to see if I could make it work to my satisfaction.  I did.  I use it every day with a smile on my face.</p>
+<p>The Tkinter interface runs continuously waiting for button presses.  It may be homely, but it works.  The design of this utility is intentionally simple.  From my chair, it's perfect.  We'll see how long that perspective lasts, shan't we?</p>
+<h3>The mmc4w.ini File</h3>
+<p>Below is the contents of a typical mmc4w.ini file. It is made up of key/value pairs.  <code>"lastport = 6600"</code> is a key/value pair.  <code>"lastport"</code> is the key, <code>"6600"</code> is the value.  We look up the values in this file by asking for the value associated with the key.  So, for example, I tell Python <code>"mpdport = confparse.get('serverstats','lastport')"</code> and it tells me <code>"mpdport"</code> is now assigned the value of <code>"6600"</code>.</p>
+<p>With the exception of the serverlist, all of these entries are filled in by the program.  You can provide values for nearly any of them if you choose. I recommend you not change anything in the "default_values" section.</p>
+<p><span style='font-family:courier;'>
+  [basic]<br />
+  installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W<br />
+  serverlist = 192.168.1.22,192.168.1.16,192.168.1.28,<br />
+  serverport = 6600<br />
+  firstrun = 0<br />
+  sysplatform = win32<br />
+</span></br>
 <span style='font-family:courier;'>
-  [basic]  
-  installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W  
-  serverlist = 192.168.1.22,192.168.1.16,192.168.1.28,  
-  serverport = 6600  
-  firstrun = 0  
-  sysplatform = win32  
-
-  [program]  
-  version = v2.0.6  
-  logging = on  
-  loglevel = debug  
-  buildmode = 0  
-  autobrowserplayer = 0  
-
-  [serverstats]  
-  playlists = Heavy Listening,B List,Joe Carr Compilations,Easy,Everything,Just Dave Matthews Band,Short Songs,All-Time Favorites,Christmas Music,  
-  lastvol = 15  
-  lastsetpl = Everything  
-  lastsrvr = 192.168.1.22  
-  lastport = 6600  
-  lastsongtitle = 16-Wild Horses - The Rolling Stones  
-  httpport = 8000  
-
-  [display]  
-  displaysize = 3840,2160  
-  scalefactors = 1.0,1.0,  
-
-  [mainwindow]  
-  comment = maingeo is "win width","win height","x locator","y locator"  
-  maingeo = 380,80,412,452  
-  titlebarstatus = 0  
-
-  [albumart]  
-  aartgeo = 120,120,412,350  
-  albarttoggle = 1  
-
-  [searchwin]  
-  swingeo = 388,328,425,832  
-
-  [buildplwin]  
-  bplwingeo = 380,180,420,680  
-  swingeo = 388,328,425,832  
-
-  [default_values]  
-  maingeo = 380,80,412,452  
-  aartgeo = 120,120,412,350  
-  swingeo = 388,328,425,832  
+  [program]<br />
+  version = v2.0.6<br />
+  logging = on<br />
+  loglevel = debug<br />
+  buildmode = 0<br />
+  autobrowserplayer = 0<br />
+</span></br>
+<span style='font-family:courier;'>
+  [serverstats]<br />
+  playlists = Heavy Listening,B List,Joe Carr Compilations,Easy,Everything,Just Dave Matthews Band,Short Songs,All-Time Favorites,Christmas Music,<br />
+  lastvol = 15<br />
+  lastsetpl = Everything<br />
+  lastsrvr = 192.168.1.22<br />
+  lastport = 6600<br />
+  lastsongtitle = 16-Wild Horses - The Rolling Stones<br />
+  httpport = 8000<br />
+</span></br>
+<span style='font-family:courier;'>
+  [display]<br />
+  displaysize = 3840,2160<br />
+  scalefactors = 1.0,1.0,<br />
+</span></br>
+<span style='font-family:courier;'>
+  [mainwindow]<br />
+  comment = maingeo is "win width","win height","x locator","y locator"<br />
+  maingeo = 380,80,412,452<br />
+  titlebarstatus = 0<br />
+</span></br>
+<span style='font-family:courier;'>
+  [albumart]<br />
+  aartgeo = 120,120,412,350<br />
+  albarttoggle = 1<br />
+</span></br>
+<span style='font-family:courier;'>
+  [searchwin]<br />
+  swingeo = 388,328,425,832<br />
+</span></br>
+<span style='font-family:courier;'>
+  [buildplwin]<br />
+  bplwingeo = 380,180,420,680<br />
+  swingeo = 388,328,425,832<br />
+</span></br>
+<span style='font-family:courier;'>
+  [default_values]<br />
+  maingeo = 380,80,412,452<br />
+  aartgeo = 120,120,412,350<br />
+  swingeo = 388,328,425,832<br />
   bplwingeo = 380,120,420,620 
-</span>
-
-### Minutia
-
-MMC4W was developed and tested in Windows 10.  As of v2.0.6, the same Python code will run on Linux. So far it's only tested on Ubuntu.  **MPD** is running on three different computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file for each album and embed the art in the songs using **[MP3TAG](https://www.mp3tag.de/en/)** or **Music Bee** depending on the circumstances.
-
-I hope you enjoy using this as much as I do.<br><br>
-
-  -------------------------------------------- <br>
-**MMC4W** is written in <span style="color:red;">Python</span> and complied using <span style="color:red;">Pyinstaller</span>.  The Windows installer is built using the <span style="color:red;">Inno Setup Compiler</span>.  
-**Many thanks** to <span style="color:green;">bauripalash (Palash Bauri)</span> for [tkhtmlview](https://github.com/bauripalash/tkhtmlview), which makes this help file window look so good!  
-**Also thanks** to [kaliko](https://gitlab.com/kaliko) for the [python-musicpd](https://gitlab.com/kaliko/python-musicpd) library!  
-And of course none of this would be possible without the excellent contribution of [MPD](https://github.com/MusicPlayerDaemon) by Max Kellermann.  **Thanks!!**  
-&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)
+</span></p>
+<h3>Minutia</h3>
+<p>MMC4W was developed and tested in Windows 10.  As of v2.0.6, the same Python code will run on Linux. So far it's only tested on Ubuntu.  <strong>MPD</strong> is running on three different Debian-type computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using <a href="https://getmusicbee.com/">Music Bee</a>.  I create a 'folder.jpg' file (I'll probably switch to 'cover.png') for each album and embed the art in the songs using <strong><a href="https://www.mp3tag.de/en/">MP3TAG</a></strong> or <strong>Music Bee</strong> depending on the circumstances.</p>
+<p>I hope you enjoy using this as much as I do.<br><br></p>
+<p>-------------------------------------------- <br>
+<strong>MMC4W</strong> is written in <span style="color:red;">Python</span> and complied using <span style="color:red;">Pyinstaller</span>.  The Windows installer is built using the <span style="color:red;">Inno Setup Compiler</span>.<br />
+<strong>Thanks</strong> to <a href="https://gitlab.com/kaliko">kaliko</a> for the <a href="https://gitlab.com/kaliko/python-musicpd">python-musicpd</a> library!<br />
+And of course none of this would be possible without the excellent contribution of <a href="https://github.com/MusicPlayerDaemon">MPD</a> by Max Kellermann.  <strong>Thanks!!</strong><br />
+&copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)</p>
+</body>
 </html>

@@ -1,1 +1,8 @@
-pyinstaller --noconsole  --add-binary=".\_internal\*.png;." --add-binary=".\ico\mmc4w.png;ico" --add-binary=".\ico\mmc4w-ico.ico;ico" --icon=.\ico\mmc4w-ico.ico --add-data=".\README.txt;." --add-data=".\mmc4w_help.html;." --add-data=".\mmc4w.ini;." mmc4w.py
+MARKDOWN TO HTML COMMAND:
+
+markdown_py mmc4w_help.md -f mmc4w_help.html -o html
+python .\md_to_html.py -i mmc4w_help.md -o _internal/mmc4w_help.html 
+
+PYINSTALLER COMMAND:
+
+pyinstaller --noconsole  --add-binary=".\_internal\*.png;." --add-binary=".\ico\mmc4w.png;ico" --add-binary=".\ico\mmc4w-ico.ico;ico" --icon=.\ico\mmc4w-ico.ico --add-data=".\README.txt;." --add-data=".\_internal\mmc4w_help.html;." --add-data=".\mmc4w.ini;." mmc4w.py
