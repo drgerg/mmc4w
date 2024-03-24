@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).
+You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/_internal/mmc4w_help.md).
 
 ## It Really is All About the Music.
 
