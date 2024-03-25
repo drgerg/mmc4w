@@ -12,11 +12,11 @@ The entire interface is intentionally tiny and simple. In its most basic mode it
 
 I recently added SHA256 hashes for the installer and mmc4w.py:  [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
 
-Playlist Builder Mode is also pretty cool.  I've been looking forward to this for a long time.
+Playlist Builder Mode is one of my favorite things.  I've been looking forward to this for a long time.
 
 ![PlayList Builder Mode](https://github.com/drgerg/mmc4w/blob/main/pics/mmc4w_plb.png)
 
-This is **such** a much better way to manage my playlists! While I'm listening, if I want to add or removed the current song, just click the playlist name.  Sweet!
+This is **such** a simple way to manage my playlists! While I'm listening, if I want to add or removed the current song, just click the playlist name.  Sweet!
 
 ![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
 
@@ -48,7 +48,7 @@ The text area is active, switching every three seconds between song title - arti
 
 ![screen_2.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_2.png)
 
-You are able to edit the configuration file (mmc4w.ini) by selecting **File** | **Configure**.  It uses Windows' default text editor.
+You are able to edit the configuration file (mmc4w.ini) by selecting **Config** | **Edit mmc4w.ini**.  It uses your system's default text editor.
 
 ### A Note About Window Positions
 
