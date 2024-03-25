@@ -6,7 +6,7 @@ You really should start here.  It's the [Help text](https://github.com/drgerg/mm
 
 The entire interface is intentionally tiny and simple. In its most basic mode it looks like this:
 
-![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/titlebar.png)
+![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/most_basic.png)
 
 ## MMC4W.py now runs in Ubuntu with no tweaking starting with v2.0.6.  
 
