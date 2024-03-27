@@ -32,7 +32,8 @@ else:
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
     ctypes.windll.user32.SetProcessDPIAware()
 
-version = "v2.0.9"
+version = "v2.1.0"
+# v2.1.0 - Gently handle attempting to run with no server. Add 'delete debug log'.
 # v2.0.9 - Finally get scale factors working. Renamed menus. Browse help.html.
 # v2.0.8 - Use buttons in search windows for added flexibility.
 # v2.0.7 - Trade pathlib for os.path. Deal with 'already connected' error.
@@ -124,11 +125,10 @@ serverlist = confparse.get('basic','serverlist')
 serverip = confparse.get('serverstats', 'lastsrvr')
 serverport = confparse.get('basic','serverport')
 firstrun = confparse.get('basic','firstrun')
-if firstrun == '1':
-    ran = 'r'
-    rpt = 'p'
-    sin = 's'
-    con = 'c'
+ran = 'r'
+rpt = 'p'
+sin = 's'
+con = 'c'
 if serverlist == "":
     proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
     if proceed == True:
@@ -344,6 +344,18 @@ def getscalefactors():
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
 
+def deletedebuglog():
+    if os.path.isfile(path_to_dat / "mmc4w_DEBUG.log"):
+        ddlsure = messagebox.askyesno("Delete Debug Log","Are you sure?")
+        if ddlsure == True:
+            try:
+                os.remove(path_to_dat / "mmc4w_DEBUG.log")
+                messagebox.showinfo("Debug Log Deleted","mmc4w_DEBUG.log has been removed.")
+            except:
+                messagebox.showinfo("File in Use","Toggle Logging before attempting to delete the log.")
+    else:
+        messagebox.showinfo("No Debug Log Found","The operating system reports no such file.")
+
 def loadplsongs(song,album):
     connext()
     pls_on_srvr = []
@@ -395,6 +407,10 @@ def connext():  ## Checks connection, then connects if necessary.
                 if err2var == 'Already connected':
                     cxstat = 1
                     pass
+                if 'WinError' in str(err2var) or 'Not connected' in str(err2var):
+                    messagebox.showinfo("Server Down","The server you selected is not responding. Edit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
+                    cxstat = 0
+                    configurator("Double-check all the IP addresses. OK sends you to edit mmc4w.ini.")
                 else:
                     logger.debug("D1| Second level errvar: {}".format(err2var))
                     cxstat = 0
@@ -762,7 +778,7 @@ def getcurrsong():
             lastpl = confparse.get('serverstats','lastsetpl')
         logger.debug('D2| Headed to getaartpic(**cs).')
         getaartpic(**cs)
-        aart = artWindow(1)
+        aart = artWindow(aartvar)
         if aatgl == '1':
             artw.aartLabel.configure(image=aart)
         if 'volume' in stat:
@@ -865,6 +881,7 @@ def getaartpic(**cs):
         aartvar = 0
     if aatgl == '1':
         logger.info('2) Bottom of getaartpic(). Headed to artWindow(). aartvar is {}, len(eadict) is {}, len(fadict) is {}.'.format(aartvar,len(eadict),len(fadict)))
+
         artWindow(aartvar)
     else:
         logger.debug('D6| aartvar is: {}, len(eadict) is {}, len(fadict) is {}.'.format(aartvar,len(eadict),len(fadict)))
@@ -895,8 +912,10 @@ def songtitlefollower():
                 logger.info(" - - - - -  songtitlefollower - - - - - - ")
                 getcurrsong()
 
-def configurator():
-    proceed = messagebox.askokcancel("Edit Config File","OK closes the app and opens mmc4w.ini for editing.")
+def configurator(confmsg):
+    if confmsg == '':
+        confmsg = "OK closes the app and opens mmc4w.ini for editing."
+    proceed = messagebox.askokcancel("Edit Config File",confmsg)
     if proceed == True:
         if sys.platform == "win32":
             os.startfile(mmc4wIni)
@@ -904,20 +923,24 @@ def configurator():
             subprocess.run(["xdg-open", mmc4wIni])
         sleep(1)
         exit()
+    else:
+        sys.exit()
 
 def logtoggler():
     confparse.read(mmc4wIni)
     logtog = confparse.get("program","logging")
+    loglevel = confparse.get("program","loglevel")
     if logtog.upper() == "ON":
-        confparse.set('program','logging','off')
-        msg = 'Logging turned OFF.'
+        newlog = "off"
+        confparse.set('program','logging',newlog)
     elif logtog.upper() == 'OFF':
-        confparse.set('program','logging','on')
-        msg = 'Logging turned ON.'
-    logger.debug("{}. Wrote to .ini file.".format(msg))
+        newlog = "on"
+        confparse.set('program','logging',newlog)
+    logger.debug("{}. Wrote to .ini file.".format(newlog))
     with open(mmc4wIni, 'w') as SLcnf:
         confparse.write(SLcnf)
-    displaytext1(msg)
+    messagebox.showinfo("Logging Toggled","Logging is now " + newlog + ".\nLogging level is " + loglevel + ".\nExiting. Restart to refresh config.")
+    exit()
 
 def getcurrstat():
     connext()
@@ -1342,7 +1365,6 @@ def lookupwin(lookupT):
         connext()
         dispitems = []
         srchterm = editing_item.get().replace('Search: ','')
-        print(srchterm.upper())
         valid_list = ['file','title','artist','album','genre','date']
         editing_item.set('Search: ')
         if srchterm.upper() == "HELP;":
@@ -1357,7 +1379,6 @@ def lookupwin(lookupT):
         if srchterm.upper() == "KEYS;":
             findit = valid_list
             dispitems = []
-            print(findit)
             for f in findit:
                 dispitems.append(f)
             plsngwin.listbx.delete(0,tk.END)
@@ -1555,6 +1576,7 @@ def SrvrWindow(swaction):
             confparse.write(SLcnf)
         logger.info('0) Connected to server {}.'.format(serverip))
         getcurrsong()
+
     def outputtggl(outputvar):
         selection = srvrw.listbx.curselection()[0]
         outputs = getoutputs()[1]
@@ -1579,7 +1601,6 @@ def SrvrWindow(swaction):
     if swaction == 'output':
         srvrw.listbx.bind('<<ListboxSelect>>', outputtggl)
         outputs = getoutputs()[1]
-        print("initial outputs: {}".format(outputs))
         srvrw.listbx.delete(0,tk.END)
         srvrw.listbx.update()
         srvrw.listvar.set(outputs)
@@ -1745,10 +1766,11 @@ menu = tk.Menu(window)
 window.config(menu=menu)
 nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
 confMenu = tk.Menu(menu, tearoff=False)
-confMenu.add_command(label="Edit mmc4w.ini", command=configurator)
+confMenu.add_command(label="Edit mmc4w.ini", command=lambda: configurator(''))
 confMenu.add_command(label="Select a Server", command=lambda: SrvrWindow('server'))
 confMenu.add_command(label="Toggle an Output", command=lambda: SrvrWindow('output'))
 confMenu.add_command(label='Toggle Logging', command=logtoggler)
+confMenu.add_command(label='Delete Debug Log',command=deletedebuglog)
 confMenu.add_command(label='Reset Win Positions', command=resetwins)
 confMenu.add_command(label="Get Scaling Factors",command=getscalefactors)
 confMenu.add_command(label="Apply Scaling Factors",command=applyscalefactors)
@@ -1828,6 +1850,9 @@ button_exit.grid(column=4, sticky='W', row=1, padx=1)                     # Plac
 # Make all threads daemon threads, and whenever the main thread dies all threads will die with it.
 ## tk.END THREADING NOTES =====================================
 #
+cxstat = connext()
+if cxstat == 0:
+    SrvrWindow('server')
 t1 = threading.Thread(target=songtitlefollower)
 t1.daemon = True
 t1.start()

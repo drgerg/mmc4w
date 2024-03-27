@@ -3,7 +3,7 @@
 <body markdown="1">
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v2.0.9 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.
+This help file was updated for the v2.1.0 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.
 
 I recommend reading the **First Run Process** section below before installing.
 
@@ -29,6 +29,7 @@ The interface contains the basic required buttons to control a MPD server:
 - **Select a Server** : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.
 - **Toggle an Output** : Allows you to enable and disable configured outputs on the MPD server.
 - **Toggle Logging** : Toggles logging On or Off.  Restart the app after toggling.
+- **Delete Debug Log** : If you are not currently logging in debug mode, deletes the log for you.
 - **Reset Win Positions** : Puts the two primary windows back where they were originally.
 - **Get Scaling Factors** : Calculates and saves two values based on display scaling.
 - **Apply Scaling Factors** : Updates window geometry numbers based on saved Scaling Factors.
@@ -93,7 +94,7 @@ If you have more than one server, just string those IP addresses together as see
 
 After typing your server IP address(es) in the [basic] section, save and close the file.
 
-Restart **MMC4W**.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  Open the text editor you were using to input that IP address.  You should be able to find mmc4w.ini in the recent files list.
+Restart **MMC4W**.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  The process opens mmc4w.ini for editing.
 
 Once you have a valid server IP under the serverlist key of the basic section, run MMC4W again.
 
@@ -201,7 +202,7 @@ Anywhere you see a Search: bar, you can use colon-separated key:value pairs for 
 
 ![Title Search.](./search_title.png)</br><span style="color:green; font-size:smaller;">Song title search.</span>
 
- When you click on one of them, it plays that one title then stops.  Use another **'Look'** menu option to do something else.
+ When you click on one of them, it plays that one title then stops.  Use another **'Lists'** menu option to do something else.
 
  **Play an Album** opens the same Search window.  This time you are searching for text contained in **Album** names.
 
@@ -225,7 +226,7 @@ Saved playlists are the heart of **MMC4W**. To differentiate between **saved pla
 
 You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  
 
-**MMC4W** will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Look'** Menu.
+**MMC4W** will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Lists'** Menu.
 
 ### You can manipulate playlists in these ways:
 

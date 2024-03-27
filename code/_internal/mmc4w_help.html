@@ -2,7 +2,7 @@
 <html>
 <body>
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<p>This help file was updated for the v2.0.9 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.</p>
+<p>This help file was updated for the v2.1.0 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.</p>
 <p>I recommend reading the <strong>First Run Process</strong> section below before installing.</p>
 <h1>Putting the Music First</h1>
 <p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.</p>
@@ -24,6 +24,7 @@
 <li><strong>Select a Server</strong> : Allows you to select a server from the list in mmc4w.ini. Prompts you to select a playlist also.</li>
 <li><strong>Toggle an Output</strong> : Allows you to enable and disable configured outputs on the MPD server.</li>
 <li><strong>Toggle Logging</strong> : Toggles logging On or Off.  Restart the app after toggling.</li>
+<li><strong>Delete Debug Log</strong> : If you are not currently logging in debug mode, deletes the log for you.</li>
 <li><strong>Reset Win Positions</strong> : Puts the two primary windows back where they were originally.</li>
 <li><strong>Get Scaling Factors</strong> : Calculates and saves two values based on display scaling.</li>
 <li><strong>Apply Scaling Factors</strong> : Updates window geometry numbers based on saved Scaling Factors.</li>
@@ -78,7 +79,7 @@
 <p><img alt="inside the mmc4w.ini file" src="./config_ini_basics.png" /></p>
 <p>If you have more than one server, just string those IP addresses together as seen there.</p>
 <p>After typing your server IP address(es) in the [basic] section, save and close the file.</p>
-<p>Restart <strong>MMC4W</strong>.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  Open the text editor you were using to input that IP address.  You should be able to find mmc4w.ini in the recent files list.</p>
+<p>Restart <strong>MMC4W</strong>.  When it starts, you will get a dialog showing you the first IP address you provided.  If the connection is not successful, an error will be displayed.  In this case, you'll need to verify your server's IP address is correctly entered into mmc4w.ini file.  The process opens mmc4w.ini for editing.</p>
 <p>Once you have a valid server IP under the serverlist key of the basic section, run MMC4W again.</p>
 <h3>Position and size windows to your liking.</h3>
 <p>The first time you run MMC4W, it runs with titlebars on.  You can move and size the windows to your liking.  When you have things to your liking, hit the <strong>mode</strong> button.  If you are running in Linux, mmc4w.py will exit. Restart the app. </p>
@@ -141,7 +142,7 @@
 <p><strong>Note:</strong> The Search window is resizeable.  If you want, type 'savewin;' in the Search: bar to save size and placement.</p>
 <p><strong>Play a Single</strong> opens the Search window and allows you to type some search term.  This is a <strong>Title</strong> search.  If any song title in the entire library contains the search term, it will be displayed when you press <strong>[enter]</strong>.</p>
 <p><img alt="Title Search." src="./search_title.png" /></br><span style="color:green; font-size:smaller;">Song title search.</span></p>
-<p>When you click on one of them, it plays that one title then stops.  Use another <strong>'Look'</strong> menu option to do something else.</p>
+<p>When you click on one of them, it plays that one title then stops.  Use another <strong>'Lists'</strong> menu option to do something else.</p>
 <p><strong>Play an Album</strong> opens the same Search window.  This time you are searching for text contained in <strong>Album</strong> names.</p>
 <p>Clicking on a list entry loads up the songs on that album and plays them sequentially, first to last.  You will notice the text area turns blue with white text.  That is the visual indicator that <strong>Random Mode</strong> has been turned off.  </p>
 <p><img alt="Album Search." src="./album_mode.png" /></br><span style="color:green; font-size:smaller;">True Blue Album Mode.</span></p>
@@ -153,7 +154,7 @@
 <h2>Working with Saved Playlists</h2>
 <p>Saved playlists are the heart of <strong>MMC4W</strong>. To differentiate between <strong>saved playlists</strong> and the list of songs currently being played, the latter is called <strong>"the queue"</strong>.  <strong>Playlists</strong> are lists of songs saved to a file on disk with some meaningful name.</p>
 <p>You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  </p>
-<p><strong>MMC4W</strong> will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the <strong>'Look'</strong> Menu.</p>
+<p><strong>MMC4W</strong> will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the <strong>'Lists'</strong> Menu.</p>
 <h3>You can manipulate playlists in these ways:</h3>
 <ul>
 <li>Load a playlist into the queue.  <strong>Lists Menu</strong> - Select a Playlist.</li>
