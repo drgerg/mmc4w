@@ -31,7 +31,7 @@ Tkinter may not be sexy, but it gets the job done.  MMC4W does exactly what I ne
 
 MMC4W is natively a saved-playlist player.  There is also what I call "True Blue Album Mode" that plays all songs on an album sequentially, first to last.  Play single titles using 'Search by Title'.
 
-There is one fairly simple config step after running the Windows installer.  [Find those details in the help text](https://github.com/drgerg/mmc4w/blob/main/code/mmc4w_help.md).  
+There is one fairly simple config step after running the Windows installer.  [Find those details in the help text](https://github.com/drgerg/mmc4w/blob/main/code/_internal/mmc4w_help.md).  
 
 Other than the basic controls, I also want to be able to see the album cover most of the time.  The **Art** button toggles a small window to display embedded or folder art.  The MPD server extracts it from the current song file or from a cover.jpg, .png, .tiff, or .bmp file located in the album folder and provides it.  MMC4W displays it. Dead simple.  That looks like this:
 
