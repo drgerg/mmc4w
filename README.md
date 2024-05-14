@@ -16,7 +16,7 @@ Playlist Builder Mode is one of my favorite things.  I've been looking forward t
 
 ![PlayList Builder Mode](https://github.com/drgerg/mmc4w/blob/main/pics/mmc4w_plb.png)
 
-This is **such** a simple way to manage my playlists! While I'm listening, if I want to add or removed the current song, just click the playlist name.  Sweet!
+This is **such** a simple way to manage my playlists! While I'm listening, if I want to add or remove the current song, just click the playlist name.  Sweet!
 
 ![Testing v0.9.2](https://github.com/drgerg/mmc4w/blob/main/pics/testing_v0.9.2.jpg)Testing v0.9.2
 
