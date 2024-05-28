@@ -56,5 +56,11 @@ The windows are intended to be placed and left alone.  If you want to move them,
 
 I find this to be a perfectly acceptable arrangement.
 
+### A Note About Design
+
+MMC4W lives and breathes around two pieces of information from the server: **duration** and **elapsed**.  "Duration" is the length of the current song. "Elapsed" is how much of it has already played.  MMC4W minimizes communication with the server by subtracting elapsed from duration and then waiting that length of time to find out what the next song is.
+
+There are some scenarios where the server cannot provide the duration value, like when a playlist is made up of streams instead of individual song files.  MMC4W will not work because there is no duration value provided by the MPD server.  This behavior can be called a design limitation. It is expected and accepted.
+
 Again, check the help file for more details.  I hope you enjoy using this as much as I do.
 
