@@ -340,30 +340,30 @@ Below is the contents of a typical mmc4w.ini file. It is made up of key/value pa
 With the exception of the serverlist, all of these entries are filled in by the program.  You can provide values for nearly any of them if you choose. I recommend you not change anything in the "default_values" section.
 
 <span style='font-family:courier;'>
-  [basic]  
-  installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W  
-  serverlist = 192.168.1.22,192.168.1.16,192.168.1.28,  
-  serverport = 6600  
-  firstrun = 0  
-  sysplatform = win32  
+  [basic]</br>  
+  installation = C:\Users\Greg\mydrive\Projects\Python\Python in Windows\MMC4W  </br>
+  serverlist = 192.168.1.22,192.168.1.16,192.168.1.28,  </br>
+  serverport = 6600  </br>
+  firstrun = 0  </br>
+  sysplatform = win32  </br>
 </span></br>
 <span style='font-family:courier;'>
-  [program]  
-  version = v2.0.6  
-  logging = on  
-  loglevel = debug  
-  buildmode = 0  
-  autobrowserplayer = 0  
+  [program]  </br>
+  version = v2.0.6  </br>
+  logging = on  </br>
+  loglevel = debug  </br>
+  buildmode = 0  </br>
+  autobrowserplayer = 0  </br>
 </span></br>
 <span style='font-family:courier;'>
-  [serverstats]  
-  playlists = Heavy Listening,B List,Joe Carr Compilations,Easy,Everything,Just Dave Matthews Band,Short Songs,All-Time Favorites,Christmas Music,  
-  lastvol = 15  
-  lastsetpl = Everything  
-  lastsrvr = 192.168.1.22  
-  lastport = 6600  
-  lastsongtitle = 16-Wild Horses - The Rolling Stones  
-  httpport = 8000  
+  [serverstats]  </br>
+  playlists = Heavy Listening,B List,Joe Carr Compilations,Easy,Everything,Just Dave Matthews Band,Short Songs,All-Time Favorites,Christmas Music,  </br>
+  lastvol = 15  </br>
+  lastsetpl = Everything  </br>
+  lastsrvr = 192.168.1.22  </br>
+  lastport = 6600  </br>
+  lastsongtitle = 16-Wild Horses - The Rolling Stones  </br>
+  httpport = 8000  </br>
 </span></br>
 <span style='font-family:courier;'>
   [display]  
@@ -377,25 +377,25 @@ With the exception of the serverlist, all of these entries are filled in by the 
   titlebarstatus = 0  
 </span></br>
 <span style='font-family:courier;'>
-  [albumart]  
-  aartgeo = 120,120,412,350  
-  albarttoggle = 1  
+  [albumart]  </br>
+  aartgeo = 120,120,412,350  </br>
+  albarttoggle = 1  </br>
 </span></br>
 <span style='font-family:courier;'>
-  [searchwin]  
-  swingeo = 388,328,425,832  
+  [searchwin]  </br>
+  swingeo = 388,328,425,832  </br>
 </span></br>
 <span style='font-family:courier;'>
-  [buildplwin]  
-  bplwingeo = 380,180,420,680  
-  swingeo = 388,328,425,832  
+  [buildplwin]  </br>
+  bplwingeo = 380,180,420,680  </br>
+  swingeo = 388,328,425,832  </br>
 </span></br>
 <span style='font-family:courier;'>
-  [default_values]  
-  maingeo = 380,80,412,452  
-  aartgeo = 120,120,412,350  
-  swingeo = 388,328,425,832  
-  bplwingeo = 380,120,420,620 
+  [default_values]  </br>
+  maingeo = 380,80,412,452  </br>
+  aartgeo = 120,120,412,350  </br>
+  swingeo = 388,328,425,832  </br>
+  bplwingeo = 380,120,420,620 </br>
 </span>
 
 ### Minutia
