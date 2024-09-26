@@ -45,6 +45,32 @@ version = "v2.1.0"
 # v1.0.0 - Fixed error in the fiver() function.
 # v0.9.9 - tk.Scrollbars on all windows. Windows are more uniform.
 
+# colours used for buttons
+colrButton = "grey90"                   # default button colour
+colrVolume = {          # volume button definitions
+    # key:  Vol+ label, bg color, fg color,      Vol- label, bg color, fg color
+    100: ['100','gray13','white',          'Vol -','gray90','black'],
+    95:  [ '95','gray12','white',          'Vol -','gray90','black'],
+    90:  [ '90','AntiqueWhite4','white', 'Vol -','gray90','black'],
+    85:  [ '85','AntiqueWhite4','white', 'Vol -','gray90','black'],
+    80:  [ '80','AntiqueWhite3','black', 'Vol -','gray90','black'],
+    75:  [ '75','AntiqueWhite3','black', 'Vol -','gray90','black'],
+    70:  [ '70','AntiqueWhite2','black', 'Vol -','gray90','black'],
+    65:  [ '65','AntiqueWhite2','black', 'Vol -','gray90','black'],
+    60:  [ '60','AntiqueWhite1','black', 'Vol -','gray90','black'],
+    55:  [ '55','AntiqueWhite1','black', 'Vol -','gray90','black'],
+    50:  ['Vol +','gray90','black',      'Vol -','gray90','black'],
+    45:  ['Vol +','gray90','black',     '45','CadetBlue1','black'],
+    40:  ['Vol +','gray90','black',     '40','CadetBlue1','black'],
+    35:  ['Vol +','gray90','black',     '35','turquoise1','black'],
+    30:  ['Vol +','gray90','black',     '30','turquoise1','black'],
+    25:  ['Vol +','gray90','black',     '25','turquoise2','black'],
+    20:  ['Vol +','gray90','black',     '20','turquoise2','black'],
+    15:  ['Vol +','gray90','black',     '15','turquoise3','black'],
+    10:  ['Vol +','gray90','black',     '10','turquoise3','black'],
+    5:   ['Vol +','gray90','black',      '5','turquoise4','white'],
+    0:   ['Vol +','gray90','black',      '0','turquoise4','white']
+}
 
 client = musicpd.MPDClient()                    # create client object
 
@@ -414,7 +440,8 @@ def connext():  ## Checks connection, then connects if necessary.
                 else:
                     logger.debug("D1| Second level errvar: {}".format(err2var))
                     cxstat = 0
-                    endWithError('Second level connection error:\n' + str(err2var) + '\nQuitting now.')
+#                    endWithError('Second level connection error:\n' + str(err2var) + '\nQuitting now.')
+                    endWithError("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
     return cxstat
 
 
@@ -577,53 +604,55 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     lastvol = str(vol_int)
     logger.debug('Set volume to {}.'.format(vol_int))
     thisvol = vol_int
-    upconf = ['Vol +','gray90','black']
-    dnconf = ['Vol -','gray90','black']
-    if thisvol == 100:
-        upconf = ['100','gray13','white']
-    if thisvol == 95:
-        upconf = ['95','gray12','white']
-    if thisvol == 90:
-        upconf = ['90','AntiqueWhite4','white']
-    if thisvol == 85:
-        upconf = ['85','AntiqueWhite4','white']
-    if thisvol == 80:
-        upconf = ['80','AntiqueWhite3','black']
-    if thisvol == 75:
-        upconf = ['75','AntiqueWhite3','black']
-    if thisvol == 70:
-        upconf = ['70','AntiqueWhite2','black']
-    if thisvol == 65:
-        upconf = ['65','AntiqueWhite2','black']
-    if thisvol == 60:
-        upconf = ['60','AntiqueWhite1','black']
-    if thisvol == 55:
-        upconf = ['55','AntiqueWhite1','black']
-    if thisvol == 50:
-        upconf = ['Vol +','gray90','black']
-        dnconf = ['Vol -','gray90','black']
-    if thisvol == 45:
-        dnconf = ['45','CadetBlue1','black']
-    if thisvol == 40:
-        dnconf = ['40','CadetBlue1','black']
-    if thisvol == 35:
-        dnconf = ['35','turquoise1','black']
-    if thisvol == 30:
-        dnconf = ['30','turquoise1','black']
-    if thisvol == 25:
-        dnconf = ['25','turquoise2','black']
-    if thisvol == 20:
-        dnconf = ['20','turquoise2','black']
-    if thisvol == 15:
-        dnconf = ['15','turquoise3','black']
-    if thisvol == 10:
-        dnconf = ['10','turquoise3','black']
-    if thisvol == 5:
-        dnconf = ['5','turquoise4','white']
-    if thisvol == 0:
-        dnconf = ['0','turquoise4','white']
+#    upconf = ['Vol +','gray90','black']
+#    dnconf = ['Vol -','gray90','black']
+#    if thisvol == 100:
+#        upconf = ['100','gray13','white']
+#    if thisvol == 95:
+#        upconf = ['95','gray12','white']
+#    if thisvol == 90:
+#        upconf = ['90','AntiqueWhite4','white']
+#    if thisvol == 85:
+#        upconf = ['85','AntiqueWhite4','white']
+#    if thisvol == 80:
+#        upconf = ['80','AntiqueWhite3','black']
+#    if thisvol == 75:
+#        upconf = ['75','AntiqueWhite3','black']
+#    if thisvol == 70:
+#        upconf = ['70','AntiqueWhite2','black']
+#    if thisvol == 65:
+#        upconf = ['65','AntiqueWhite2','black']
+#    if thisvol == 60:
+#        upconf = ['60','AntiqueWhite1','black']
+#    if thisvol == 55:
+#        upconf = ['55','AntiqueWhite1','black']
+#    if thisvol == 50:
+#        upconf = ['Vol +','gray90','black']
+#        dnconf = ['Vol -','gray90','black']
+#    if thisvol == 45:
+#        dnconf = ['45','CadetBlue1','black']
+#    if thisvol == 40:
+#        dnconf = ['40','CadetBlue1','black']
+#    if thisvol == 35:
+#        dnconf = ['35','turquoise1','black']
+#    if thisvol == 30:
+#        dnconf = ['30','turquoise1','black']
+#    if thisvol == 25:
+#        dnconf = ['25','turquoise2','black']
+#    if thisvol == 20:
+#        dnconf = ['20','turquoise2','black']
+#    if thisvol == 15:
+#        dnconf = ['15','turquoise3','black']
+#    if thisvol == 10:
+#        dnconf = ['10','turquoise3','black']
+#    if thisvol == 5:
+#        dnconf = ['5','turquoise4','white']
+#    if thisvol == 0:
+#        dnconf = ['0','turquoise4','white']
+    upconf = colrVolume[thisvol]        # the up and down button paramaters
     button_volup.configure(text=upconf[0],bg=upconf[1],fg=upconf[2])
-    button_voldn.configure(text=dnconf[0],bg=dnconf[1],fg=dnconf[2])
+#    button_voldn.configure(text=dnconf[0],bg=dnconf[1],fg=dnconf[2])
+    button_voldn.configure(text=upconf[3],bg=upconf[4],fg=upconf[5])
     currvolconf = confparse.get('serverstats','lastvol')
     if lastvol != currvolconf:
         confparse.set('serverstats','lastvol',lastvol)
