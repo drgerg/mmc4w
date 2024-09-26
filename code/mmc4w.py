@@ -604,54 +604,8 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     lastvol = str(vol_int)
     logger.debug('Set volume to {}.'.format(vol_int))
     thisvol = vol_int
-#    upconf = ['Vol +','gray90','black']
-#    dnconf = ['Vol -','gray90','black']
-#    if thisvol == 100:
-#        upconf = ['100','gray13','white']
-#    if thisvol == 95:
-#        upconf = ['95','gray12','white']
-#    if thisvol == 90:
-#        upconf = ['90','AntiqueWhite4','white']
-#    if thisvol == 85:
-#        upconf = ['85','AntiqueWhite4','white']
-#    if thisvol == 80:
-#        upconf = ['80','AntiqueWhite3','black']
-#    if thisvol == 75:
-#        upconf = ['75','AntiqueWhite3','black']
-#    if thisvol == 70:
-#        upconf = ['70','AntiqueWhite2','black']
-#    if thisvol == 65:
-#        upconf = ['65','AntiqueWhite2','black']
-#    if thisvol == 60:
-#        upconf = ['60','AntiqueWhite1','black']
-#    if thisvol == 55:
-#        upconf = ['55','AntiqueWhite1','black']
-#    if thisvol == 50:
-#        upconf = ['Vol +','gray90','black']
-#        dnconf = ['Vol -','gray90','black']
-#    if thisvol == 45:
-#        dnconf = ['45','CadetBlue1','black']
-#    if thisvol == 40:
-#        dnconf = ['40','CadetBlue1','black']
-#    if thisvol == 35:
-#        dnconf = ['35','turquoise1','black']
-#    if thisvol == 30:
-#        dnconf = ['30','turquoise1','black']
-#    if thisvol == 25:
-#        dnconf = ['25','turquoise2','black']
-#    if thisvol == 20:
-#        dnconf = ['20','turquoise2','black']
-#    if thisvol == 15:
-#        dnconf = ['15','turquoise3','black']
-#    if thisvol == 10:
-#        dnconf = ['10','turquoise3','black']
-#    if thisvol == 5:
-#        dnconf = ['5','turquoise4','white']
-#    if thisvol == 0:
-#        dnconf = ['0','turquoise4','white']
     upconf = colrVolume[thisvol]        # the up and down button paramaters
     button_volup.configure(text=upconf[0],bg=upconf[1],fg=upconf[2])
-#    button_voldn.configure(text=dnconf[0],bg=dnconf[1],fg=dnconf[2])
     button_voldn.configure(text=upconf[3],bg=upconf[4],fg=upconf[5])
     currvolconf = confparse.get('serverstats','lastvol')
     if lastvol != currvolconf:
