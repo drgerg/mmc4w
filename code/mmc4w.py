@@ -136,7 +136,7 @@ logger.info("     -----======<<<<  STARTING UP  >>>>======-----")
 logger.info("D0) sys.platform is {}".format(sys.platform))
 logger.info(" ")
 
-global serverip,serverport,tbarini,endtime,firstrun
+global tbarini,endtime,firstrun, confparse
 aartvar = 0     ## aartvar tells us whether or not to display the art window.
 endtime = time.time()
 cxstat = 0      ## 'cxstat' indicates the connection status. '1' is connected.
@@ -413,36 +413,29 @@ def getoutputs():
     return outputsraw,outputs
 
 def connext():  ## Checks connection, then connects if necessary.
-    global serverip,serverport,cxstat
+                # if no connection this program ends with error message
+    global serverip,serverport
     try:
         client.ping()  # Use ping() to see if we're connected.
-        cxstat = 1
     except (musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as errvar:
         logger.debug("D1| Initial errvar: {}".format(errvar))
         if errvar == 'Already connected':
-            cxstat = 1
             pass
         else:
-            cxstat = 0
             try:
                 logger.debug("D1| Try to reconnect to {} on port {}".format(serverip,serverport))
                 client.connect(serverip, int(serverport))
-                cxstat = 1
                 logger.debug('D1| 2nd try. cxstat is : ' + str(cxstat))
             except  (ValueError, musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as err2var:
                 if err2var == 'Already connected':
-                    cxstat = 1
                     pass
                 if 'WinError' in str(err2var) or 'Not connected' in str(err2var):
                     messagebox.showinfo("Server Down","The server you selected is not responding. Edit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
-                    cxstat = 0
                     configurator("Double-check all the IP addresses. OK sends you to edit mmc4w.ini.")
                 else:
                     logger.debug("D1| Second level errvar: {}".format(err2var))
-                    cxstat = 0
-#                    endWithError('Second level connection error:\n' + str(err2var) + '\nQuitting now.')
                     endWithError("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
-    return cxstat
+    return
 
 
 def plrandom():  # Set random playback mode.
@@ -613,38 +606,7 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         logger.info('Saved volume to mmc4w.ini. lastvol is {}.'.format(lastvol))
-#
-##  FIVER() ROUNDS VOLUME NUMBERS TO MULTIPLES OF 5.
-#
-def fiver(invar):  # invar should be a string of numbers: 0 - 100. Returns string.
-    fivevar = ''
-    firDig = ''
-    secDig = ''
-    if len(invar) == 1:
-        secDig = invar
-    elif len(invar) == 2:
-        firDig = invar[:1]
-        secDig = invar[1:2]
-    if invar == '100':
-        fivevar = invar
-    zerovals = ('0','1','2')
-    zeroplusvals = ('8','9')
-    fivevals = ('3','4','5','6','7')
-    if secDig in zerovals:
-        secDig = '0'
-    if secDig in zeroplusvals:
-        secDig = '0'
-        if firDig == '':
-            firDig = '0'
-        firDig = str(int(firDig) + 1)
-    if secDig in fivevals:
-        secDig = '5'
-    if fivevar != '100':
-        if firDig > "":
-            fivevar = firDig + secDig
-        else:
-            fivevar = secDig
-    return fivevar
+
 
 def toglrandom():
     connext()
@@ -707,7 +669,7 @@ def dbupdate():
 ##  DEFINE getcurrsong() - THE MOST POPULAR FUNCTION HERE.
 #
 def getcurrsong():
-    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,cxstat,buttonvar,ran,rpt,sin,con,artw,lastpl
+    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,buttonvar,ran,rpt,sin,con,artw,lastpl
     connext()
     if threading.active_count() < 2:
         logger.debug("D9| The threading.active_count() dropped below 2. Quitting.")
@@ -766,8 +728,8 @@ def getcurrsong():
             artw.aartLabel.configure(image=aart)
         if 'volume' in stat:
             lastvol = stat['volume']
-            vol_fives = fiver(lastvol)
-            vol_int = int(vol_fives)
+            vol_fives = int( (float(lastvol)+3) /5 )         # map 0-100 to range of 0-20
+            vol_int = int(vol_fives * 5)                    # and back to 0-100
             volbtncolor(vol_int)
             logger.info('3) Volume is {}, Random is {}, Repeat is {}.'.format(lastvol,stat['random'],stat['repeat']))
         gpstate = stat['state']
@@ -799,8 +761,6 @@ def getcurrsong():
             exit()
         if pstate == 'stop' or pstate == 'pause':
             logger.info("6) pstate: {}.".format(pstate))
-        if cxstat == 0:
-            globsongtitle = "Not Connected."
         bpltgl = confparse.get('program','buildmode')
         if bpltgl == '1':
             pls_without_song,pls_with_song = loadplsongs(cs['title'],cs['album'])
@@ -1833,9 +1793,6 @@ button_exit.grid(column=4, sticky='W', row=1, padx=1)                     # Plac
 # Make all threads daemon threads, and whenever the main thread dies all threads will die with it.
 ## tk.END THREADING NOTES =====================================
 #
-cxstat = connext()
-if cxstat == 0:
-    SrvrWindow('server')
 t1 = threading.Thread(target=songtitlefollower)
 t1.daemon = True
 t1.start()
@@ -1909,4 +1866,3 @@ if abp == '1':
         browserplayer()
 logger.info("Down at the bottom. Firstrun: {}".format(firstrun))
 window.mainloop()  # Run the (not defined with 'def') main window loop.
-
