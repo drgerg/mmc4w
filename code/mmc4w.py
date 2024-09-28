@@ -356,7 +356,7 @@ def wingeoxlator(geostring,geovals,geolist):
             return geostr
 
 def getscalefactors():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     wglst = confparse.get("default_values","maingeo").split(',') #  Get default values from mmc4w.ini.
     mainwingeo = window.geometry() #                                Get current window values 
     mwglist = wingeoxlator(mainwingeo,None,'').split(',') #            Send current to generate list.
@@ -870,7 +870,7 @@ def configurator(confmsg):
         sys.exit()
 
 def logtoggler():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     logtog = confparse.get("program","logging")
     loglevel = confparse.get("program","loglevel")
     if logtog.upper() == "ON":
@@ -934,7 +934,7 @@ def displaytext2(msg2):
 def albarttoggle():
     global aatgl,artw,aartvar
     connext()
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     aatgl = confparse.get("albumart","albarttoggle")
     if aatgl == '1':
         try:
@@ -1004,7 +1004,7 @@ def savewinstats():
         confparse.write(SLcnf)
     if aatgl == '1':
         global artwinilist
-        confparse.read(mmc4wIni)
+#        confparse.read(mmc4wIni)
         artwinilist = makeartwinilist()
         aart = artWindow(aartvar)
         artw.aartLabel.configure(image=aart)
@@ -1034,7 +1034,7 @@ def tbtoggle():
 def returntoPL():
     global lastpl
     connext()
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
     client.clear()
     try:
@@ -1044,7 +1044,7 @@ def returntoPL():
         PLSelWindow()
 
 def resetwins():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     aartwin_x = confparse.get("default_values","aartgeo")
     win_x = confparse.get("default_values","maingeo")
     bwinx = confparse.get("default_values","bplwingeo")
@@ -1059,7 +1059,7 @@ def resetwins():
     sys.exit()
 
 def applyscalefactors():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     sf = confparse.get("display","scalefactors")
     sf = sf.split(',')
     sfx = float(sf[0])
@@ -1141,7 +1141,7 @@ class FaultTolerantTk(tk.Tk):
 # window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
 window = tk.Tk()  # Create the root window with errors in console, invisible to Windows.
 window.title("Minimal MPD Client " + version)  # Set window title
-confparse.read(mmc4wIni)  # get parameters from config .ini file.
+#confparse.read(mmc4wIni)  # get parameters from config .ini file.
 if confparse.get("basic","firstrun") == '1':
     wglst = confparse.get("default_values","maingeo").split(',')
 else:
@@ -1374,7 +1374,7 @@ def lookupwin(lookupT):
             plsngwin.listvar.set(dispitems)
             # if srchterm.upper() == 'Q;':
             #     plsngwin.destroy()
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+#    confparse.read(mmc4wIni)  # get parameters from config .ini file.
     plsngwin = TlSbWin(window, "Search & Play by " + lookupT + " or 'help;'", tsbinilist)
     itemsraw = []
     dispitems = []
@@ -1492,8 +1492,8 @@ def addtopl(plaction):
 ## DEFINE THE SERVER SELECTION WINDOW
 #
 def SrvrWindow(swaction):
-    global serverip,firstrun,lastpl
-    cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
+    global serverip,firstrun,lastpl, cp
+#    cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     if swaction == 'server':
         srvrwtitle = "Servers"
     if swaction == 'output':
@@ -1506,7 +1506,7 @@ def SrvrWindow(swaction):
         msg = ipvar
         displaytext1(msg)
         serverip = iplist[selection]
-        confparse.read(mmc4wIni)
+#        confparse.read(mmc4wIni)
         connext()
         confparse.set("serverstats","lastsrvr",serverip)
         with open(mmc4wIni, 'w') as SLcnf:
@@ -1536,7 +1536,7 @@ def SrvrWindow(swaction):
             artw.aartLabel.configure(image=aart)
     if swaction == 'server':
         srvrw.listbx.bind('<<ListboxSelect>>', rtnplsel)
-        cp.read(mmc4wIni)
+#        cp.read(mmc4wIni)
         iplist = cp.getlist('basic','serverlist')
         srvrw.listbx.delete(0,tk.END)
         srvrw.listbx.update()
@@ -1566,7 +1566,7 @@ def PLSelWindow():
         if loadit == True:
             client.clear()
             client.load(plvar)
-        confparse.read(mmc4wIni)
+#        confparse.read(mmc4wIni)
         confparse.set("serverstats","lastsetpl",plvar)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
@@ -1576,7 +1576,7 @@ def PLSelWindow():
         if aatgl == '1':
             aart = artWindow(aartvar)
             artw.aartLabel.configure(image=aart)
-    cp.read(mmc4wIni)
+#    cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
     lastpl = confparse.get("serverstats","lastsetpl")
     plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
@@ -1590,7 +1590,7 @@ def PLSelWindow():
 def aboutWindow():
     aw = tk.Toplevel(window)
     aw.title("About MMC4W " + version)
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     sf = confparse.get("display","scalefactors")
     sf = sf.split(',')
     sfx = float(sf[0])
@@ -1648,7 +1648,7 @@ def artWindow(aartvar):
 #
 def buildpl():
     global bplwinilist,bplwin
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     bpltgl = confparse.get('program','buildmode')
     if bpltgl == '0':  ## If zero (OFF), set to ON and set up for ON.
         confparse.set('program','buildmode','1')
@@ -1797,7 +1797,7 @@ t1 = threading.Thread(target=songtitlefollower)
 t1.daemon = True
 t1.start()
 #
-confparse.read(mmc4wIni)
+#confparse.read(mmc4wIni)
 aatgl = confparse.get("albumart","albarttoggle")
 abp = confparse.get('program','autobrowserplayer')
 evenodd = 1
