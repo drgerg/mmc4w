@@ -45,6 +45,32 @@ version = "v2.1.0"
 # v1.0.0 - Fixed error in the fiver() function.
 # v0.9.9 - tk.Scrollbars on all windows. Windows are more uniform.
 
+# colours used for buttons
+colrButton = "grey90"                   # default button colour
+colrVolume = {          # volume button definitions
+    # key:  Vol+ label, bg color, fg color,      Vol- label, bg color, fg color
+    100: ['100','gray13','white',          'Vol -','gray90','black'],
+    95:  [ '95','gray12','white',          'Vol -','gray90','black'],
+    90:  [ '90','AntiqueWhite4','white', 'Vol -','gray90','black'],
+    85:  [ '85','AntiqueWhite4','white', 'Vol -','gray90','black'],
+    80:  [ '80','AntiqueWhite3','black', 'Vol -','gray90','black'],
+    75:  [ '75','AntiqueWhite3','black', 'Vol -','gray90','black'],
+    70:  [ '70','AntiqueWhite2','black', 'Vol -','gray90','black'],
+    65:  [ '65','AntiqueWhite2','black', 'Vol -','gray90','black'],
+    60:  [ '60','AntiqueWhite1','black', 'Vol -','gray90','black'],
+    55:  [ '55','AntiqueWhite1','black', 'Vol -','gray90','black'],
+    50:  ['Vol +','gray90','black',      'Vol -','gray90','black'],
+    45:  ['Vol +','gray90','black',     '45','CadetBlue1','black'],
+    40:  ['Vol +','gray90','black',     '40','CadetBlue1','black'],
+    35:  ['Vol +','gray90','black',     '35','turquoise1','black'],
+    30:  ['Vol +','gray90','black',     '30','turquoise1','black'],
+    25:  ['Vol +','gray90','black',     '25','turquoise2','black'],
+    20:  ['Vol +','gray90','black',     '20','turquoise2','black'],
+    15:  ['Vol +','gray90','black',     '15','turquoise3','black'],
+    10:  ['Vol +','gray90','black',     '10','turquoise3','black'],
+    5:   ['Vol +','gray90','black',      '5','turquoise4','white'],
+    0:   ['Vol +','gray90','black',      '0','turquoise4','white']
+}
 
 client = musicpd.MPDClient()                    # create client object
 
@@ -110,7 +136,7 @@ logger.info("     -----======<<<<  STARTING UP  >>>>======-----")
 logger.info("D0) sys.platform is {}".format(sys.platform))
 logger.info(" ")
 
-global serverip,serverport,tbarini,endtime,firstrun
+global tbarini,endtime,firstrun, confparse
 aartvar = 0     ## aartvar tells us whether or not to display the art window.
 endtime = time.time()
 cxstat = 0      ## 'cxstat' indicates the connection status. '1' is connected.
@@ -330,7 +356,7 @@ def wingeoxlator(geostring,geovals,geolist):
             return geostr
 
 def getscalefactors():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     wglst = confparse.get("default_values","maingeo").split(',') #  Get default values from mmc4w.ini.
     mainwingeo = window.geometry() #                                Get current window values 
     mwglist = wingeoxlator(mainwingeo,None,'').split(',') #            Send current to generate list.
@@ -387,35 +413,29 @@ def getoutputs():
     return outputsraw,outputs
 
 def connext():  ## Checks connection, then connects if necessary.
-    global serverip,serverport,cxstat
+                # if no connection this program ends with error message
+    global serverip,serverport
     try:
         client.ping()  # Use ping() to see if we're connected.
-        cxstat = 1
     except (musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as errvar:
         logger.debug("D1| Initial errvar: {}".format(errvar))
         if errvar == 'Already connected':
-            cxstat = 1
             pass
         else:
-            cxstat = 0
             try:
                 logger.debug("D1| Try to reconnect to {} on port {}".format(serverip,serverport))
                 client.connect(serverip, int(serverport))
-                cxstat = 1
                 logger.debug('D1| 2nd try. cxstat is : ' + str(cxstat))
             except  (ValueError, musicpd.ConnectionError, ConnectionRefusedError,ConnectionAbortedError) as err2var:
                 if err2var == 'Already connected':
-                    cxstat = 1
                     pass
                 if 'WinError' in str(err2var) or 'Not connected' in str(err2var):
                     messagebox.showinfo("Server Down","The server you selected is not responding. Edit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
-                    cxstat = 0
                     configurator("Double-check all the IP addresses. OK sends you to edit mmc4w.ini.")
                 else:
                     logger.debug("D1| Second level errvar: {}".format(err2var))
-                    cxstat = 0
-                    endWithError('Second level connection error:\n' + str(err2var) + '\nQuitting now.')
-    return cxstat
+                    endWithError("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
+    return
 
 
 def plrandom():  # Set random playback mode.
@@ -577,91 +597,16 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
     lastvol = str(vol_int)
     logger.debug('Set volume to {}.'.format(vol_int))
     thisvol = vol_int
-    upconf = ['Vol +','gray90','black']
-    dnconf = ['Vol -','gray90','black']
-    if thisvol == 100:
-        upconf = ['100','gray13','white']
-    if thisvol == 95:
-        upconf = ['95','gray12','white']
-    if thisvol == 90:
-        upconf = ['90','AntiqueWhite4','white']
-    if thisvol == 85:
-        upconf = ['85','AntiqueWhite4','white']
-    if thisvol == 80:
-        upconf = ['80','AntiqueWhite3','black']
-    if thisvol == 75:
-        upconf = ['75','AntiqueWhite3','black']
-    if thisvol == 70:
-        upconf = ['70','AntiqueWhite2','black']
-    if thisvol == 65:
-        upconf = ['65','AntiqueWhite2','black']
-    if thisvol == 60:
-        upconf = ['60','AntiqueWhite1','black']
-    if thisvol == 55:
-        upconf = ['55','AntiqueWhite1','black']
-    if thisvol == 50:
-        upconf = ['Vol +','gray90','black']
-        dnconf = ['Vol -','gray90','black']
-    if thisvol == 45:
-        dnconf = ['45','CadetBlue1','black']
-    if thisvol == 40:
-        dnconf = ['40','CadetBlue1','black']
-    if thisvol == 35:
-        dnconf = ['35','turquoise1','black']
-    if thisvol == 30:
-        dnconf = ['30','turquoise1','black']
-    if thisvol == 25:
-        dnconf = ['25','turquoise2','black']
-    if thisvol == 20:
-        dnconf = ['20','turquoise2','black']
-    if thisvol == 15:
-        dnconf = ['15','turquoise3','black']
-    if thisvol == 10:
-        dnconf = ['10','turquoise3','black']
-    if thisvol == 5:
-        dnconf = ['5','turquoise4','white']
-    if thisvol == 0:
-        dnconf = ['0','turquoise4','white']
+    upconf = colrVolume[thisvol]        # the up and down button paramaters
     button_volup.configure(text=upconf[0],bg=upconf[1],fg=upconf[2])
-    button_voldn.configure(text=dnconf[0],bg=dnconf[1],fg=dnconf[2])
+    button_voldn.configure(text=upconf[3],bg=upconf[4],fg=upconf[5])
     currvolconf = confparse.get('serverstats','lastvol')
     if lastvol != currvolconf:
         confparse.set('serverstats','lastvol',lastvol)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
         logger.info('Saved volume to mmc4w.ini. lastvol is {}.'.format(lastvol))
-#
-##  FIVER() ROUNDS VOLUME NUMBERS TO MULTIPLES OF 5.
-#
-def fiver(invar):  # invar should be a string of numbers: 0 - 100. Returns string.
-    fivevar = ''
-    firDig = ''
-    secDig = ''
-    if len(invar) == 1:
-        secDig = invar
-    elif len(invar) == 2:
-        firDig = invar[:1]
-        secDig = invar[1:2]
-    if invar == '100':
-        fivevar = invar
-    zerovals = ('0','1','2')
-    zeroplusvals = ('8','9')
-    fivevals = ('3','4','5','6','7')
-    if secDig in zerovals:
-        secDig = '0'
-    if secDig in zeroplusvals:
-        secDig = '0'
-        if firDig == '':
-            firDig = '0'
-        firDig = str(int(firDig) + 1)
-    if secDig in fivevals:
-        secDig = '5'
-    if fivevar != '100':
-        if firDig > "":
-            fivevar = firDig + secDig
-        else:
-            fivevar = secDig
-    return fivevar
+
 
 def toglrandom():
     connext()
@@ -724,7 +669,7 @@ def dbupdate():
 ##  DEFINE getcurrsong() - THE MOST POPULAR FUNCTION HERE.
 #
 def getcurrsong():
-    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,cxstat,buttonvar,ran,rpt,sin,con,artw,lastpl
+    global globsongtitle,endtime,aatgl,sent,pstate,elap,firstrun,prevbtnstate,lastvol,buttonvar,ran,rpt,sin,con,artw,lastpl
     connext()
     if threading.active_count() < 2:
         logger.debug("D9| The threading.active_count() dropped below 2. Quitting.")
@@ -783,8 +728,8 @@ def getcurrsong():
             artw.aartLabel.configure(image=aart)
         if 'volume' in stat:
             lastvol = stat['volume']
-            vol_fives = fiver(lastvol)
-            vol_int = int(vol_fives)
+            vol_fives = int( (float(lastvol)+3) /5 )         # map 0-100 to range of 0-20
+            vol_int = int(vol_fives * 5)                    # and back to 0-100
             volbtncolor(vol_int)
             logger.info('3) Volume is {}, Random is {}, Repeat is {}.'.format(lastvol,stat['random'],stat['repeat']))
         gpstate = stat['state']
@@ -816,8 +761,6 @@ def getcurrsong():
             exit()
         if pstate == 'stop' or pstate == 'pause':
             logger.info("6) pstate: {}.".format(pstate))
-        if cxstat == 0:
-            globsongtitle = "Not Connected."
         bpltgl = confparse.get('program','buildmode')
         if bpltgl == '1':
             pls_without_song,pls_with_song = loadplsongs(cs['title'],cs['album'])
@@ -927,7 +870,7 @@ def configurator(confmsg):
         sys.exit()
 
 def logtoggler():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     logtog = confparse.get("program","logging")
     loglevel = confparse.get("program","loglevel")
     if logtog.upper() == "ON":
@@ -991,7 +934,7 @@ def displaytext2(msg2):
 def albarttoggle():
     global aatgl,artw,aartvar
     connext()
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     aatgl = confparse.get("albumart","albarttoggle")
     if aatgl == '1':
         try:
@@ -1061,7 +1004,7 @@ def savewinstats():
         confparse.write(SLcnf)
     if aatgl == '1':
         global artwinilist
-        confparse.read(mmc4wIni)
+#        confparse.read(mmc4wIni)
         artwinilist = makeartwinilist()
         aart = artWindow(aartvar)
         artw.aartLabel.configure(image=aart)
@@ -1091,7 +1034,7 @@ def tbtoggle():
 def returntoPL():
     global lastpl
     connext()
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     lastpl = confparse.get("serverstats","lastsetpl")
     client.clear()
     try:
@@ -1101,7 +1044,7 @@ def returntoPL():
         PLSelWindow()
 
 def resetwins():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     aartwin_x = confparse.get("default_values","aartgeo")
     win_x = confparse.get("default_values","maingeo")
     bwinx = confparse.get("default_values","bplwingeo")
@@ -1116,7 +1059,7 @@ def resetwins():
     sys.exit()
 
 def applyscalefactors():
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     sf = confparse.get("display","scalefactors")
     sf = sf.split(',')
     sfx = float(sf[0])
@@ -1198,7 +1141,7 @@ class FaultTolerantTk(tk.Tk):
 # window = FaultTolerantTk()  # Create the root window with abbreviated error messages in popup.
 window = tk.Tk()  # Create the root window with errors in console, invisible to Windows.
 window.title("Minimal MPD Client " + version)  # Set window title
-confparse.read(mmc4wIni)  # get parameters from config .ini file.
+#confparse.read(mmc4wIni)  # get parameters from config .ini file.
 if confparse.get("basic","firstrun") == '1':
     wglst = confparse.get("default_values","maingeo").split(',')
 else:
@@ -1431,7 +1374,7 @@ def lookupwin(lookupT):
             plsngwin.listvar.set(dispitems)
             # if srchterm.upper() == 'Q;':
             #     plsngwin.destroy()
-    confparse.read(mmc4wIni)  # get parameters from config .ini file.
+#    confparse.read(mmc4wIni)  # get parameters from config .ini file.
     plsngwin = TlSbWin(window, "Search & Play by " + lookupT + " or 'help;'", tsbinilist)
     itemsraw = []
     dispitems = []
@@ -1549,8 +1492,8 @@ def addtopl(plaction):
 ## DEFINE THE SERVER SELECTION WINDOW
 #
 def SrvrWindow(swaction):
-    global serverip,firstrun,lastpl
-    cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
+    global serverip,firstrun,lastpl, cp
+#    cp = ConfigParser(converters={'list': lambda x: [i.strip() for i in x.split(',')]})
     if swaction == 'server':
         srvrwtitle = "Servers"
     if swaction == 'output':
@@ -1563,7 +1506,7 @@ def SrvrWindow(swaction):
         msg = ipvar
         displaytext1(msg)
         serverip = iplist[selection]
-        confparse.read(mmc4wIni)
+#        confparse.read(mmc4wIni)
         connext()
         confparse.set("serverstats","lastsrvr",serverip)
         with open(mmc4wIni, 'w') as SLcnf:
@@ -1593,7 +1536,7 @@ def SrvrWindow(swaction):
             artw.aartLabel.configure(image=aart)
     if swaction == 'server':
         srvrw.listbx.bind('<<ListboxSelect>>', rtnplsel)
-        cp.read(mmc4wIni)
+#        cp.read(mmc4wIni)
         iplist = cp.getlist('basic','serverlist')
         srvrw.listbx.delete(0,tk.END)
         srvrw.listbx.update()
@@ -1623,7 +1566,7 @@ def PLSelWindow():
         if loadit == True:
             client.clear()
             client.load(plvar)
-        confparse.read(mmc4wIni)
+#        confparse.read(mmc4wIni)
         confparse.set("serverstats","lastsetpl",plvar)
         with open(mmc4wIni, 'w') as SLcnf:
             confparse.write(SLcnf)
@@ -1633,7 +1576,7 @@ def PLSelWindow():
         if aatgl == '1':
             aart = artWindow(aartvar)
             artw.aartLabel.configure(image=aart)
-    cp.read(mmc4wIni)
+#    cp.read(mmc4wIni)
     pllist = cp.getlist('serverstats','playlists')
     lastpl = confparse.get("serverstats","lastsetpl")
     plsw.listbx.bind('<<ListboxSelect>>', rtnplsel)
@@ -1647,7 +1590,7 @@ def PLSelWindow():
 def aboutWindow():
     aw = tk.Toplevel(window)
     aw.title("About MMC4W " + version)
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     sf = confparse.get("display","scalefactors")
     sf = sf.split(',')
     sfx = float(sf[0])
@@ -1705,7 +1648,7 @@ def artWindow(aartvar):
 #
 def buildpl():
     global bplwinilist,bplwin
-    confparse.read(mmc4wIni)
+#    confparse.read(mmc4wIni)
     bpltgl = confparse.get('program','buildmode')
     if bpltgl == '0':  ## If zero (OFF), set to ON and set up for ON.
         confparse.set('program','buildmode','1')
@@ -1850,14 +1793,11 @@ button_exit.grid(column=4, sticky='W', row=1, padx=1)                     # Plac
 # Make all threads daemon threads, and whenever the main thread dies all threads will die with it.
 ## tk.END THREADING NOTES =====================================
 #
-cxstat = connext()
-if cxstat == 0:
-    SrvrWindow('server')
 t1 = threading.Thread(target=songtitlefollower)
 t1.daemon = True
 t1.start()
 #
-confparse.read(mmc4wIni)
+#confparse.read(mmc4wIni)
 aatgl = confparse.get("albumart","albarttoggle")
 abp = confparse.get('program','autobrowserplayer')
 evenodd = 1
@@ -1926,4 +1866,3 @@ if abp == '1':
         browserplayer()
 logger.info("Down at the bottom. Firstrun: {}".format(firstrun))
 window.mainloop()  # Run the (not defined with 'def') main window loop.
-
