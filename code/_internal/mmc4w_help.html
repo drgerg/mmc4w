@@ -1,9 +1,6 @@
-<!doctype html>
-<html>
-<body>
 <h1>MMC4W - Minimal MPD Client for Windows</h1>
-<p>This help file was updated for the v2.1.0 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.</p>
-<p>I recommend reading the <strong>First Run Process</strong> section below before installing.</p>
+<p>This help file was updated for the v24.11.1 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.</p>
+<p>I recommend reading the <strong>First Run Process</strong> section below before installing.  Of course, that assumes you're reading this on Github before you downloaded and installed MMC4W.</p>
 <h1>Putting the Music First</h1>
 <p><strong>MMC4W</strong> is first and foremost <strong>Minimal</strong>.  That may be a little misleading, because it does quite a lot.  The GUI is minimal so as to quietly go about its business. This is about the music. That was the original point of this exercise.</p>
 <p><strong>MMC4W</strong> is a MPD <strong>Client</strong>.  To be clear, you must have access to a running <a href="https://www.drgerg.com/mpd-is-just-awesome.html">MPD</a> server for this app to be of any value to you.</p>
@@ -58,6 +55,7 @@
 <li><strong>Find and Play</strong> : Opens a window displaying the songs in the queue. See below for more detail.</li>
 <li><strong>Toggle PL Build Mode</strong> : Sets PL Build Mode. Easily add or delete songs from saved playlists.</li>
 <li><strong>Launch Browser Player</strong> : If a streaming HTTP output is enabled on the server, opens your browser there.</li>
+<li><strong>Write Queue to .m3u File</strong> : Write current queue to a local .m3u file. Artist/Album/Track is the basic format.</li>
 </ul>
 <h3>The 'Help' menu contains:</h3>
 <ul>
@@ -155,6 +153,7 @@
 <p>Saved playlists are the heart of <strong>MMC4W</strong>. To differentiate between <strong>saved playlists</strong> and the list of songs currently being played, the latter is called <strong>"the queue"</strong>.  <strong>Playlists</strong> are lists of songs saved to a file on disk with some meaningful name.</p>
 <p>You load playlists into the queue and then MPD plays that queue using the settings in force at the moment.  </p>
 <p><strong>MMC4W</strong> will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the <strong>'Lists'</strong> Menu.</p>
+<p>If you want to get a playlist out of the MPD server and onto your local computer, look in the Queue menu for the option to save the queue to a .m3u file.  The saved file will have an Artist/Album/Track format. Note that this has only been tested with a curated library of songs with complete metadata. If the library on the server is missing some metadata, it's a good bet it will have a unwanted effect.</p>
 <h3>You can manipulate playlists in these ways:</h3>
 <ul>
 <li>Load a playlist into the queue.  <strong>Lists Menu</strong> - Select a Playlist.</li>
@@ -163,6 +162,7 @@
 <li>Create a new empty playlist. <strong>Lists Menu</strong> - Create New Saved Playlist.</li>
 <li>Delete a playlist. <strong>Lists Menu</strong> - Remove Saved Playlist.</li>
 <li>Add or remove the currently playing song to any saved playlist. <strong>Queue Menu</strong> - Toggle PL Build Mode.</li>
+<li><strong>NEW</strong> Save the current queue to a local .m3u playlist file.</li>
 </ul>
 <h2>Adding and Removing Songs in a Saved Playlist:</h2>
 <p><strong>MMC4W</strong> lets you add songs to playlists as you go.  No need to stop playback.</p>
@@ -174,7 +174,7 @@
 <p>2) If the music isn't already playing, hit <strong>Play</strong>.  Two sets of playlists are displayed, those with this song on the left, and those without it on the right.<br />
  3) If you want to add the current song to a playlist, click on the playlist name in the right list box.  The playlist name will move to the left and the current song will be added.  </p>
 <p><strong>NOTE:</strong> If you press <strong>Quit</strong> while in PLBuild Mode, <strong>MMC4W</strong> first turns PLBuild Mode off, then exits.</p>
-<p><strong>That's it.</strong></p>
+<p><strong>It's just that easy.</strong></p>
 <h4>Deleting a song from the current saved playlist is just as easy:</h4>
 <p>1) In <strong>PL Build Mode</strong>, when you hear a song you want to remove, click the playlist name in the left window.<br />
 2) The playlist name will move to the right and song will be gone from the saved playlist.</p>
@@ -288,5 +288,3 @@ When it's playing, select the playlist to add or delete the current song from th
 <strong>Thanks</strong> to <a href="https://gitlab.com/kaliko">kaliko</a> for the <a href="https://gitlab.com/kaliko/python-musicpd">python-musicpd</a> library!<br />
 And of course none of this would be possible without the excellent contribution of <a href="https://github.com/MusicPlayerDaemon">MPD</a> by Max Kellermann.  <strong>Thanks!!</strong><br />
 &copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)</p>
-</body>
-</html>
