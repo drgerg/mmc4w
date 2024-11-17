@@ -1,10 +1,11 @@
-Minimal MPD Client - v2.1.0
+Minimal MPD Client - v24.11.1
 
-Check out the offline help under the Help menu. (updated for v2.1.0)
+Check out the offline help under the Help menu. (updated for v24.11.1)
 
-v2.1.0 
-  - Provided a kinder solution when trying to run MMC4W against a server that is not running.
-  - Added Config menu option to delete the debug log file.
-  - Corrected bug preventing logo from being displayed when there is no album art.
-
+v24.11.1
+  - Changed versioning scheme. I like the year (24.) month (11.) iteration (1) numbering.
+  - Incorporated a code change based on a recommendation from donburch888. Thanks Don!
+  - Added an option under the Queue menu to save the current queue to a .m3u file 
+    in the folder of your choice.  This helped me get my favorites on my phone.
+  - I also added the 'requirements.txt' file from my Windows 'venv' to the repo.
 

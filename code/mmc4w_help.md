@@ -1,11 +1,8 @@
-<!doctype html>
-<html markdown="1">
-<body markdown="1">
 # MMC4W - Minimal MPD Client for Windows
 
-This help file was updated for the v2.1.0 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.
+This help file was updated for the v24.11.1 release.  As of v2.0.8 the same Python code runs in Linux without needing any tweaks.
 
-I recommend reading the **First Run Process** section below before installing.
+I recommend reading the **First Run Process** section below before installing.  Of course, that assumes you're reading this on Github before you downloaded and installed MMC4W.
 
 # Putting the Music First
 
@@ -64,6 +61,7 @@ The interface contains the basic required buttons to control a MPD server:
 - **Find and Play** : Opens a window displaying the songs in the queue. See below for more detail.
 - **Toggle PL Build Mode** : Sets PL Build Mode. Easily add or delete songs from saved playlists.
 - **Launch Browser Player** : If a streaming HTTP output is enabled on the server, opens your browser there.
+- **Write Queue to .m3u File** : Write current queue to a local .m3u file. Artist/Album/Track is the basic format.
 
 
 ### The 'Help' menu contains:
@@ -228,6 +226,8 @@ You load playlists into the queue and then MPD plays that queue using the settin
 
 **MMC4W** will create a special playlist called "Everything" that contains all the songs in your library.  That option is found in the **'Lists'** Menu.
 
+If you want to get a playlist out of the MPD server and onto your local computer, look in the Queue menu for the option to save the queue to a .m3u file.  The saved file will have an Artist/Album/Track format. Note that this has only been tested with a curated library of songs with complete metadata. If the library on the server is missing some metadata, it's a good bet it will have a unwanted effect.
+
 ### You can manipulate playlists in these ways:
 
  - Load a playlist into the queue.  **Lists Menu** - Select a Playlist.
@@ -236,6 +236,7 @@ You load playlists into the queue and then MPD plays that queue using the settin
  - Create a new empty playlist. **Lists Menu** - Create New Saved Playlist.
  - Delete a playlist. **Lists Menu** - Remove Saved Playlist.
  - Add or remove the currently playing song to any saved playlist. **Queue Menu** - Toggle PL Build Mode.
+ - **NEW** Save the current queue to a local .m3u playlist file.
 
 ## Adding and Removing Songs in a Saved Playlist:
 
@@ -256,7 +257,7 @@ You can move and resize that window to suit your tastes.  When you exit PLBuild 
 
 **NOTE:** If you press **Quit** while in PLBuild Mode, **MMC4W** first turns PLBuild Mode off, then exits.
 
-**That's it.**
+**It's just that easy.**
 
 #### Deleting a song from the current saved playlist is just as easy:
 
@@ -400,7 +401,7 @@ With the exception of the serverlist, all of these entries are filled in by the 
 
 ### Minutia
 
-MMC4W was developed and tested in Windows 10.  As of v2.0.6, the same Python code will run on Linux. So far it's only tested on Ubuntu.  **MPD** is running on three different Debian-type computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file (I'll probably switch to 'cover.png') for each album and embed the art in the songs using **[MP3TAG](https://www.mp3tag.de/en/)** or **Music Bee** depending on the circumstances.
+MMC4W was developed and tested in Windows 10 and 11.  As of v2.0.6, the same Python code will run on Linux. So far it's only tested on Ubuntu.  **MPD** is running on three different Debian-type computers here, one i7 Ubuntu, one i3 Ubuntu and one Raspberry Pi.  My music library is made up exclusively of FLAC files.  I rip my CD's (remember those?) using [Music Bee](https://getmusicbee.com/).  I create a 'folder.jpg' file (I'll probably switch to 'cover.png') for each album and embed the art in the songs using **[MP3TAG](https://www.mp3tag.de/en/)** or **Music Bee** depending on the circumstances.
 
 I hope you enjoy using this as much as I do.<br><br>
 
@@ -409,5 +410,4 @@ I hope you enjoy using this as much as I do.<br><br>
 **Thanks** to [kaliko](https://gitlab.com/kaliko) for the [python-musicpd](https://gitlab.com/kaliko/python-musicpd) library!  
 And of course none of this would be possible without the excellent contribution of [MPD](https://github.com/MusicPlayerDaemon) by Max Kellermann.  **Thanks!!**  
 &copy;2023-2024 - Gregory A. Sanders (dr.gerg@drgerg.com)
-</body>
-</html>
+

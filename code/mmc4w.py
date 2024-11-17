@@ -9,6 +9,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import simpledialog
+from tkinter import filedialog
 from tkinter.font import Font
 import datetime
 from time import sleep
@@ -32,18 +33,10 @@ else:
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
     ctypes.windll.user32.SetProcessDPIAware()
 
-version = "v2.1.0"
+version = "v24.11.1"
+# v24.11.1 - Save playlist to file. Also shift to different version number scheme.
 # v2.1.0 - Gently handle attempting to run with no server. Add 'delete debug log'.
 # v2.0.9 - Finally get scale factors working. Renamed menus. Browse help.html.
-# v2.0.8 - Use buttons in search windows for added flexibility.
-# v2.0.7 - Trade pathlib for os.path. Deal with 'already connected' error.
-# v2.0.6 - Fine tuning lookups and search windows. Completely revamp win size methods.
-# v2.0.5 - Way better Playlist Build Mode.
-# v2.0.4 - Doing things a better way.
-# v2.0.1 - Handling the queue.
-# v2.0.0 - Introduced classes for some windows. Tons more stability tweaks.
-# v1.0.0 - Fixed error in the fiver() function.
-# v0.9.9 - tk.Scrollbars on all windows. Windows are more uniform.
 
 
 client = musicpd.MPDClient()                    # create client object
@@ -414,7 +407,7 @@ def connext():  ## Checks connection, then connects if necessary.
                 else:
                     logger.debug("D1| Second level errvar: {}".format(err2var))
                     cxstat = 0
-                    endWithError('Second level connection error:\n' + str(err2var) + '\nQuitting now.')
+                    endWithError("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
     return cxstat
 
 
@@ -631,38 +624,6 @@ def volbtncolor(vol_int):  # Provide visual feedback on volume buttons.
             confparse.write(SLcnf)
         logger.info('Saved volume to mmc4w.ini. lastvol is {}.'.format(lastvol))
 #
-##  FIVER() ROUNDS VOLUME NUMBERS TO MULTIPLES OF 5.
-#
-def fiver(invar):  # invar should be a string of numbers: 0 - 100. Returns string.
-    fivevar = ''
-    firDig = ''
-    secDig = ''
-    if len(invar) == 1:
-        secDig = invar
-    elif len(invar) == 2:
-        firDig = invar[:1]
-        secDig = invar[1:2]
-    if invar == '100':
-        fivevar = invar
-    zerovals = ('0','1','2')
-    zeroplusvals = ('8','9')
-    fivevals = ('3','4','5','6','7')
-    if secDig in zerovals:
-        secDig = '0'
-    if secDig in zeroplusvals:
-        secDig = '0'
-        if firDig == '':
-            firDig = '0'
-        firDig = str(int(firDig) + 1)
-    if secDig in fivevals:
-        secDig = '5'
-    if fivevar != '100':
-        if firDig > "":
-            fivevar = firDig + secDig
-        else:
-            fivevar = secDig
-    return fivevar
-
 def toglrandom():
     connext()
     ranstat =  client.status()
@@ -762,6 +723,9 @@ def getcurrsong():
     buttonvar = newstate
     logger.debug('D2| Retrieving "cs" in getcurrsong().')
     cs = client.currentsong()
+    # if 'duration' not in cs:
+        # msg = "The server cannot provide the required song duration value. Exiting."
+        # endWithError(msg)
     logger.debug('D2| Got cs (client.currentsong()) with a length of {}.'.format(len(cs)))
     if cs == {}:
         client.stop()
@@ -783,8 +747,10 @@ def getcurrsong():
             artw.aartLabel.configure(image=aart)
         if 'volume' in stat:
             lastvol = stat['volume']
-            vol_fives = fiver(lastvol)
-            vol_int = int(vol_fives)
+            # next two lines courtesy of Donburch888. Replaces entire fiver() function.
+            vol_fives = int( (float(lastvol)+3) /5 )         # map 0-100 to range of 0-20
+            vol_int = int(vol_fives * 5)                    # and back to 0-100
+            # 
             volbtncolor(vol_int)
             logger.info('3) Volume is {}, Random is {}, Repeat is {}.'.format(lastvol,stat['random'],stat['repeat']))
         gpstate = stat['state']
@@ -1158,16 +1124,16 @@ artw = None
 globsongtitle = ""
 aatgl = '0'
 
-def makeeverything():
+def makeeverything(): 
     connext()
-    client.clear()
+    client.clear() # clears the queue
     pllist = client.listplaylists()
     if 'Everything' in str(pllist):
         client.rm('Everything')
-    client.add('/')
-    client.save('Everything')
+    client.add('/') # adds all songs in library to the queue.
+    client.save('Everything') # Saves a new 'Everything.m3u' file to disk.
     logger.info('The playlist named "Everything" was just updated.')
-    PLSelWindow()
+    PLSelWindow() # opens the playlist selection dialog.
 #
 ## A CLASS TO CREATE ERROR MESSAGEBOXES (USED VERBATIM FROM STACKOVERFLOW)
 ## https://stackoverflow.com/questions/6666882/tkinter-python-catching-exceptions
@@ -1738,6 +1704,19 @@ def createnewpl():
         PLSelWindow()
         logger.info("NPL) A new saved Playlist named '{}' was created.".format(newpl))
 #
+def writeqtofile():
+    file_path = filedialog.askdirectory(parent=window,initialdir="~",title='Please select a directory')
+    print(file_path)
+    if file_path != ():
+        songlist=[]
+        songlistq = client.playlistinfo()
+        for s in songlistq:
+            songlist.append(s['file'])
+        with open(Path(file_path,"mmc4w_playlist.m3u"), 'w') as plout:
+            plout.write('\n'.join(songlist))
+    window.update()
+    artw.update()
+#
 def browserplayer():
     global buttonvar
     outputsraw = getoutputs()[0]
@@ -1803,6 +1782,7 @@ queueMenu.add_command(label='Ingest Last Playlist',command=returntoPL)
 queueMenu.add_command(label='Find and Play in Queue',command=lambda: queuewin('title'))
 queueMenu.add_command(label="Toggle PL Build Mode", command=buildpl)
 queueMenu.add_command(label="Launch Browser Player", command=browserplayer)
+queueMenu.add_command(label='Write Queue to .m3u File', command=writeqtofile)
 menu.add_cascade(label="Queue", menu=queueMenu)
 
 helpMenu = tk.Menu(menu, tearoff=False)
