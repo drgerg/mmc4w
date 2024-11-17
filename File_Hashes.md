@@ -1,6 +1,6 @@
 # Cryptographic Hashes
 
-Beginning with v2.0.7, I'm including the SHA256 cryptographic hash for the installer and the python source files.  You'll find those hashes in the description of the release.
+Beginning with v2.0.7, I'm including the SHA256 cryptographic hash for the installer and the python source files.
 
 While it is true that nothing can absolutely guarantee you will not be abused online, cryptographic hashes of files you download from the Internet can help.
 They help by providing you a mechanism by which you can gain a reasonable amount of assurance the file you downloaded is the same file the developer created.
