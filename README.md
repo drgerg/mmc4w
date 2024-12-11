@@ -1,7 +1,9 @@
 # MMC4W - Minimal MPD Client for Windows 
 
+v24.12.1 brings a kinder and gentler method of handling servers not running when MMC4W is started. 
+
 Is MMC4W for you? [Check this](https://github.com/drgerg/mmc4w/blob/main/is_mmc4w_for_you.md).  
-You really should start here.  It's the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/_internal/mmc4w_help.md).
+Take a look at the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/_internal/mmc4w_help.md).
 
 ## It Really is All About the Music.
 
@@ -9,9 +11,7 @@ The entire interface is intentionally tiny and simple. In its most basic mode it
 
 ![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/most_basic.png)
 
-**v24.11.1** adds the ability to save the current server queue to a .m3u file on your local computer. I needed this so I could copy my favorites to my phone. I wrote another Python program to compare that list to my local music library and pull the playlist songs out to another folder. Then I wiped my phone's music, and copied that folder to it. It was actually pretty easy. I like it.
-
-## MMC4W.py runs in Ubuntu with no tweaking starting with v2.0.6.  
+## MMC4W.py runs in Ubuntu with no tweaking.
 
 I recently added SHA256 hashes for the installer and mmc4w.py:  [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
 
