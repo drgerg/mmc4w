@@ -11,7 +11,7 @@ The entire interface is intentionally tiny and simple. In its most basic mode it
 
 ![titlebar.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/most_basic.png)
 
-## MMC4W.py runs in Ubuntu with no tweaking.
+## MMC4W.py runs in Ubuntu with no tweaking. We have run it as a Python app on MacOS also.
 
 I recently added SHA256 hashes for the installer and mmc4w.py:  [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
 
