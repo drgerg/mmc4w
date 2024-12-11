@@ -25,6 +25,7 @@ import webbrowser
 from collections import OrderedDict
 from pathlib import Path
 
+
 if sys.platform != "win32":
     import subprocess
 else:
@@ -33,11 +34,11 @@ else:
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
     ctypes.windll.user32.SetProcessDPIAware()
 
-version = "v24.11.1"
+version = "v24.12.1"
+# v24.12.1 - Much improved handling of unresponsive servers.
 # v24.11.1 - Save playlist to file. Also shift to different version number scheme.
 # v2.1.0 - Gently handle attempting to run with no server. Add 'delete debug log'.
 # v2.0.9 - Finally get scale factors working. Renamed menus. Browse help.html.
-
 
 client = musicpd.MPDClient()                    # create client object
 
@@ -400,14 +401,20 @@ def connext():  ## Checks connection, then connects if necessary.
                 if err2var == 'Already connected':
                     cxstat = 1
                     pass
-                if 'WinError' in str(err2var) or 'Not connected' in str(err2var):
-                    messagebox.showinfo("Server Down","The server you selected is not responding. Edit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
-                    cxstat = 0
-                    configurator("Double-check all the IP addresses. OK sends you to edit mmc4w.ini.")
                 else:
-                    logger.debug("D1| Second level errvar: {}".format(err2var))
-                    cxstat = 0
-                    endWithError("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
+                    cstat = 0
+                # if 'WinError' in str(err2var) or 'Not connected' in str(err2var):
+                    # messagebox.showinfo("Server Down","The server you selected is not responding. Edit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
+                    # cxstat = 0
+                    #configurator("Double-check all the IP addresses. OK sends you to edit mmc4w.ini.")
+                # else:
+                #     logger.debug("D1| Final terminal error: {}".format(err2var))
+                #     cxstat = 0
+                    # configurator("Double-check all the IP addresses. OK sends you to edit mmc4w.ini.")
+                    
+                    #endWithError("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
+                    #configurator("The server you selected is not responding.\nEdit mmc4w.ini to ensure the 'lastsrvr' IP address is for a running server.")
+                    # messagebox.showinfo("Server Not Responding","Server\n" + serverip + "\nis not responding.\nSelect a different one.")
     return cxstat
 
 
@@ -950,9 +957,11 @@ def plupdate():
 def displaytext1(msg):
     text1.delete("1.0", 'end')
     text1.insert("1.0", msg)
+    text1.update()
 
 def displaytext2(msg2):
     text1.insert(tk.END, msg2)
+    text1.update()
 
 def albarttoggle():
     global aatgl,artw,aartvar
@@ -1522,26 +1531,40 @@ def SrvrWindow(swaction):
     if swaction == 'output':
         srvrwtitle = "MPD Server Outputs"
     srvrw = TlSbBWin(window, srvrwtitle, tsbinilist)
+
     def rtnplsel(ipvar):
-        global serverip,firstrun,lastpl
-        client.close()
+        global serverip,firstrun,lastpl,cxstat
+        cxstat = connext()
+        if cxstat == 1:
+            client.close()
         selection = srvrw.listbx.curselection()[0]
-        msg = ipvar
+        msg = "Attempting " + iplist[selection]
         displaytext1(msg)
         serverip = iplist[selection]
         confparse.read(mmc4wIni)
-        connext()
-        confparse.set("serverstats","lastsrvr",serverip)
-        with open(mmc4wIni, 'w') as SLcnf:
-            confparse.write(SLcnf)
-        # srvrw.destroy()
-        logger.debug("serverip: {}".format(serverip))
-        lastpl = 'Joined Server Queue'
-        confparse.set('serverstats','lastsetpl',lastpl)
-        with open(mmc4wIni, 'w') as SLcnf:
-            confparse.write(SLcnf)
-        logger.info('0) Connected to server {}.'.format(serverip))
-        getcurrsong()
+        currsrvr = confparse.get("serverstats","lastsrvr")
+        cxstat = connext()
+        # print('cxstat is: {}'.format(cxstat))
+        if cxstat == 1:
+            srvrw.destroy()
+            msg = iplist[selection]
+            displaytext1(msg)
+            confparse.set("serverstats","lastsrvr",serverip)
+            with open(mmc4wIni, 'w') as SLcnf:
+                confparse.write(SLcnf)
+            logger.debug("serverip: {}".format(serverip))
+            lastpl = 'Joined Server Queue'
+            confparse.set('serverstats','lastsetpl',lastpl)
+            with open(mmc4wIni, 'w') as SLcnf:
+                confparse.write(SLcnf)
+            logger.info('0) Connected to server {}.'.format(serverip))
+            getcurrsong()
+        else:
+            tried = serverip
+            serverip = currsrvr
+            srvrw.destroy()
+            messagebox.showinfo("Server Not Responding","Server\n" + tried + "\nis not responding.\nSelect a different one.")
+            
 
     def outputtggl(outputvar):
         selection = srvrw.listbx.curselection()[0]
@@ -1899,8 +1922,13 @@ if aatgl == '1':
         artw.overrideredirect(True)
     elif firstrun == '0' and tbarini == '1':
         artw.overrideredirect(False)
-getcurrsong()
-getoutputs()
+#cxstat = connext()
+if cxstat == 1:
+    getcurrsong()
+    getoutputs()
+else:
+    messagebox.showinfo("Select a Server", serverip + " is not responding.\nSelect a different one.")
+    SrvrWindow('server')
 if abp == '1':
     if buttonvar == 'play':
         browserplayer()
