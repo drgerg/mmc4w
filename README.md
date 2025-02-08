@@ -59,7 +59,9 @@ You are able to edit the configuration file (mmc4w.ini) by selecting **Config** 
 
 ### A Note About Window Positions
 
-The windows are intended to be placed and left alone.  If you want to move them, click the **'Mode'** button.  The titlebars will be visible, and you can move the windows where you want them.  Clicking **'Mode'** again saves their position to the mmc4w.ini file in your installation folder.
+The windows are intended to be placed and left alone.  If you want to move them, click the **'Mode'** button.  The titlebars will be visible, and you can move the windows where you want them.  Clicking **'Mode'** again saves their position to the mmc4w.ini file in your installation folder and removes the titlebars. 
+In Windows this simply leaves the MMC4W windows where they are. Other windows will cover them if moved on top.  
+In Linux (Ubuntu / Mint) the MMC4W windows stay on top of everything.  No testing has been done in other Linux variants.
 
 I find this to be a perfectly acceptable arrangement.
 
