@@ -1,6 +1,6 @@
 # MMC4W - Minimal MPD Client for Windows 
 
-v24.12.1 brings a kinder and gentler method of handling servers not running when MMC4W is started. 
+![screen_1.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_1.png)
 
 Is MMC4W for you? [Check this](https://github.com/drgerg/mmc4w/blob/main/is_mmc4w_for_you.md).  
 Take a look at the [Help text](https://github.com/drgerg/mmc4w/blob/main/code/_internal/mmc4w_help.md).
@@ -14,6 +14,8 @@ The entire interface is intentionally tiny and simple. In its most basic mode it
 ## MMC4W.py runs in Ubuntu with no tweaking. 
 
 We have also run it as a Python app on MacOS.
+
+v24.12.1 brings a kinder and gentler method of handling servers not running when MMC4W is started. 
 
 I recently added SHA256 hashes for the installer and mmc4w.py:  [File_Hashes.md](https://github.com/drgerg/mmc4w/blob/main/File_Hashes.md).
 
