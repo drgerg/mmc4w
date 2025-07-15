@@ -1,3 +1,5 @@
+2025-JUL-15 - There's been no further development on MMC4W because it just works.
+
 # MMC4W - Minimal MPD Client for Windows 
 
 ![screen_1.png](https://github.com/drgerg/mmc4w/blob/main/code/_internal/screen_1.png)
