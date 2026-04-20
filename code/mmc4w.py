@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # 
-# mmc4w.py - 2024 by Gregory A. Sanders (dr.gerg@drgerg.com)
+# mmc4wsc.py - 2024-6 by Gregory A. Sanders (dr.gerg@drgerg.com)
 # Minimal MPD Client for Windows - basic set of controls for an MPD server.
 # Take up as little space as possible to get the job done.
 # mmc4w.py uses the python-musicpd library.
@@ -24,6 +24,7 @@ import logging
 import webbrowser
 from collections import OrderedDict
 from pathlib import Path
+import snapcast.control
 
 
 if sys.platform != "win32":
@@ -34,7 +35,8 @@ else:
     ctypes.windll.shcore.SetProcessDpiAwareness(0)
     ctypes.windll.user32.SetProcessDPIAware()
 
-version = "v24.12.1"
+version = "v26.01.1"
+# v26.04.1 - First iteration of MMC4W with SnapCast snapclient controls.
 # v24.12.1 - Much improved handling of unresponsive servers.
 # v24.11.1 - Save playlist to file. Also shift to different version number scheme.
 # v2.1.0 - Gently handle attempting to run with no server. Add 'delete debug log'.
@@ -119,6 +121,7 @@ serverlist = confparse.get('basic','serverlist')
 serverip = confparse.get('serverstats', 'lastsrvr')
 serverport = confparse.get('basic','serverport')
 firstrun = confparse.get('basic','firstrun')
+snapcastserver = confparse.get('basic','snapcastserver')
 ran = 'r'
 rpt = 'p'
 sin = 's'
@@ -1629,7 +1632,86 @@ def PLSelWindow():
     plsw.listbx.delete(0,tk.END)
     plsw.listbx.update()
     plsw.listvar.set(pllist)
-    
+#
+## DEFINE THE SNAPCLIENT WINDOW
+#
+def SnapClientWindow():
+    import asyncio
+    global serverip,aartvar,aatgl,tsbinilist
+#    
+## Start by getting the list of connected SnapCast clients from the SnapCast server.
+    sclist = []
+    prettysclist = []
+    plsctitle = "Snapcast Clients"
+    plsc = TlSbWin(window, plsctitle, tsbinilist)
+    loop = asyncio.get_event_loop()
+    server = loop.run_until_complete(snapcast.control.create_server(loop, snapcastserver))
+    for client in server.clients:
+        if client.connected == True:
+            if client.muted==True:
+                tcm = 'Muted'
+            else:
+                tcm = 'On'
+            thisclientpretty = str(client.friendly_name +" | Vol: " + str(client.volume) + " | " +  tcm)
+            thisclient = client.identifier,client.friendly_name,client.volume,client.muted
+            prettysclist.append(thisclientpretty)
+            sclist.append(thisclient)
+#
+## Define some nested fuctions here;
+#
+    ## The tk.Entry box runs this upon <Return>
+    def pushret(event):
+        global scvar,scvarpretty
+        clid = sclist[scvar][0]
+        newvol = editing_item.get()[-2:]
+        if newvol.isnumeric():
+            newvol = int(newvol)
+        server = loop.run_until_complete(snapcast.control.create_server(loop, serverip))
+        clidx = 0 ## We're going to find the index number for our client.
+        for client in server.clients:
+            if clid in str(client):
+                ourclientindex = clidx
+            clidx += 1
+        ourclient = server.clients[ourclientindex]
+        if ourclient.connected:
+            if isinstance(newvol,str) and newvol.upper() == ' M':
+                loop.run_until_complete(ourclient.set_muted(True))
+                logger.info("Muted {}.".format(ourclient))
+            if isinstance(newvol,int) and newvol >= 1:
+                loop.run_until_complete(ourclient.set_muted(False))
+                loop.run_until_complete(ourclient.set_volume(newvol))
+                logger.info("Set {}'s volume to {}.".format(ourclient,newvol))
+        plsc.destroy()
+        sleep(1)
+        if aatgl == '1':
+            aart = artWindow(aartvar)
+            artw.aartLabel.configure(image=aart)
+
+    # The tk.Listbox runs this upon click (<<ListboxSelect>>)
+    def clientmgr(clicked):
+        global serverip,lastpl,scvarpretty,scvar
+        selection = plsc.listbx.curselection()[0]
+        scvar = selection
+        selclientname = sclist[scvar][1]
+        scvarpretty = prettysclist[selection]
+        displaytext1(scvarpretty)
+        editing_item.set(selclientname + " | New volume (1-100). M for mute. ")
+
+
+    editing_item = tk.StringVar()
+    entry = tk.Entry(plsc, textvariable=editing_item, width=tsbinilist[2])
+    entry.grid(row=6,column=1,columnspan=5,sticky='NSEW')
+    entry.insert(0,'Select SnapCast Client. ')
+    entry.bind('<Return>', pushret)
+    entry.bind('<KP_Enter>', pushret)
+    entry.focus_set()    
+    plsc.listbx.bind('<<ListboxSelect>>', clientmgr)
+    plsc.listbx.delete(0,tk.END)
+    plsc.listbx.update()
+    plsc.listvar.set(prettysclist)
+    if aatgl == '1':
+        aart = artWindow(aartvar)
+        artw.aartLabel.configure(image=aart)
 #
 ## DEFINE THE ABOUT WINDOW
 #
@@ -1769,8 +1851,9 @@ window.config(menu=menu)
 nnFont = Font(family="Segoe UI", size=10)          ## Set the base font
 confMenu = tk.Menu(menu, tearoff=False)
 confMenu.add_command(label="Edit mmc4w.ini", command=lambda: configurator(''))
-confMenu.add_command(label="Select a Server", command=lambda: SrvrWindow('server'))
-confMenu.add_command(label="Toggle an Output", command=lambda: SrvrWindow('output'))
+confMenu.add_command(label="Select a MPD Server", command=lambda: SrvrWindow('server'))
+confMenu.add_command(label="Toggle an MPD Output", command=lambda: SrvrWindow('output'))
+confMenu.add_command(label='Manage SnapClients', command=SnapClientWindow)
 confMenu.add_command(label='Toggle Logging', command=logtoggler)
 confMenu.add_command(label='Delete Debug Log',command=deletedebuglog)
 confMenu.add_command(label='Reset Win Positions', command=resetwins)

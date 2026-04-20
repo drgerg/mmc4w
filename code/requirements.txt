@@ -1,10 +1,12 @@
 altgraph==0.17.4
+construct==2.10.70
 Markdown==3.7
 packaging==24.2
 pefile==2023.2.7
 pillow==11.0.0
-pyinstaller==6.11.1
-pyinstaller-hooks-contrib==2024.10
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.4
 python-musicpd==0.9.1
 pywin32-ctypes==0.2.3
 setuptools==75.5.0
+snapcast==2.3.7

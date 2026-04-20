@@ -1,8 +1,9 @@
-Minimal MPD Client - v24.12.1
+Minimal MPD Client - v26.04.1
 
 Check out the offline help under the Help menu. (updated for v24.11.1)
 
-v24.12.1
-  - I finally have a more kind and gentle way of handling things when the selected server is not online.
+v26.04.1
+  - Support for managing SnapCast servers from MMC4W is found under the File menu.  Change volume and mute online servers.
+  - Look for updates regarding this new functionality in the Help menu in the .2 version coming soon.
   
 
