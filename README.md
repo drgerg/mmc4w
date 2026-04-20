@@ -1,4 +1,4 @@
-2026-APR-19 - v26.04.1 adds a way to manage volume and muting of SnapCast clients from the Config menu.
+2026-APR-19 - v26.04.1 adds a way to manage volume and muting of [SnapCast](https://github.com/snapcast/snapcast) clients from the Config menu.
 
 # MMC4W - Minimal MPD Client for Windows 
 
